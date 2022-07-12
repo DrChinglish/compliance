@@ -1,0 +1,231 @@
+{% extends 'baseadmin.html' %}
+
+{% block title %} - 生成报告{% endblock title %}
+{% block bodyclass %}sidebar-collapse{% endblock %}
+
+{% block content %}
+
+
+
+<section class="content-header">
+  <div class="container-fluid">
+    <div class="row mb-2">
+      <div class="col-sm-6">
+        <h1>项目报告</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item">
+            <a href="{{post.get_absolute_url}}">
+              <button type="button" class="btn btn-block btn-outline-secondary btn-lg">返回</button>
+            </a>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-12">
+
+        <div class="callout callout-info">
+          <h5><i class="fas fa-info"></i> 温馨提示:</h5>
+          此页面为您的数据合规报告，包含您原始数据的合规得分，以及您的详细合规操作，点击pdf按钮即可生成您的合规分析报告。
+        </div>
+
+
+        <!-- Main content -->
+        <div class="invoice p-3 mb-3" id="contentToPrint">
+          <!-- title row -->
+          <div class="row">
+            <div class="col-12">
+              <h4>
+                <i class="fas fa-globe"></i> {{post.title}}
+                <small class="float-right">Date: {{ generate_report_time }}</small>
+              </h4>
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- info row -->
+          <div class="row invoice-info">
+            <div class="col-sm-4 invoice-col">
+              <br>
+              <address>
+                <strong>基本信息</strong><br>
+                创建时间：{{post.publish}}<br>
+                创建人： {{post.author}}<br>
+
+              </address>
+            </div>
+            <!-- /.col -->
+            <div class="col-sm-4 invoice-col">
+              <br>
+              <strong>项目描述</strong><br>
+              <address>
+                <br>
+                {{post.body}}
+              </address>
+            </div>
+
+          </div>
+          <!-- /.row -->
+
+          <!-- Table row -->
+          <div class="col-12 my_title">
+            <h5>
+              <i class="far fa-file-alt "></i> 1.审计操作
+
+            </h5>
+          </div>
+          <div class="row">
+            <div class="col-12 table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>序号</th>
+                    <th>处理时间</th>
+                    <th>处理数据量</th>
+                    <th>处理内容描述</th>
+                    <!-- <th>Subtotal</th> -->
+                  </tr>
+                </thead>
+                <tbody>
+
+                  {% for i in operation %}
+                  <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{ i.created }}</td>
+                    <td>{{ i.quantity }}</td>
+                    <td>{{ i.content }}</td>
+                  </tr>
+                  {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+
+
+          <div class="col-12 my_title">
+            <h5>
+              <i class="far fa-file-alt "></i> 2.审计结果及审计得分
+
+            </h5>
+          </div>
+
+          <div class="row">
+            <!-- accepted payments column -->
+            <div class="col-6">
+              <div class="card-body p-0" style="display: block;">
+                <div class="x_content">
+                  <iframe class="chartjs-hidden-iframe"
+                    style="width: 100%; display: block; border: 0px; height: 0px; margin: 0px; position: absolute; inset: 0px;">
+                  </iframe>
+                  <canvas id="canvasRadar" width="303" height="151" style="width: 303px; height: 151px;"></canvas>
+                </div>
+              </div>
+            </div>
+            <!-- /.col -->
+            <div class="col-6" style="margin-top: 7rem;">
+              <!-- <p class="lead">风险数据占比</p> -->
+
+              <div class="table-responsive">
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th>高风险占比:</th>
+                      <td>{{ operation.0.low_proportion }}</td>
+                    </tr>
+                    <tr>
+                      <th>中风险占比：</th>
+                      <td>{{ operation.1.middle_proportion }}</td>
+                    </tr>
+                    <tr>
+                      <th>低风险占比:</th>
+                      <td>{{ operation.2.high_proportion }}</td>
+                    </tr>
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-12 my_title">
+            <h5>
+              <i class="far fa-file-alt "></i> 3.审计意见
+
+            </h5>
+          </div>
+
+          <div class=" row">
+            <div class="user-block">
+                <h6 style="padding-left:3rem ">××x公司董事会：</h6>
+            </div>
+            <!-- /.user-block -->
+            <p style="padding-left:3rem ;padding-right:3rem">
+                  我们接受委托，审计了贵公司2021年的资产负债表及该年度的利润表、现金流量表,以及销售数据。这些会计报表的编制由贵公司负责，我们的责任是对这些会计报表发表审
+              计意见。我们的审计是根据《中国注册会计独立审计准则》进行的。在审计过程中，我们结合贵公司的实际情况，实施了包括抽查会计记录等我们认为必要的审计程序。
+
+              　　经审计，我们发现贵公司销售数据存在部分敏感的感人隐私数据，我们已经在附件下载中为您提供合规后的数据。2021年10月份预提的本年度第四季度短期银行借款利息××元，全部作为当月费用处理。我们认为，按照《企业会计准则》的规定，第四季度利息费用不应全部
+              作为10月份的财务费用处理，应分月预提，但贵公司未接受我们的意见。该事项使贵公司资产负债表、利润表及现金流量表反映不公允、不合理。
+
+              　　我们认为，除存在本报告第二段所述预提短期银行借款利息的会计处理不符合规定外，上述会计报表符合《企业会计准则》和《××会计制度》的规定，在所有重大方面公允地反映了贵公
+              司200×年12月31日的财务状况和该年度经营成果以及现金流量情况，会计处理方法的选用遵循了一贯性原则。
+            </p>
+
+          </div>
+
+
+          
+
+          <div class="row">
+            <div class="col-6" style="margin-top: 7rem;">
+              <!-- <p class="lead">风险数据占比</p> -->
+
+              
+              
+            </div>
+           
+            <div class="col-6" style="margin-top: 3rem;">
+              <!-- <p class="lead">风险数据占比</p> -->
+
+              
+                <p style="margin-left: 16rem;">浙江大学嘉兴研究院</p>
+                <p style="margin-left: 16rem;">时间：{{ generate_report_time }}</p>
+              
+            </div>
+          </div>
+
+         
+
+
+
+
+        </div>
+
+
+        <div class="row no-print">
+          <div class="col-12">
+
+
+            <button onclick="Convert_HTML_To_PDF();" class="btn btn-primary float-right">
+              <i class="fas fa-download"></i> 生成PDF
+            </button>
+
+          </div>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+{% endblock content %}
