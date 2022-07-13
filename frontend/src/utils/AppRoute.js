@@ -6,9 +6,9 @@ const AppRoute = ({
   layout: Layout,
   ...rest
 }) => {
-
+  console.log(Component)
   Layout = (Layout === undefined) ? props => (<>{props.children}</>) : Layout;
-
+  
   return (
     <Route
       {...rest}
