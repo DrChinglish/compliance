@@ -508,7 +508,7 @@ def text_detail(request, post):
 
     name_compliance = [x[0]+'*'*(len(x)-1) for x in high_level['name']]
     number_compliance = [x[0:3]+'****'+x[7:] if len(x)==11 else x[0:6]+'********'+x[14:] for x in high_level['number']]
-    high_level_compliance = name_compliance+number_compliance
+    high_level_compliance = number_compliance+name_compliance
     middle_level_compliance = middle_level.copy()
 
     middleRegex = re.compile(r'''(              
