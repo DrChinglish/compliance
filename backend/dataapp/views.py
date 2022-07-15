@@ -1,7 +1,7 @@
 import sys
-sys.path.append("./dataalgorithm/bert")
-sys.path.append("./dataalgorithm/bert/NER")
-sys.path.append("./dataalgorithm")
+sys.path.append("./../env/Lib/site-packages/bert")
+sys.path.append("./../env/Lib/site-packages/bert/NER")
+# sys.path.append("./../env/Lib/site-packages")
 import NER.predict as bert
 
 import datetime
@@ -46,14 +46,14 @@ def login(request):
         login_form = UserForm(request.POST)
         message = "请检查填写的内容！"
         if login_form.is_valid():
-            username = login_form.cleaned_data['username']
+            email = login_form.cleaned_data['email']
             password = login_form.cleaned_data['password']
             try:
-                user = User.objects.get(username=username)
+                user = User.objects.get(email=email)
                 if user.password == password:
                     request.session['is_login'] = True
                     request.session['user_id'] = user.id
-                    request.session['user_name'] = user.username
+                    request.session['email'] = user.email
                     return redirect('dataapp:post_list')
                 else:
                     message = "密码不正确！"
@@ -115,7 +115,8 @@ def post_list(request):
     if not request.session.get('is_login', None):
         # 非登录状态显示主页
         return redirect("/")
-    user = User.objects.filter(username=request.session['user_name']).first()
+    print('-------email-------',request.session['email'])
+    user = User.objects.filter(email=request.session['email']).first()
     posts = user.user_posts.all().filter(category='table')
     # for post in posts:
     # print(post)
@@ -126,7 +127,7 @@ def text_list(request):
     if not request.session.get('is_login', None):
         # 非登录状态显示主页
         return redirect("/")
-    user = User.objects.filter(username=request.session['user_name']).first()
+    user = User.objects.filter(email=request.session['email']).first()
     posts = user.user_posts.all().filter(category='text')
     # for post in posts:
     # print(post)
@@ -154,7 +155,7 @@ def file_upload_view(request):
     if request.method == "POST":
 
         myfile = {'upload': request.FILES.get('file[0]')}
-        the_user = User.objects.get(username=request.session['user_name'])
+        the_user = User.objects.get(email=request.session['email'])
         my_request = request.POST.copy()
         my_request['author'] = the_user.id
 
