@@ -146,7 +146,7 @@ def file_upload_view(request):
     print(request.POST.get('title'))
     print(request.POST.get('body'))
     print(request.FILES.get('file[0]'))
-    print(request.session['user_name'])
+    print(request.session['email'])
 
     if not request.session.get('is_login', None):
         # 非登录状态显示主页
