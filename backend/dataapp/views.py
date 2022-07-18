@@ -1,9 +1,11 @@
 import sys
-sys.path.append("./dataalgorithm/bert")
-sys.path.append("./dataalgorithm/bert/NER")
-sys.path.append("./dataalgorithm")
-import NER.predict as bert
-
+# sys.path.append("./dataalgorithm/bert")
+# sys.path.append("./dataalgorithm/bert/NER")
+# sys.path.append("./dataalgorithm")
+sys.path.append("../venv_back/lib/site-packages/bert/NER")
+#from bert.NER import *
+import bert.NER.predict as bert
+#import bert
 import datetime
 from multiprocessing import context
 import string
@@ -27,7 +29,7 @@ import numpy as np
 
 import io
 from django.http import FileResponse
-from reportlab.pdfgen import canvas
+# from reportlab.pdfgen import canvas
 
 
 # Create your views here.
