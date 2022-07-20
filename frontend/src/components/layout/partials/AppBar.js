@@ -1,7 +1,7 @@
 import React from 'react'
 import { styled, useTheme } from '@mui/material/styles'; 
 import MuiAppBar from '@mui/material/AppBar';
-const drawerWidth = 240
+const drawerWidth = 200
 const AppBar = styled(MuiAppBar, {
     shouldForwardProp: (prop) => prop !== 'open',
   })(({ theme, open }) => ({

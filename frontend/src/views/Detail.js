@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import {Drawer, AppBar} from "@mui/material"
+import {Drawer, AppBar, Typography, Stack} from "@mui/material"
 import DataGridS from '../components/elements/DataGridS/DataGridS'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { GridActionsCellItem} from '@mui/x-data-grid'
@@ -9,7 +9,15 @@ export default class Detail extends Component {
 
   render() {
     return (
-        <DataGridS columns={columns} rows={rows}/>
+      <>
+        <Stack spacing={2}>
+          <Typography variant='h6' fontWeight='bold'>
+            项目详情
+          </Typography>
+          <DataGridS columns={columns} rows={rows}/>
+        </Stack>
+        
+      </>
     )
   }
 }

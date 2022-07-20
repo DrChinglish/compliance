@@ -3,11 +3,17 @@ import MuiDrawer from '@mui/material/Drawer';
 
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Divider, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText} from '@mui/material';
+import { Avatar, Divider, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography} from '@mui/material';
+// icons
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import InboxIcon from '@mui/icons-material/Inbox';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import ImageIcon from '@mui/icons-material/Image';
+import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+
 import { DrawerHeader } from './DrawerHeader';
-const drawerWidth = 240;
+const drawerWidth = 200;
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -71,7 +77,7 @@ export default class SideDrawer extends Component {
   MenuItem = (item)=>{
     const {open} = this.state 
     return (
-      <ListItem key={item.title} disablePadding sx={{ display: 'block' }}>
+      <ListItem key={item.title} disablePadding sx={{ display: 'block' }} divider>
         <ListItemButton
           sx={{
             minHeight: 48,
@@ -89,7 +95,11 @@ export default class SideDrawer extends Component {
           >
             {item.icon}
           </ListItemIcon>
-          <ListItemText primary={item.title} sx={{ opacity: open ? 1 : 0 }} />
+          <ListItemText primary={item.title} sx={{ opacity: open ? 1 : 0 }} primaryTypographyProps={{
+                  // fontSize: 20,
+                  fontWeight: 'bold',
+                  letterSpacing: 0,
+                }} />
         </ListItemButton>
       </ListItem>
     )
@@ -103,17 +113,22 @@ export default class SideDrawer extends Component {
     return (
       <Drawer variant='permanent' open={open}>
         <DrawerHeader>
+          <Avatar alt='User' sx={{mr:1,height:24,width:24}}/>
+          <Typography variant="body" noWrap component="div" sx={{flexGrow:1}}>
+            UserName
+          </Typography>
           <IconButton onClick={(e)=>setOpen(false)}>
             <ChevronLeftIcon/>
           </IconButton>
+          
         </DrawerHeader>
-
         <Divider/>
 
         <List>
           {menuList.map((item,index)=>(
             this.MenuItem(item)
           ))}
+         
         </List>
       </Drawer>
       
@@ -133,8 +148,23 @@ SideDrawer.defaultProps={
 //menu list 
 const menuList = [
   {
-    title:"Menu Item",
-    icon:<InboxIcon/>,
+    title:"表格数据",
+    icon:<TableChartIcon/>,
     link:""//for navigation...
-  }
+  },
+  {
+    title:"文本数据",
+    icon:<TextFieldsIcon/>,
+    link:""//for navigation...
+  },
+  {
+    title:"图像数据",
+    icon:<ImageIcon/>,
+    link:""//for navigation...
+  },
+  {
+      title:"音频数据",
+      icon:<RecordVoiceOverIcon/>,
+      link:""//for navigation...
+    },
 ]

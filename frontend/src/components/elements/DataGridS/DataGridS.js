@@ -2,10 +2,11 @@
 
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import {DataGrid, GridActionsCellItem, GridToolbar} from '@mui/x-data-grid'
+import {DataGrid, GridActionsCellItem,zhCN} from '@mui/x-data-grid'
 import { CssBaseline } from '@mui/material';
 import { Box } from '@mui/system';
 import DataGridSPagination from './DataGridSPagination';
+import { DataGridSToolbar } from './DataGridSToolbar';
 
 
 export default class DataGridS extends Component {
@@ -16,8 +17,9 @@ export default class DataGridS extends Component {
       <Box sx={{height:'75vh',width:'75%'}}>
         {/* <CssBaseline/> */}
         <DataGrid columns={this.props.columns} rows={this.props.rows} 
+        localeText={zhCN.components.MuiDataGrid.defaultProps.localeText}
         components={{
-          Toolbar: GridToolbar,
+          Toolbar: DataGridSToolbar,
           Pagination: DataGridSPagination
         }} />
       </Box>
