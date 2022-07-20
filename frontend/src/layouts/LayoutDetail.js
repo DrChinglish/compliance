@@ -40,7 +40,7 @@ export default class LayoutDetail extends Component {
                 <IconButton size='large' edge='start' color='inherit' aria-label='menu' sx={{mr:2,...(open && {display:'none'})}} onClick={e=>this.setOpen(true)}>
                     <Menu/>
                 </IconButton>
-                <Typography variant="h6" noWrap component="div">
+                <Typography variant="h6" noWrap component="div" >
                     项目列表
                 </Typography>
             </Toolbar>
