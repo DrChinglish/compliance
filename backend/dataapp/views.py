@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("./../env/Lib/site-packages/bert")
 sys.path.append("./../env/Lib/site-packages/bert/NER")
 # sys.path.append("./../env/Lib/site-packages")
@@ -27,7 +28,7 @@ import numpy as np
 
 import io
 from django.http import FileResponse
-from reportlab.pdfgen import canvas
+# from reportlab.pdfgen import canvas
 
 
 # Create your views here.

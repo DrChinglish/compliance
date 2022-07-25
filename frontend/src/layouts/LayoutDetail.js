@@ -1,39 +1,74 @@
 import React, { Component } from 'react'
 import  PropTypes  from 'prop-types' 
-import { AppBar, Box, CssBaseline, IconButton, Toolbar, Typography } from '@mui/material'
+import { Box, CssBaseline, Drawer, IconButton, Toolbar, Typography } from '@mui/material'
 import {Menu} from '@mui/icons-material'
 import Footer from '../components/layout/Footer'
+import { Container } from '@mui/system'
+import AppBar from '../components/layout/partials/AppBar'
+import SideDrawer from '../components/layout/partials/SideDrawer/SideDrawer'
+import { DrawerHeader } from '../components/layout/partials/SideDrawer/DrawerHeader'
+
+
 
 export default class LayoutDetail extends Component {
+    constructor(props){
+        super(props)
+        this.state={
+            open:false
+        }
+    }
+
+    setOpen = (state) => {
+        if(state!=undefined){
+        this.setState({
+            open:state
+        })
+        }
+    }
+
   render() {
+    const {open}=this.state
+
+    
+
     return (
-      <Box sx={{display:'flex'}}>
+    <Box sx={{display:'flex'}}>
         <CssBaseline/>
         {/* Header start */}
-        <AppBar position='fixed' sx={{zIndex: (theme)=> theme.zIndex.drawer + 1}}>
+        <AppBar position='fixed' open={open}>
             <Toolbar>
-                <IconButton size='large' edge='start' color='inherit' aria-label='menu' sx={{mr:2}}>
+                <IconButton size='large' edge='start' color='inherit' aria-label='menu' sx={{mr:2,...(open && {display:'none'})}} onClick={e=>this.setOpen(true)}>
                     <Menu/>
                 </IconButton>
-                <Typography variant="h6" noWrap component="div">
+                <Typography variant="h6" noWrap component="div" >
                     项目列表
                 </Typography>
             </Toolbar>
-
         </AppBar>
-        <Toolbar/>
+        
         {/* Header end */}
+        {/* Drawer */}
+        <SideDrawer open={open} setOpen={this.setOpen}/>
+        <Box sx={{flexDirection:'row',flexGrow:1,p:0}}>
+             {/* Body */}
+            <Box component='main' sx={{flexGrow:1,p:4}}>
+                
+                <DrawerHeader/>
+                {this.props.children}
+                
+            </Box>
+            
+            {/* Body end */}
 
-        {/* Body */}
-        <main className="site-content">
-            {this.props.children}
-        </main>
-        {/* Body end */}
-
-        {/* Footer */}
-        <Footer/>
-        {/* Footer end */}
-      </Box>
+            {/* Footer */}
+            <Box component='footer' sx={{flexGrow:1}} >  
+                <Footer/>
+            </Box>
+            
+            {/* Footer end */}
+        </Box>
+       
+    </Box>
     )
   }
 }
@@ -41,3 +76,5 @@ export default class LayoutDetail extends Component {
 LayoutDetail.propTypes={
     chilidren: PropTypes.any
 }
+
+

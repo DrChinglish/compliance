@@ -52,12 +52,12 @@ ol {
 	list-style: decimal;
 }
 
-li {
+// li {
 
-	&:not(:last-child) {
-		margin-bottom: $spacing--shared-v * 0.5;
-	}
-}
+// 	&:not(:last-child) {
+// 		margin-bottom: $spacing--shared-v * 0.5;
+// 	}
+// }
 
 li > ul,
 li > ol {

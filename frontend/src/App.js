@@ -8,10 +8,11 @@ import ReactGA from 'react-ga';
 import LayoutDefault from './layouts/LayoutDefault';
 
 // Views 
-import Home from './views/Home';
 import Detail from './views/Detail';
-import LayoutDetail from './layouts/LayoutDetail';
+import Home from './views/Home';
 
+import LayoutDetail from './layouts/LayoutDetail';
+import  './assets/scss/style.scss';
 // Initialize Google Analytics
 ReactGA.initialize(process.env.REACT_APP_GA_CODE);
 
