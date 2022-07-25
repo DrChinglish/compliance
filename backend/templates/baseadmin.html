@@ -248,7 +248,7 @@
                   class="nav-link {% block li1class %} {% endblock %}"
                 >
                   <i class="nav-icon fas fa-columns"></i>
-                  <p>Table Data</p>
+                  <p>表格数据</p>
                 </a>
               </li>
 
@@ -258,7 +258,7 @@
                   class="nav-link {% block li2class %} {% endblock %}"
                 >
                   <i class="nav-icon fas fa-columns"></i>
-                  <p>Text Data</p>
+                  <p>文本数据</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -267,7 +267,7 @@
                   class="nav-link {% block li3class %} {% endblock %}"
                 >
                   <i class="nav-icon fas fa-columns"></i>
-                  <p>Audio Data</p>
+                  <p>语音数据</p>
                 </a>
               </li>
               <li class="nav-item">
@@ -276,7 +276,7 @@
                   class="nav-link {% block li4class %} {% endblock %}"
                 >
                   <i class="nav-icon fas fa-columns"></i>
-                  <p>Image Data</p>
+                  <p>图片数据</p>
                 </a>
               </li>
 
@@ -284,7 +284,7 @@
                 <a href="#" class="nav-link">
                   <i class="nav-icon fas fa-columns"></i>
                   <p>
-                    Project List
+                    项目列表
                     <i class="right fas fa-angle-left"></i>
                   </p>
                 </a>
@@ -375,13 +375,15 @@
     <script>
       // 文件上传
       $(function () {
+        
         Dropzone.autoDiscover = false;
+        let category = document.getElementById("myselect").value;
         new Dropzone("#upload", {
           clickable: ".dropzone",
           url: "upload/",
           maxFiles: 1,
           maxFilesize: 50,
-          acceptedFiles: ".excel, .png, .csv, .txt, .docx, .doc",
+          acceptedFiles: ".png, .csv, .docx, ",
           previewsContainer: "#previewsContainer",
           uploadMultiple: true,
           autoProcessQueue: false,
@@ -402,18 +404,17 @@
                 e.stopPropagation();
                 myDropzone.processQueue();
               });
-            // this.on("queuecomplete", function() {
-            // //Redirect URL
-            //  'post_list/';
-            // });
 
             let category = document.getElementById("myselect");
+            // var message = JSON.parse("{{message|escapejs}}");
+            
+            
 
-            this.on("success", function (files, response) {
-              if (response["message"]) {
-                alert(response["message"]);
+            this.on("success", function (files, response, e) {
+              // let name = document.getElementById("inputName").value;
+              // alert(msg)
+              if (response["message"]) {  
                 window.location.href = "/new_post/";
-                // window.location.href = '@Url.Action("Action", "Controller", new { param1 = "aa", param2 = "aaa" })';
               } else {
                 let category = document.getElementById("myselect").value;
                 if (category == "table") {
@@ -449,10 +450,10 @@
         if ($("#canvasRadar").length) {
           var ctx = document.getElementById("canvasRadar");
           var data = {
-            labels: ["Compliance", "Privacy", "Integrity", "Availability", "Normative"],
+            labels: ["合规性", "隐私性", "完整性", "可用性", "规范性"],
             datasets: [
               {
-                label: "My Second dataset",
+                label: "My First dataset",
                 backgroundColor: "rgba(38, 185, 154, 0.2)",
                 borderColor: "rgba(38, 185, 154, 0.85)",
                 pointColor: "rgba(38, 185, 154, 0.85)",
@@ -469,7 +470,7 @@
             type: "radar",
             data: data,
             options: {
-              showDatasetLabels: true,
+              showDatasetLabels: false,
               elements: {
                 line: {
                   borderWidth: 2,
