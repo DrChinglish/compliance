@@ -1,4 +1,4 @@
-const { Tune } = require("@material-ui/icons");
+const { Tune } = require("@mui/icons-material");
 const path = require("path");
 const webpack = require("webpack");
 

@@ -79,7 +79,7 @@ const Testimonial = ({
               <div className="tiles-item-inner">
                 <div className="testimonial-item-content">
                   <p className="text-sm mb-0">
-                    — 结构化数据是一种比较常见的数据格式，不同数据格式中直接或间接包含的个人信息、敏感信息、儿童信息、不良信息、公共信息等进行合规认定，其中敏感信息包括一旦泄露或者非法使用，容易导致自然人的人格尊严受到侵害或者人身、财产安全受到危害的个人信息。
+                    — 文本数据是同样是一种比较常见的数据格式，不同数据格式中直接或间接包含的个人信息、敏感信息、儿童信息、不良信息、公共信息等进行合规认定，其中敏感信息包括一旦泄露或者非法使用，容易导致自然人的人格尊严受到侵害或者人身、财产安全受到危害的个人信息。
                       </p>
                 </div>
                 <div className="testimonial-item-footer text-xs mt-32 mb-0 has-top-divider">
@@ -96,7 +96,7 @@ const Testimonial = ({
               <div className="tiles-item-inner">
                 <div className="testimonial-item-content">
                   <p className="text-sm mb-0">
-                    — 结构化数据是一种比较常见的数据格式，不同数据格式中直接或间接包含的个人信息、敏感信息、儿童信息、不良信息、公共信息等进行合规认定，其中敏感信息包括一旦泄露或者非法使用，容易导致自然人的人格尊严受到侵害或者人身、财产安全受到危害的个人信息。
+                    — 图像数据当图片给人们带来快捷的信息记录和分享方式的同时，海量图片广泛地传播在大众视野下，相应的问题也随之而来。同样图像数据也直接或间接包含个人信息、敏感信息、不良信息、公共信息等，因此对于图片数据中敏感信息脱敏也尤为重要。
                       </p>
                 </div>
                 <div className="testimonial-item-footer text-xs mt-32 mb-0 has-top-divider">
