@@ -1,16 +1,17 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import {Drawer, AppBar, Typography, Stack, Card, CardHeader, Button, CardContent, IconButton, Accordion, AccordionSummary, AccordionDetails} from "@mui/material"
+import {Drawer, AppBar, Typography, Stack, Card, CardHeader, Button, CardContent, IconButton, Accordion, AccordionSummary, AccordionDetails, ButtonGroup, CssBaseline} from "@mui/material"
 import DataGridS from '../components/elements/DataGridS/DataGridS'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { GridActionsCellItem} from '@mui/x-data-grid'
-
+import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
 import { ExpandMore, MoreVert } from '@mui/icons-material';
-import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
+import IosShareIcon from '@mui/icons-material/IosShare';
+
 export default class Detail extends Component {
   
 
@@ -18,7 +19,8 @@ export default class Detail extends Component {
     return (
       <>
         <Stack direction='row' spacing={2}>
-          <Stack spacing={2} sx={{flexGrow:6}}>
+          <CssBaseline/>
+          <Stack spacing={2} sx={{width:'60%'}}>
           <Card>
               <CardHeader 
                 title='项目详情'
@@ -38,7 +40,7 @@ export default class Detail extends Component {
             </Card>
             
           </Stack>
-          <Stack sx={{flexGrow:4}} spacing={2}>
+          <Stack sx={{width:'40%'}} spacing={2}>
 
             {/* 审计结果（suggestion） */}
             <Card>
@@ -46,8 +48,13 @@ export default class Detail extends Component {
                 title='审计结果'
                 titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
                 action={
-                  <Button variant='contained' startIcon={<BuildIcon/>}>FIX ALL</Button>
+                  <Stack direction='row' spacing={2}>
+                    <Button variant='contained' startIcon={<BuildIcon/>} size='small'>FIX ALL</Button>
+                    <Button variant='contained' startIcon={<IosShareIcon/>} size='small'>导出报告</Button>
+                  </Stack>
+                  
                 }
+
               >
 
               </CardHeader>
@@ -90,6 +97,7 @@ export default class Detail extends Component {
               <CardHeader 
                 title='合规分数'
                 titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
+                // sx={{backgroundColor:'darkgrey'}}
               >
 
               </CardHeader>
