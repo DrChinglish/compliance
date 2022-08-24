@@ -16,7 +16,7 @@ const option = {
     },
     legend: {
       data: ['企业A数据','平均水平'],
-      top: '5%'
+      top: '10%'
     },
     radar: {
       // shape: 'circle',
@@ -28,7 +28,7 @@ const option = {
         { name: '规范性', max: 100 }
         
       ],
-      center:['50%','60%']
+      center:['50%','65%']
     },
     series: [
       {

@@ -26,8 +26,8 @@ export default class LayoutDetail extends Component {
         }
     }
 
-  render() {
-    const {open}=this.state
+    render() {
+        const {open}=this.state
 
     
 

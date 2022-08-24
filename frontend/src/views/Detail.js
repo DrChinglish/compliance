@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import {Drawer, AppBar, Typography, Stack, Card, CardHeader, Button, CardContent, IconButton, Accordion, AccordionSummary, AccordionDetails, ButtonGroup, CssBaseline} from "@mui/material"
+import {Drawer, AppBar, Typography, Stack, Card, CardHeader, Button, CardContent, IconButton, Accordion, AccordionSummary, AccordionDetails, ButtonGroup, CssBaseline, Chip, ListItem} from "@mui/material"
 import DataGridS from '../components/elements/DataGridS/DataGridS'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { GridActionsCellItem} from '@mui/x-data-grid'
@@ -9,8 +9,9 @@ import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
-import { ExpandMore, MoreVert } from '@mui/icons-material';
+import { CheckBox, ExpandMore, MoreVert } from '@mui/icons-material';
 import IosShareIcon from '@mui/icons-material/IosShare';
+import ResultS from '../components/elements/ResultS/ResultS';
 
 export default class Detail extends Component {
   
@@ -43,54 +44,9 @@ export default class Detail extends Component {
           <Stack sx={{width:'40%'}} spacing={2}>
 
             {/* 审计结果（suggestion） */}
-            <Card>
-              <CardHeader 
-                title='审计结果'
-                titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
-                action={
-                  <Stack direction='row' spacing={2}>
-                    <Button variant='contained' startIcon={<BuildIcon/>} size='small'>FIX ALL</Button>
-                    <Button variant='contained' startIcon={<IosShareIcon/>} size='small'>导出报告</Button>
-                  </Stack>
-                  
-                }
+            <ResultS suggestions={suggestions}>
 
-              >
-
-              </CardHeader>
-              <CardContent>
-                <Accordion disableGutters>
-                  <AccordionSummary sx={{backgroundColor:'red'}} expandIcon={<ExpandMore color='inherit'/>}>
-                    <Typography color='white' fontWeight='bold'>
-                      高风险
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    Detail
-                  </AccordionDetails>
-                </Accordion>
-                <Accordion disableGutters>
-                  <AccordionSummary sx={{backgroundColor:'Orange'}} expandIcon={<ExpandMore color='inherit'/>}>
-                    <Typography color='white' fontWeight='bold'>
-                      中风险
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    Detail
-                  </AccordionDetails>
-                </Accordion>
-                <Accordion disableGutters>
-                  <AccordionSummary sx={{backgroundColor:'lightblue'}} expandIcon={<ExpandMore color='inherit'/>}>
-                    <Typography color='white' fontWeight='bold'>
-                      低风险
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    Detail
-                  </AccordionDetails>
-                </Accordion>
-              </CardContent>
-            </Card>
+            </ResultS>
 
             {/* 图表区域 */}
             <Card>
@@ -116,6 +72,26 @@ export default class Detail extends Component {
 }
 Detail.propTypes = {}
 
+const suggestions=[
+  {
+    id:1,
+    seriousness:'high',
+    title:'123',
+    description:'114514'
+  },
+  {
+    id:2,
+    seriousness:'medium',
+    title:'123',
+    description:'114514'
+  },
+  {
+    id:3,
+    seriousness:'high',
+    title:'123',
+    description:'114514'
+  },
+]
 const rows=[
     {
       id:1,
