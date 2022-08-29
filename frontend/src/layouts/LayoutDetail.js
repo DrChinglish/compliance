@@ -7,6 +7,7 @@ import { Container } from '@mui/system'
 import AppBar from '../components/layout/partials/AppBar'
 import SideDrawer from '../components/layout/partials/SideDrawer/SideDrawer'
 import { DrawerHeader } from '../components/layout/partials/SideDrawer/DrawerHeader'
+import { Outlet } from 'react-router-dom'
 
 
 
@@ -54,7 +55,8 @@ export default class LayoutDetail extends Component {
             <Box component='main' sx={{flexGrow:1,p:4}}>
                 
                 <DrawerHeader/>
-                {this.props.children}
+                {/* {this.props.children} */}
+                <Outlet/>
                 
             </Box>
             

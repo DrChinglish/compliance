@@ -25,7 +25,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-ga": "^3.3.1",
-    "react-router-dom": "^5.3.3",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.53.0",
     "sass-loader": "^13.0.2",
@@ -48,6 +47,7 @@
     "echarts": "^5.3.3",
     "echarts-for-react": "^3.0.2",
     "emailjs-com": "^3.2.0",
+    "react-router-dom": "^6.3.0",
     "react-scripts": "^5.0.1",
     "smooth-scroll": "^16.1.3"
   },

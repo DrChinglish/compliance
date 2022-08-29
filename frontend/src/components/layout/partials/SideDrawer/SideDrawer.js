@@ -83,6 +83,7 @@ export default class SideDrawer extends Component {
             minHeight: 48,
             justifyContent: open ? 'initial' : 'center',
             px: 2.5,
+            // bgcolor:'lightgrey'
           }}
         >
           {/* maybe add a 'onclick' event handler here?*/}
@@ -138,11 +139,12 @@ export default class SideDrawer extends Component {
 
 SideDrawer.propTypes={
   setOpen: PropTypes.func.isRequired,// to let parent notice state change
-  open: PropTypes.bool
+  open: PropTypes.bool,
 }
 
 SideDrawer.defaultProps={
-  open: false
+  open: false,
+  active:0
 }
 
 //menu list 

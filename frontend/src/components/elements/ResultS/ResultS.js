@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { Card, CardHeader, CardContent, Stack, Accordion, Typography, AccordionSummary, AccordionDetails, Chip, List, ListItem, Checkbox, Button, ListSubheader  } from '@mui/material'
+import { Card, CardHeader, CardContent, Stack, Button, ListSubheader  } from '@mui/material'
 import SuggestionListItem from './SuggestionListItem';
 import getSeriousness from './util';
 import SuggestionAccordion from './SuggestionAccordion';
@@ -8,11 +8,8 @@ import SuggestionAccordion from './SuggestionAccordion';
 // icons
 import BuildIcon from '@mui/icons-material/Build';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import { CheckBox, ExpandMore, MoreVert } from '@mui/icons-material';
 import IosShareIcon from '@mui/icons-material/IosShare';
 
-
-const MAX_SUGGESTION_COUNT=99
 
 export default class ResultS extends Component {
 

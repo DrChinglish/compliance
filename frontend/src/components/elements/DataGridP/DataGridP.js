@@ -5,11 +5,11 @@ import React, { Component } from 'react'
 import {DataGrid, GridActionsCellItem,zhCN} from '@mui/x-data-grid'
 import { CssBaseline } from '@mui/material';
 import { Box } from '@mui/system';
-import DataGridPagination from '../DataGridPartial/DataGridPagination';
-import { DataGridToolbar } from '../DataGridPartial/DataGridToolbar';
+import DataGridPagination from './DataGridSPagination';
+import { DataGridToolbar } from './DataGridSToolbar';
 
 
-export default class DataGridS extends Component {
+export default class DataGridP extends Component {
   
 
   render() {
@@ -27,7 +27,7 @@ export default class DataGridS extends Component {
   }
 }
 
-DataGridS.propTypes= {
+DataGridP.propTypes= {
     columns: PropTypes.arrayOf(PropTypes.object),
     rows: PropTypes.arrayOf(PropTypes.object)
 }
