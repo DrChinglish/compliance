@@ -9,13 +9,13 @@ import {
   } from '@mui/x-data-grid';
 import { Stack, Typography } from '@mui/material';
 
-export const DataGridToolbar = () => {
+export const DataGridToolbar = (props) => {
   return (
     <GridToolbarContainer sx={{
         p:1
       }}>
         <Stack>
-            <Typography variant='h6'> Title</Typography>
+            {!props?.noTitle && (<Typography variant='h6'> Title</Typography>)}
             <Stack direction='row'>
                 
                 <GridToolbarColumnsButton />

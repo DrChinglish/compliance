@@ -109,7 +109,7 @@ render() {
     for(let sugg of this.props.suggestions){
         let target=[]
         let checked=[]
-        console.log(sugg)
+        //console.log(sugg)
         switch(getSeriousness(sugg)){
             case 0:target=suggestionItem.high;checked=this.state.selected.high;break;
             case 1:target=suggestionItem.medium;checked=this.state.selected.medium;break;

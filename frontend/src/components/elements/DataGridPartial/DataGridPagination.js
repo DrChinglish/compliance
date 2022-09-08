@@ -1,8 +1,8 @@
 import React from 'react'
 import { useGridApiContext, useGridSelector, gridPageCountSelector, gridPageSelector, } from '@mui/x-data-grid'
 import { Pagination } from '@mui/material';
-import './DataGridSPagination.scss'
-export default function DataGridSPagination() {
+import './DataGridPagination.scss'
+export default function DataGridPagination() {
     const apiRef = useGridApiContext();
     const page = useGridSelector(apiRef, gridPageSelector);
     const pageCount = useGridSelector(apiRef, gridPageCountSelector);

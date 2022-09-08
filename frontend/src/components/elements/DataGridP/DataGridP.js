@@ -5,8 +5,8 @@ import React, { Component } from 'react'
 import {DataGrid, GridActionsCellItem,zhCN} from '@mui/x-data-grid'
 import { CssBaseline } from '@mui/material';
 import { Box } from '@mui/system';
-import DataGridPagination from './DataGridSPagination';
-import { DataGridToolbar } from './DataGridSToolbar';
+import DataGridPagination from '../DataGridPartial/DataGridPagination';
+import { DataGridToolbar } from '../DataGridPartial/DataGridToolbar';
 
 
 export default class DataGridP extends Component {
