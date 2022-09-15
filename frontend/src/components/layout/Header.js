@@ -107,7 +107,7 @@ const Header = ({
             'site-header-inner',
             bottomDivider && 'has-bottom-divider'
           )}>
-          <Logo />
+          {/* <Logo />
           {!hideNav &&
             <>
               <button
@@ -143,12 +143,12 @@ const Header = ({
                     >
                       <li>
                         <Link to="/login/" className="button button-primary button-wide-mobile button-sm" onClick={() => {window.location.href="/login"}}>欢迎登陆</Link>
-                        {/* <Link to="/login/" className="button button-primary button-wide-mobile button-sm" onClick={closeMenu}>Sign up</Link> */}
+                        
                       </li>
                     </ul>}
                 </div>
               </nav>
-            </>}
+            </>} */}
         </div>
       </div>
     </header>

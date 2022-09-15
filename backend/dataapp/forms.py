@@ -1,5 +1,6 @@
+from dataclasses import field
 from django import forms
-from .models import Post
+from .models import Post, Project
 
 
 # class UserForm(forms.Form):
@@ -26,8 +27,13 @@ class RegisterForm(forms.Form):
     email = forms.EmailField(label="邮箱地址", widget=forms.EmailInput(attrs={'class': 'form-control'}))
     # sex = forms.ChoiceField(label='性别', choices=gender)
 
+# class FileUploadForm(forms.Form):
+#     file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
 
-
+class ProjectForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = ('title','description','category')
 
 class PostForm(forms.ModelForm):
     class Meta:

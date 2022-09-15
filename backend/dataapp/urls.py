@@ -27,6 +27,9 @@ urlpatterns=[
     path('post_list/<slug:post>/generate_report/',views.generate_report,name='generate_report'),
 
     path('new_post/', views.MainView.as_view(), name="upload-view"),
+    path('new_project/',views.create_project_view,name="create_new_project"),
     path('new_post/upload/', views.file_upload_view, name="upload_view"),
-    path('re/',views.re, name='re')
+    path('re/',views.re, name='re'),
+
+    path('test/',views.search_keyword,name = "search_keyword")
     ]

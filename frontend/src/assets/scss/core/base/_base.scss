@@ -30,7 +30,7 @@ body {
 
 hr {
 	border: 0;
-	@include divider();
+	//@include divider(); //conflict with mui
 	margin-top: $spacing--shared-v;
 	margin-bottom: $spacing--shared-v;
 }
