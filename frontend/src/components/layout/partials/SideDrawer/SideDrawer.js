@@ -83,6 +83,9 @@ const StyledListItemButton = styled(ListItemButton)(({theme,selected})=>({
   },
   ...(selected &&{
     '& .MuiListItemIcon-root':{
+      color:'#FFFFFF',
+    },
+    '& .MuiTypography-root':{
       color:'#FFFFFF'
     }
   })
@@ -161,9 +164,9 @@ class SideDrawer extends Component {
           </IconButton>
           
         </DrawerHeader>
-        <Divider/>
+        {/* <Divider/> */}
 
-        <List>
+        <List sx={{pt:0}}>
           {menuList.map((item,index)=>(
             this.MenuItem(item)
           ))}

@@ -1,10 +1,12 @@
-import { Card, CardContent, CardHeader, Stack, Box } from '@mui/material'
+import { Card, CardContent, CardHeader, Stack, Box, Button } from '@mui/material'
 import TablePaginationActions from '@mui/material/TablePagination/TablePaginationActions'
 import React, { Component } from 'react'
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import withRouter from '../utils/WithRouter'
+import AddIcon from '@mui/icons-material/Add';
 import { DataGrid, zhCN, GridActionsCellItem } from '@mui/x-data-grid';
+import urlmapping from '../urlMapping.json'
 import DataGridPagination from '../components/elements/DataGridPartial/DataGridPagination';
 import { DataGridToolbar } from '../components/elements/DataGridPartial/DataGridToolbar';
 function retrieveProjectList(type){
@@ -34,10 +36,15 @@ function retrieveProjectList(type){
         default:listTypeText = '其他'
     }
     return (
-      <Card>
+      <Card sx={{maxWidth:'75vw',mx:'auto'}}>
         <CardHeader
             title={'项目列表-'+listTypeText}
             titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
+            action={
+              <Stack direction='row' spacing={2} sx={{pr:5,pt:2}}>
+                  <Button variant='contained' startIcon={<AddIcon/>}  onClick={(e)=>{this.props.navigate(urlmapping.newproject)}}>创建新项目</Button>
+              </Stack>
+            }
         />
         <CardContent>
             <Box sx={{height:'100vh'}}>
