@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import * as echarts from 'echarts/core'
-import { TitleComponent, LegendComponent } from 'echarts/components';
+import { TitleComponent, LegendComponent,TooltipComponent } from 'echarts/components';
 import {CanvasRenderer} from 'echarts/renderers'
 import {RadarChart} from 'echarts/charts'
 import ReactEChartCore from 'echarts-for-react/lib/core'
@@ -11,8 +11,12 @@ const option = {
     title: {
       text: '合规性分数'
     },
+    tooltip: {
+      trigger: 'item'
+    },
     legend: {
-      data: ['企业A数据','平均水平']
+      data: ['企业A数据','平均水平'],
+      top: '10%'
     },
     radar: {
       // shape: 'circle',
@@ -24,7 +28,7 @@ const option = {
         { name: '规范性', max: 100 }
         
       ],
-      center:['50%','60%']
+      center:['50%','65%']
     },
     series: [
       {
@@ -46,7 +50,7 @@ const option = {
 }
 
 echarts.use(
-    [TitleComponent,LegendComponent,RadarChart,CanvasRenderer]
+    [TitleComponent,LegendComponent,RadarChart,CanvasRenderer,TooltipComponent]
 )
 export default class ScoreRadarChart extends Component {
     
@@ -54,7 +58,8 @@ export default class ScoreRadarChart extends Component {
     return (
       <div style={{width:'100%'}}>
         <ReactEChartCore 
-        style={{width:'100%',margin:'auto'}}
+        //opts={{width:'505'}}
+        //style={{width:'100%'}}
         echarts={echarts}
         option={option}
         />

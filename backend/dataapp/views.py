@@ -1,9 +1,11 @@
 import sys
+from turtle import title
 
 sys.path.append("./../env/Lib/site-packages/bert")
 sys.path.append("./../env/Lib/site-packages/bert/NER")
 # sys.path.append("./../env/Lib/site-packages")
-import NER.predict as bert
+#import NER.predict as bert
+import bert
 
 import datetime
 from multiprocessing import context
@@ -15,8 +17,8 @@ import numbers
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
-from .forms import UserForm, PostForm, RegisterForm
-from .models import Post, User, Operation
+from .forms import ProjectForm, UserForm, PostForm, RegisterForm
+from .models import FileUploaded, Post, Project, User, Operation
 from django.views.generic import TemplateView
 from django.http import HttpResponse, JsonResponse
 from slugify import slugify
@@ -139,6 +141,26 @@ def text_list(request):
 
 class MainView(TemplateView):
     template_name = 'dataapp/main.html'
+
+
+def create_project_view(request):
+    if request.method == "POST":
+        project_form = ProjectForm(request.POST)
+        if project_form.is_valid():
+            current_project = Project.objects.filter(title=project_form.cleaned_data['title'])
+            if current_project:
+                #duplicate!
+                return JsonResponse({'res':0, 'msg':'已经存在同名项目！'})
+            # upload files
+            for f in request.FILES.getlist('file_field'):
+                instance = FileUploaded(file=f)
+                instance.save()
+            project_form.save()
+            return JsonResponse({'res':1, 'msg':'创建项目成功!'})
+        else:
+            project_form = ProjectForm()
+    else:
+        redirect("/")
 
 
 def file_upload_view(request):
@@ -436,7 +458,85 @@ def generate_report(request, post):
         return redirect("dataapp:post_detail", post=post.slug)
     if post.category=='text':
         return redirect("dataapp:text_detail", post=post.slug)
+class DFAFilter(object):
+    def __init__(self):
+        self.keyword_chains = {}  # 敏感词链表
+        self.delimit = '\x00'  # 敏感词词尾标识
+        self.whitelist=['的'] # 白名单
+    def add(self, keyword):
+        keyword = keyword.lower()  # 关键词英文变为小写
+        chars = keyword.strip()  # 关键字去除首尾空格和换行
+        if not chars:  # 如果关键词为空直接返回
+            return
+        level = self.keyword_chains
+        # 遍历关键字的每个字
+        for i in range(len(chars)):
+            # 如果这个字已经存在字符链的key中就进入其子字典
+            if chars[i] in level:
+                level = level[chars[i]]
+            else:
+                if not isinstance(level, dict):
+                    break
+                for j in range(i, len(chars)):
+                    level[chars[j]] = {}
+                    last_level, last_char = level, chars[j]
+                    level = level[chars[j]]
+                last_level[last_char] = {self.delimit: 0}
+                break
+        if i == len(chars) - 1:
+            level[self.delimit] = 0
+        
+    def init_chains(self, path):
+        import docx
+        import re
+        keyword_file = docx.Document(path)
+        keywords = []
+        for para in keyword_file.paragraphs:
+            keywords.extend(re.split("[；|;]",str(para.text)))
+        # print(keywords)
+        for keyword in keywords:
+            self.add(str(keyword).strip())
 
+    def filter(self, message):
+        message = message.lower()
+        ret = []  # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"abc"}, {'flag':1 ,'text':"sb"}]的形式返回
+        start = 0
+        while start < len(message):
+            level = self.keyword_chains
+            step_ins = 0
+            for char in message[start:]:
+                if char in level:
+                    step_ins += 1
+                    if self.delimit not in level[char] or message[start:start+step_ins] in self.whitelist: # current serial is legal
+                        level = level[char]
+                    else:
+                        ret.append({'flag':1,'text':message[start:start+step_ins]})
+                        start += step_ins - 1
+                        break
+                else:
+                    ret.append({'flag':0,'text':message[start]})
+                    break
+            else:
+                ret.append({'flag':0,'text':message[start]})
+            start += 1
+
+        return ret
+
+def search_keyword(request):
+    import re
+    import docx
+    path = 'media/filter/keywords.docx'
+    file_path = 'media/files/sample.docx'
+    content = []
+    content_str =''
+    file = docx.Document(file_path)
+    for para in file.paragraphs:
+        content_str+=str(para.text)
+    filter = DFAFilter()
+    filter.init_chains(path)
+    res = filter.filter(content_str)
+    print(res)
+    return JsonResponse({'data':res})
 
 
 
@@ -448,7 +548,7 @@ def text_detail(request, post):
     content=[]
     content_string = ''
     file = docx.Document(path)
-
+    
     for para in file.paragraphs:
         content.append(str(para.text))
         content_string = content_string+str(para.text)

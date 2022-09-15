@@ -26,6 +26,44 @@ class User(models.Model):
         ordering = ['c_time']
 
 
+
+'''任务表（新）'''
+
+
+class Project(models.Model):
+    CATEGORY_CHOICES=(
+        ('table','Table'),
+        ('text','Text'),
+        ('image','Image'),
+        ('speech','Speech'),
+        ('game','Game'),
+    )
+
+    title = models.CharField(max_length=50)
+    #author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_posts') # not yet supported
+    description = models.TextField()
+    #upload = models.FileField(upload_to=get_file_dir)
+    #upload = models.FileField(upload_to='files/')
+    # For multiple file uploads
+    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='table')
+
+    #publish = models.DateTimeField(default=timezone.now)
+    #created = models.DateTimeField(auto_now_add=True)
+    #updated = models.DateTimeField(auto_now=True)
+
+    
+
+    #status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
+
+'''文件'''
+def get_file_dir(instance, filename):
+    print(instance)
+    return 'project_{0}/{1}'.format(instance.project.title,filename)
+
+class FileUploaded(models.Model):
+    project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_files')
+    file = models.FileField(upload_to=get_file_dir)
+
 '''任务表'''
 
 

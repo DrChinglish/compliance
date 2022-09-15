@@ -2,21 +2,21 @@ import React from 'react';
 import { Route } from 'react-router-dom';
 
 const AppRoute = ({
-  component: Component,
+  element: Element,
   layout: Layout,
   ...rest
 }) => {
-  console.log(Component)
+  //console.log(Component)
   Layout = (Layout === undefined) ? props => (<>{props.children}</>) : Layout;
   
   return (
     <Route
       {...rest}
-      render={props => (
+      element={
         <Layout>
-          <Component {...props} />
+          <Element />
         </Layout>
-      )} />
+      } />
   );
 }
 

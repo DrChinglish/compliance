@@ -6,11 +6,11 @@ import PropTypes from 'prop-types'
 import { Avatar, Divider, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography} from '@mui/material';
 // icons
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import InboxIcon from '@mui/icons-material/Inbox';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
+import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 
 import { DrawerHeader } from './DrawerHeader';
 const drawerWidth = 200;
@@ -83,6 +83,7 @@ export default class SideDrawer extends Component {
             minHeight: 48,
             justifyContent: open ? 'initial' : 'center',
             px: 2.5,
+            // bgcolor:'lightgrey'
           }}
         >
           {/* maybe add a 'onclick' event handler here?*/}
@@ -115,7 +116,7 @@ export default class SideDrawer extends Component {
         <DrawerHeader>
           <Avatar alt='User' sx={{mr:1,height:24,width:24}}/>
           <Typography variant="body" noWrap component="div" sx={{flexGrow:1}}>
-            UserName
+            UserName{/* place username here */}
           </Typography>
           <IconButton onClick={(e)=>setOpen(false)}>
             <ChevronLeftIcon/>
@@ -138,11 +139,12 @@ export default class SideDrawer extends Component {
 
 SideDrawer.propTypes={
   setOpen: PropTypes.func.isRequired,// to let parent notice state change
-  open: PropTypes.bool
+  open: PropTypes.bool,
 }
 
 SideDrawer.defaultProps={
-  open: false
+  open: false,
+  active:0
 }
 
 //menu list 
@@ -165,6 +167,11 @@ const menuList = [
   {
       title:"音频数据",
       icon:<RecordVoiceOverIcon/>,
+      link:""//for navigation...
+    },
+    {
+      title:"游戏合规",
+      icon:<VideogameAssetIcon/>,
       link:""//for navigation...
     },
 ]

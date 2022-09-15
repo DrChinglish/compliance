@@ -7,6 +7,7 @@ import { Container } from '@mui/system'
 import AppBar from '../components/layout/partials/AppBar'
 import SideDrawer from '../components/layout/partials/SideDrawer/SideDrawer'
 import { DrawerHeader } from '../components/layout/partials/SideDrawer/DrawerHeader'
+import { Outlet } from 'react-router-dom'
 
 
 
@@ -26,13 +27,13 @@ export default class LayoutDetail extends Component {
         }
     }
 
-  render() {
-    const {open}=this.state
+    render() {
+        const {open}=this.state
 
     
 
     return (
-    <Box sx={{display:'flex'}}>
+    <Box sx={{display:'flex',maxWidth:'100vw'}}>
         <CssBaseline/>
         {/* Header start */}
         <AppBar position='fixed' open={open}>
@@ -41,7 +42,7 @@ export default class LayoutDetail extends Component {
                     <Menu/>
                 </IconButton>
                 <Typography variant="h6" noWrap component="div" >
-                    项目列表
+                    项目详情
                 </Typography>
             </Toolbar>
         </AppBar>
@@ -51,10 +52,11 @@ export default class LayoutDetail extends Component {
         <SideDrawer open={open} setOpen={this.setOpen}/>
         <Box sx={{flexDirection:'row',flexGrow:1,p:0}}>
              {/* Body */}
-            <Box component='main' sx={{flexGrow:1,p:4}}>
+            <Box component='main' sx={{flexGrow:1,p:4,maxWidth:'100%'}}>
                 
                 <DrawerHeader/>
-                {this.props.children}
+                {/* {this.props.children} */}
+                <Outlet/>
                 
             </Box>
             

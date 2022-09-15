@@ -9,7 +9,7 @@ import DataGridPagination from '../DataGridPartial/DataGridPagination';
 import { DataGridToolbar } from '../DataGridPartial/DataGridToolbar';
 
 
-export default class DataGridS extends Component {
+export default class DataGridP extends Component {
   
 
   render() {
@@ -27,7 +27,7 @@ export default class DataGridS extends Component {
   }
 }
 
-DataGridS.propTypes= {
+DataGridP.propTypes= {
     columns: PropTypes.arrayOf(PropTypes.object),
     rows: PropTypes.arrayOf(PropTypes.object)
 }
