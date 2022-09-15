@@ -1,4 +1,4 @@
-import { styled, useTheme } from '@mui/material/styles';
+import { createTheme, styled, useTheme } from '@mui/material/styles';
 import MuiDrawer from '@mui/material/Drawer';
 
 import React, { Component } from 'react'
@@ -11,9 +11,30 @@ import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
-
+import urlMapping from '../../../../urlMapping.json'
 import { DrawerHeader } from './DrawerHeader';
+import withRouter from '../../../../utils/WithRouter';
+import { ThemeProvider } from '@emotion/react';
 const drawerWidth = 200;
+
+const theme = createTheme({
+  components:{
+    // MuiListItemIcon:{
+    //   styleOverrides:{
+    //     root:{
+    //       color:'#FFFFFF',
+    //     }
+    //   }
+    // },
+    MuiListItemButton:{
+      styleOverrides:{
+        selected:{
+          backgroundColor:'#202020',
+        }
+      }
+    }
+  }
+})
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -53,13 +74,27 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
+const StyledListItemButton = styled(ListItemButton)(({theme,selected})=>({
+  '&.Mui-selected':{
+    backgroundColor:'rgba(25,118,210,0.9)'
+  },
+  '&.Mui-selected:hover':{
+    backgroundColor:'rgba(25,118,210,0.5)'
+  },
+  ...(selected &&{
+    '& .MuiListItemIcon-root':{
+      color:'#FFFFFF'
+    }
+  })
+}))
 
 
-export default class SideDrawer extends Component {
+class SideDrawer extends Component {
   constructor(props){
     super(props)
     this.state={
-      open:false
+      open:false,
+      selectedIndex:1
     }
   }
   
@@ -75,10 +110,12 @@ export default class SideDrawer extends Component {
   
 
   MenuItem = (item)=>{
+
     const {open} = this.state 
     return (
-      <ListItem key={item.title} disablePadding sx={{ display: 'block' }} divider>
-        <ListItemButton
+      <ThemeProvider theme={theme}>
+        <StyledListItemButton
+        key={item.title} disablePadding divider onClick={(e)=>{this.setState({selectedIndex:item.id}); this.props.navigate(item.link)}} selected={this.state.selectedIndex==item.id}
           sx={{
             minHeight: 48,
             justifyContent: open ? 'initial' : 'center',
@@ -101,8 +138,9 @@ export default class SideDrawer extends Component {
                   fontWeight: 'bold',
                   letterSpacing: 0,
                 }} />
-        </ListItemButton>
-      </ListItem>
+        </StyledListItemButton>
+      </ThemeProvider>
+        
     )
   }
 
@@ -136,7 +174,7 @@ export default class SideDrawer extends Component {
     )
   }
 }
-
+export default withRouter(SideDrawer)
 SideDrawer.propTypes={
   setOpen: PropTypes.func.isRequired,// to let parent notice state change
   open: PropTypes.bool,
@@ -149,29 +187,33 @@ SideDrawer.defaultProps={
 
 //menu list 
 const menuList = [
-  {
+  { id:1,
     title:"表格数据",
     icon:<TableChartIcon/>,
-    link:""//for navigation...
+    link: urlMapping.tablelist//for navigation...
   },
-  {
+  { 
+    id:2,
     title:"文本数据",
     icon:<TextFieldsIcon/>,
-    link:""//for navigation...
+    link:urlMapping.textlist//for navigation...
   },
-  {
+  { 
+    id:3,
     title:"图像数据",
     icon:<ImageIcon/>,
-    link:""//for navigation...
+    link:urlMapping.imagelist//for navigation...
   },
-  {
-      title:"音频数据",
-      icon:<RecordVoiceOverIcon/>,
-      link:""//for navigation...
-    },
-    {
-      title:"游戏合规",
-      icon:<VideogameAssetIcon/>,
-      link:""//for navigation...
-    },
+  {   
+    id:4,
+    title:"音频数据",
+    icon:<RecordVoiceOverIcon/>,
+    link:urlMapping.voicelist//for navigation...
+  },
+  { 
+    id:5,
+    title:"游戏合规",
+    icon:<VideogameAssetIcon/>,
+    link:urlMapping.gamelist//for navigation...
+  },
 ]

@@ -26,11 +26,12 @@ function retrieveProjectList(type){
     const {params} = this.props
     let listTypeText
     switch(params.type){
+        case 'table':listTypeText = '结构化数据合规';break;
         case 'game':listTypeText = '游戏合规';break;
         case 'voice':listTypeText = '音频合规';break;
-        case 'picture':listTypeText = '图片合规';break;
+        case 'image':listTypeText = '图片合规';break;
         case 'text':listTypeText = '文本合规';break;
-        default:'其他'
+        default:listTypeText = '其他'
     }
     return (
       <Card>
@@ -65,7 +66,7 @@ function retrieveProjectList(type){
     {field: 'status', headerName: '项目状态',flex:3},
     {field: '_operation', headerName: '操作',width: 100,type: 'actions', getActions: (params)=>[
       <Stack spacing={1} direction="row">
-        <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{console.log(e)}} label="删除" />
+        <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{console.log(params)}} label="删除" />
         <GridActionsCellItem icon={<RemoveRedEyeIcon/>} onClick={(e)=>{this.props.navigate('/detail/2')}} label="查看详情" />
       </Stack>
     ]},
