@@ -1,8 +1,11 @@
-import { CardContent, CardHeader, FormControl, Grid, InputLabel, MenuItem, OutlinedInput, Select, Card } from '@mui/material'
+import { CardContent, CardHeader, FormControl, Grid, InputLabel, MenuItem, OutlinedInput, Select, Card, Button } from '@mui/material'
 import { Box } from '@mui/system'
 import React, { Component } from 'react'
 import withRouter from '../utils/WithRouter'
-
+import { Upload} from 'antd'
+import { InboxOutlined } from '@ant-design/icons';
+import "../assets/scss/createProject.scss"
+import 'antd/dist/antd.css'
 class CreateProject extends Component {
 
     constructor(props) {
@@ -18,11 +21,48 @@ class CreateProject extends Component {
             name:false,
             type:false,
             description:false
-         }
+         },
+         fileList:[],
+         creating:false,
       }
     }
 
+    handleSubmit =(e)=>{
+        const formdata = new FormData()
+        this.state.fileList.forEach((file)=>{
+            formdata.append('files[]',file)
+        })
+        this.setState({creating:true})
+        fetch("http://localhost:8000/new_project",{
+            method:'POST',
+            body:formdata,
+        })
+        .then((res)=>{
+            return res.json()
+        })
+        .then((msg)=>{
+            console.log(msg)
+        })
+    }
+
+    uploadProps = {
+        multiple: true,
+        onRemove:(file)=>{
+            let fileList = this.state.fileList
+            const index = fileList.indexOf(file);
+            const newFileList = fileList.slice();
+            newFileList.splice(index, 1);
+            this.setState({fileList:newFileList})
+        },
+        beforeUpload:(file)=>{
+            this.setState({fileList:[...this.state.fileList,file]})
+            return false
+        },
+
+    }
+
     isCorrectInput=(prop)=>{
+        
         console.log(prop,this.state.values[prop])
         console.log("1",this.state.touched[prop])
         return this.state.values[prop]?.length==0 && this.state.touched[prop]
@@ -77,10 +117,24 @@ class CreateProject extends Component {
                             <MenuItem value='other'>其他</MenuItem>
                     </Select>
                 </FormControl>
+                <Upload {...this.uploadProps} fileList={this.state.fileList}>
+                    <p className="ant-upload-drag-icon">
+                        <InboxOutlined />
+                    </p>
+                    <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                    <p className="ant-upload-hint">
+                    Support for a single or bulk upload. Strictly prohibit from uploading company data or other
+                    band files
+                    </p>
+                </Upload>
+                <Button variant='contained'>
+                    Upload
+                </Button>
             </Box>
         </CardContent>
       </Card>
     )
   }
 }
+
 export default withRouter(CreateProject)

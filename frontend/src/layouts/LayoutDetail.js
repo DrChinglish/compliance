@@ -33,7 +33,7 @@ export default class LayoutDetail extends Component {
     
 
     return (
-    <Box sx={{display:'flex'}}>
+    <Box sx={{display:'flex',maxWidth:'100vw'}}>
         <CssBaseline/>
         {/* Header start */}
         <AppBar position='fixed' open={open}>
@@ -52,7 +52,7 @@ export default class LayoutDetail extends Component {
         <SideDrawer open={open} setOpen={this.setOpen}/>
         <Box sx={{flexDirection:'row',flexGrow:1,p:0}}>
              {/* Body */}
-            <Box component='main' sx={{flexGrow:1,p:4}}>
+            <Box component='main' sx={{flexGrow:1,p:4,maxWidth:'100%'}}>
                 
                 <DrawerHeader/>
                 {/* {this.props.children} */}

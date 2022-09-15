@@ -28,7 +28,7 @@ export default class GameMeta extends Component {
   render() {
     let {value} = this.state
     return (
-        <Box sx={{height:'75vh',width:'100%'}}>
+        <Box sx={{height:'75vh',width:'55vw'}}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={this.handleChange} aria-label="basic tabs example">
                     <Tab label="游戏信息" {...a11yProps(0)} />

@@ -80,7 +80,7 @@ const Hero = ({
               </div>
             </div>
           </div>
-          <div className="hero-figure reveal-from-bottom illustration-element-01" data-reveal-value="20px" data-reveal-delay="800">
+          {/* <div className="hero-figure reveal-from-bottom illustration-element-01" data-reveal-value="20px" data-reveal-delay="800">
             <a
               data-video="./../../assets/images/video.mp4"
               href="#0"
@@ -94,7 +94,7 @@ const Hero = ({
                 width={896}
                 height={504} />
             </a>
-          </div>
+          </div> */}
           <Modal
             id="video-modal"
             show={videoModalActive}

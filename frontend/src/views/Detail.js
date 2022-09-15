@@ -48,7 +48,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
       <>
         <Stack direction='row' spacing={2}>
           <CssBaseline/>
-          <Stack spacing={2} sx={{width:'60%'}}>
+          <Stack spacing={2} sx={{width:'60%',maxWidth:'60%'}}>
           <Card>
               <CardHeader 
                 title='项目详情'
@@ -69,7 +69,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
             </Card>
             
           </Stack>
-          <Stack sx={{width:'40%'}} spacing={2}>
+          <Stack sx={{width:'40%',maxWidth:'40%'}} spacing={2}>
 
             {/* 审计结果（suggestion） */}
             <ResultS suggestions={suggestions}>
@@ -198,9 +198,9 @@ const CellRenderer=(props)=>{
 }
 
 const fileList=[
-  {name:'dialog.txt',size:'100kb',type:'text',content:`Method:
+  {name:'sample.docx',size:'100kb',type:'text',content:`Method:
 
-  Heat 1/2 cup of the broth in a pot until simmering, add saffron and set aside for 10 minutes.
+  Heat 1/2 <p color='red'>cup</p> of the broth in a pot until simmering, add saffron and set aside for 10 minutes.
   
   Heat oil in a (14- to 16-inch) paella pan or a large, deep skillet over medium-high heat. Add chicken, shrimp and chorizo, and cook, stirring occasionally until lightly browned, 6 to 8 minutes. Transfer shrimp to a large plate and set aside, leaving chicken and chorizo in the pan. Add pimentón, bay leaves, garlic, tomatoes, onion, salt and pepper, and cook, stirring often until thickened and fragrant, about 10 minutes. Add saffron broth and remaining 4 1/2 cups chicken broth; bring to a boil.
   
