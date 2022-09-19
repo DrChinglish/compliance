@@ -5,7 +5,7 @@ sys.path.append("./../env/Lib/site-packages/bert")
 sys.path.append("./../env/Lib/site-packages/bert/NER")
 # sys.path.append("./../env/Lib/site-packages")
 #import NER.predict as bert
-import bert
+# import bert
 
 import datetime
 from multiprocessing import context
