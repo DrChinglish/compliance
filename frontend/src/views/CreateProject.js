@@ -5,6 +5,7 @@ import React, { Component } from 'react'
 import withRouter from '../utils/WithRouter'
 import { message, Upload} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
+import cookie from 'react-cookies'
 import SaveIcon from '@mui/icons-material/Save';
 const {Dragger} = Upload
 //import "../assets/scss/createProject.scss"
@@ -13,7 +14,23 @@ const helperText={
     empty:'该项目是必填项'
 }
 
+
+
+
 class CreateProject extends Component {
+
+    componentDidMount=()=>{
+        fetch("/api/new_project",{
+            method:'GET',
+            mode:'cors'
+        })
+        .then((res)=>{
+            if(cookie.load("csrftoken")!=undefined)
+                console.log("cookie ok!")
+            else
+                console.log("cookie error!")
+        })
+    }
 
     constructor(props) {
       super(props)
@@ -53,13 +70,21 @@ class CreateProject extends Component {
         this.state.fileList.forEach((file)=>{
             formdata.append('files[]',file)
         })
+        formdata.append("category",this.state.values.type)
+        formdata.append("title",this.state.values.name)
+        formdata.append("description",this.state.values.description)
         this.setState({creating:true})
         fetch("/api/new_project",{
             method:'POST',
             body:formdata,
-            mode:'cors'
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
         })
         .then((res)=>{
+            
             return res.json()
         })
         .then((msg)=>{
@@ -229,9 +254,9 @@ class CreateProject extends Component {
 const typeItems = [
     <MenuItem value='table'>表格数据合规</MenuItem>,
     <MenuItem value='game'>游戏合规</MenuItem>,
-    <MenuItem value='picture'>图片合规</MenuItem>,
+    <MenuItem value='image'>图片合规</MenuItem>,
     <MenuItem value='text'>文本合规</MenuItem>,
-    <MenuItem value='voice'>音频合规</MenuItem>,
+    <MenuItem value='speech'>音频合规</MenuItem>,
     <MenuItem value='other'>其他</MenuItem>,
 ]
 

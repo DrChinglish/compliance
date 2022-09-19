@@ -1,3 +1,4 @@
+import imp
 import sys
 from turtle import title
 
@@ -21,7 +22,9 @@ from .forms import ProjectForm, UserForm, PostForm, RegisterForm
 from .models import FileUploaded, Post, Project, User, Operation
 from django.views.generic import TemplateView
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from slugify import slugify
+
 import pandas as pd
 import openpyxl
 import os, math
@@ -142,7 +145,7 @@ def text_list(request):
 class MainView(TemplateView):
     template_name = 'dataapp/main.html'
 
-
+@ensure_csrf_cookie
 def create_project_view(request):
     if request.method == "POST":
         project_form = ProjectForm(request.POST)
@@ -152,16 +155,19 @@ def create_project_view(request):
                 #duplicate!
                 return JsonResponse({'res':0, 'msg':'已经存在同名项目！'})
             # upload files
-            for f in request.FILES.getlist('file_field'):
-                instance = FileUploaded(file=f)
-                instance.save()
+            print(request.FILES.getlist('files[]'))
+            
             project_form.save()
+            for f in request.FILES.getlist('files[]'):    
+                instance = FileUploaded(project_name=project_form.clean().get('title'), file=f,project=project_form.instance)
+                instance.save()
+            
             return JsonResponse({'res':1, 'msg':'创建项目成功!'})
         else:
             project_form = ProjectForm()
             return JsonResponse({'status':'error'})
     else:
-        redirect("/")
+        return HttpResponse()
 
 
 def file_upload_view(request):

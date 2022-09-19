@@ -58,9 +58,10 @@ class Project(models.Model):
 '''文件'''
 def get_file_dir(instance, filename):
     print(instance)
-    return 'project_{0}/{1}'.format(instance.project.title,filename)
+    return 'project_{0}/{1}'.format(instance.project_name,filename)
 
 class FileUploaded(models.Model):
+    project_name = models.CharField(max_length=250)
     project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_files')
     file = models.FileField(upload_to=get_file_dir)
 

@@ -86,7 +86,7 @@ export default class GameTextList extends Component {
       selected: value,
       loading:true
     })
-    fetch('/api/test',{
+    fetch('/api/test/',{
       method:'GET',
       mode:'cors'
     }).then((res)=>{
