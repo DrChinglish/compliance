@@ -54,9 +54,10 @@ class CreateProject extends Component {
             formdata.append('files[]',file)
         })
         this.setState({creating:true})
-        fetch("http://localhost:8000/new_project",{
+        fetch("/api/new_project",{
             method:'POST',
             body:formdata,
+            mode:'cors'
         })
         .then((res)=>{
             return res.json()
@@ -147,7 +148,7 @@ class CreateProject extends Component {
             titleTypographyProps={{variant:'h5',fontWeight:'bold'}}
         />
         <CardContent>
-            <Stack sx={{minHeight:'75vh', display:'flex',flexWrap:'wrap',overflow:'auto'}} spacing={4}>
+            <Stack sx={{minHeight:'75vh', display:'flex',flexWrap:'wrap',overflow:'auto'}} spacing={2}>
                 <Divider flexItem textAlign='left'><Typography variant='h6' fontWeight='bold'>项目属性</Typography></Divider>
                 <Grid container>
                     <FormControl sx={{m:1, width:'40ch'}} variant='outlined' error={this.state.error.name}>
@@ -180,6 +181,24 @@ class CreateProject extends Component {
                         <FormHelperText>{this.state.helperText.type}</FormHelperText>
                     </FormControl>
                 </Grid>
+                <Grid container sx={{mt:0}}>
+                    <FormControl sx={{m:1}} fullWidth variant='outlined' error={this.state.error.description}>
+                        <InputLabel htmlFor='description'>项目描述</InputLabel>
+                        <OutlinedInput
+                        multiline
+                        rows={5}
+                        fullWidth
+                        required
+                        id="description"
+                        value={values.description}
+                        onChange={this.handleChange('description')}
+                        onFocus={this.handleFoucus('description')}
+                        onBlur={this.handleblur('description')}
+                        label="项目描述"
+                        />
+                        <FormHelperText>{this.state.helperText.description}</FormHelperText>
+                    </FormControl>
+                </Grid>
                 <Divider flexItem textAlign='left'><Typography variant='h6' fontWeight='bold'>项目文件</Typography></Divider>
                 <Stack sx={{height:'auto'}}>
                     <Dragger {...this.uploadProps} fileList={this.state.fileList} style={{marginBottom:'24px',maxHeight:'200px'}}>
@@ -195,7 +214,7 @@ class CreateProject extends Component {
                 </Stack>
                 <Stack justifyContent='center' alignItems='center'>
                     
-                    <LoadingButton variant='contained' loading={this.state.creating}>
+                    <LoadingButton variant='contained' loading={this.state.creating} onClick={this.handleSubmit}>
                         创建项目
                     </LoadingButton>
                 </Stack>

@@ -159,6 +159,7 @@ def create_project_view(request):
             return JsonResponse({'res':1, 'msg':'创建项目成功!'})
         else:
             project_form = ProjectForm()
+            return JsonResponse({'status':'error'})
     else:
         redirect("/")
 
