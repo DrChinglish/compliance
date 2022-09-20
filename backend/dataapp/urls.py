@@ -31,5 +31,9 @@ urlpatterns=[
     path('new_post/upload/', views.file_upload_view, name="upload_view"),
     path('re/',views.re, name='re'),
 
+    path('project_delete/',views.project_delete,name='project_delete'),
+    path('project_list/',views.project_list,name = "project_list"),
+    path('project_info/<int:id>/',views.project_info,name = "project_info"),
+    
     path('test/',views.search_keyword,name = "search_keyword")
     ]

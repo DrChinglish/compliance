@@ -1,6 +1,8 @@
+from http.client import HTTPResponse
 import imp
 import sys
 from turtle import title
+from unittest.mock import patch
 
 sys.path.append("./../env/Lib/site-packages/bert")
 sys.path.append("./../env/Lib/site-packages/bert/NER")
@@ -21,6 +23,7 @@ from django.urls import reverse
 from .forms import ProjectForm, UserForm, PostForm, RegisterForm
 from .models import FileUploaded, Post, Project, User, Operation
 from django.views.generic import TemplateView
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from slugify import slugify
@@ -153,7 +156,7 @@ def create_project_view(request):
             current_project = Project.objects.filter(title=project_form.cleaned_data['title'])
             if current_project:
                 #duplicate!
-                return JsonResponse({'res':0, 'msg':'已经存在同名项目！'})
+                return JsonResponse({'status':0, 'msg':'已经存在同名项目！'})
             # upload files
             print(request.FILES.getlist('files[]'))
             
@@ -162,11 +165,24 @@ def create_project_view(request):
                 instance = FileUploaded(project_name=project_form.clean().get('title'), file=f,project=project_form.instance)
                 instance.save()
             
-            return JsonResponse({'res':1, 'msg':'创建项目成功!'})
+            return JsonResponse({'status':1, 'msg':'创建项目成功!'})
         else:
             project_form = ProjectForm()
-            return JsonResponse({'status':'error'})
+            return JsonResponse({'status':0,'msg':'Invalid form data'})
     else:
+        return HttpResponse()
+
+
+def project_info(request,id):
+    if request.method=='GET':
+        
+        project = Project.objects.get(id=id)
+        # print(id)
+        pd = model_to_dict(project)
+        # print(pd)
+        return JsonResponse({'data':pd})
+    else:
+        # print('in')
         return HttpResponse()
 
 
@@ -440,6 +456,26 @@ def handle_high_level(request, post):
     return render(request, 'post_detail.html',
                   {'post': post, 'excel_data': excel_data, page: 'pages', 'table_head': table_head})
 
+@ensure_csrf_cookie
+def project_list(request):
+    # print(request.POST.get('category'))
+    if request.method == 'POST':
+        project_list = Project.objects.filter(category = request.POST.get('category')).values()
+        #print(project_list)
+        plist = list(project_list)
+
+        return JsonResponse({'data':plist,'status':1})
+    else:
+        return JsonResponse({'msg':'Invalid method','status':0})
+
+@ensure_csrf_cookie
+def project_delete(request):
+    project = Project.objects.get(id=request.POST.get('id'))
+    project.delete()
+    path = 'media/project_'+str(project.title)
+    print(path)
+    os.removedirs(path)
+    return HttpResponse()
 
 def post_delete(requst, pk):
     post = Post.objects.get(id=pk)
@@ -702,28 +738,6 @@ def text_detail(request, post):
             print('中风险数处理时间', request.GET.get('middle_level_handle_time'))
        
     return render(request, 'text_detail.html', {'post': post, 'content':content ,'data_to_frontend':dataJSON})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

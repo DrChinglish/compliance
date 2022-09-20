@@ -7,8 +7,11 @@ module.exports = function (app){
             target:'http://localhost:8000',
             changeOrigin:true,
             pathRewrite:{
-                '^/api/test/':'/test/',
-                '^/api/new_project':'/new_project/'
+                // '^/api/test/':'/test/',
+                // '^/api/new_project':'/new_project/',
+                //'^/api/project_list':'/project_list/',
+                //'^/api/project_info':'/project_list/',
+                '^/api':""
             }
         })
     )

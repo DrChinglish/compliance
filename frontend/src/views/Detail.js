@@ -19,29 +19,42 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
  class Detail extends Component {
 
   projectType(index){
+    console.log('here')
     //分类项目类型（结构化数据、图片音频等）,还需要后续实现
     
-    if(index==1){
-      return 'S'
-    }else if(index==2){
-      return 'G'
-    }else{
-      return 'P'
-    }
+    fetch(`/api/project_info/${index}/`,{
+      method:'GET' 
+    })
+    .then((res)=>{
+      return res.json()
+    })
+    .then((res)=>{
+      this.setState({
+        type:res.data.category
+      })
+    })
+    
+  }
+
+  async componentDidMount(){
+     this.projectType(this.props.params.id)
   }
 
   constructor(props){
     super(props)
     console.log(this.props.params.id)
+    this.state={
+      type:''
+    }
   }
 
   render() {
     var content
     let defaultsx={px:2}
-    switch(this.projectType(this.props.params.id)){
-      case 'S': content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'G': content = <GameMeta fileList={fileList}/> ;defaultsx={px:0};break;
-      case 'P': content = <DataGridP columns={columnsP} rows={rows}/>;break;
+    switch(this.state.type){
+      case 'table': content = <DataGridS columns={columns} rows={rows}/>;break;
+      case 'game': content = <GameMeta fileList={fileList}/> ;defaultsx={px:0};break;
+      case 'image': content = <DataGridP columns={columnsP} rows={rows}/>;break;
       default: content = <h6> 404 </h6>
     }
     return (
