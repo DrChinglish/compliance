@@ -54,6 +54,7 @@ async function retrieveProjectList(type){
           console.log("cookie error!")
     })
     let res = await retrieveProjectList(this.props.params.type)
+    console.log(res)
     if(res.status){
       this.setState({
         rows:res.data,

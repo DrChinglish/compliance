@@ -1,6 +1,6 @@
 import { Box, Card, Tab, Tabs } from '@mui/material'
 import React, { Component } from 'react'
-import GameTextList from './GameTextList';
+import GameFileList from './GameFileList';
 import TabPanel from './TabPanel';
 
 function a11yProps(index) {
@@ -12,10 +12,34 @@ function a11yProps(index) {
 
 export default class GameMeta extends Component {
 
+    static getDerivedStateFromProps(props,state){
+        let fileList={
+            text:[],
+            image:[],
+            other:[]
+        }
+        for(let index in props.fileList){
+            let file = props.fileList[index]
+            let target 
+            switch(file.type){
+                case 'text': target = fileList.text;break;
+                case 'image':target = fileList.image;break;
+                default : target = fileList.other;break;
+            }
+            target.push(file)
+        }
+        console.log(fileList)
+        return {fileList:fileList}
+    }
+
     constructor(props){
+        
+        //console.log(props)
         super(props)
+        
+        //console.log(fileList)
         this.state={
-            value:0 //currently selected tab index
+            value:0, //currently selected tab index
         }
     }
 
@@ -26,6 +50,7 @@ export default class GameMeta extends Component {
     }
 
   render() {
+    console.log(this.state.fileList)
     let {value} = this.state
     return (
         <Box sx={{height:'75vh',width:'55vw'}}>
@@ -40,10 +65,10 @@ export default class GameMeta extends Component {
                 Item 2
             </TabPanel>
             <TabPanel value={value} index={1}>
-                <GameTextList fileList={this.props.fileList}/>
+                <GameFileList fileList={this.state.fileList.text} variant='text'/>
             </TabPanel>
             <TabPanel value={value} index={2}>
-                Item 3
+                <GameFileList fileList={this.state.fileList.image} variant='image'/>
             </TabPanel>
         </Box>
     )

@@ -27,7 +27,7 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from slugify import slugify
-
+from .util import convert_size,convert_type
 import pandas as pd
 import openpyxl
 import os, math
@@ -119,6 +119,20 @@ def logout(request):
 
     return redirect('/')
 
+def file_list(request,id):
+    project = Project.objects.get(id=id)
+    files = project.project_files.all()
+    filelist = []
+    print(files)
+    for f in files:
+        file_info={'id':f.id,
+        'name':os.path.split(f.file.name)[1],
+        'size':convert_size(f.file.size),
+        'type':convert_type(f.file.name),
+        'content':''}
+        filelist.append(file_info)
+        #os.stat(f.file).st_size
+    return JsonResponse({'data':filelist})
 
 def post_list(request):
     if not request.session.get('is_login', None):
@@ -581,6 +595,21 @@ def search_keyword(request):
     print(res)
     return JsonResponse({'data':res})
 
+def text_censor(request,fid):
+    import re
+    import docx
+    path = 'media/filter/keywords.docx'
+    file_path = FileUploaded.objects.get(id=fid).file.path
+    content = []
+    content_str =''
+    file = docx.Document(file_path)
+    for para in file.paragraphs:
+        content_str+=str(para.text)
+    filter = DFAFilter()
+    filter.init_chains(path)
+    res = filter.filter(content_str)
+    print(res)
+    return JsonResponse({'data':res})
 
 
 def text_detail(request, post):

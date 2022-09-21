@@ -1,4 +1,4 @@
-import { CardContent, CardHeader, FormControl, Grid, InputLabel, MenuItem, OutlinedInput, Select, Card, Button, Divider, Stack, Typography, FormHelperText } from '@mui/material'
+import { CardContent, CardHeader, FormControl, Grid, InputLabel, MenuItem, OutlinedInput, Select, Card, Button, Divider, Stack, Typography, FormHelperText, Snackbar, Alert } from '@mui/material'
 import { Box } from '@mui/system'
 import {LoadingButton} from '@mui/lab'
 import React, { Component } from 'react'
@@ -7,6 +7,8 @@ import { message, Upload} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
 import cookie from 'react-cookies'
 import SaveIcon from '@mui/icons-material/Save';
+import fetchHandle from '../utils/FetchErrorhandle' 
+import urlMapping from '../urlMapping.json'
 const {Dragger} = Upload
 //import "../assets/scss/createProject.scss"
 
@@ -25,6 +27,7 @@ class CreateProject extends Component {
             mode:'cors'
         })
         .then((res)=>{
+            console.log(res.json())
             if(cookie.load("csrftoken")!=undefined)
                 console.log("cookie ok!")
             else
@@ -36,6 +39,11 @@ class CreateProject extends Component {
       super(props)
     
       this.state = {
+        snackmessage:{
+            show:false,
+            severity:'success',
+            text:''
+        },
         error:{
             name:false,
             type:false,
@@ -65,6 +73,18 @@ class CreateProject extends Component {
       }
     }
 
+    handleCloseSnackbar = (e,reason)=>{
+        console.log(reason)
+        if(reason === 'clickaway'){
+            return
+        }
+        this.setState((state)=>{
+            let newvalue = state.snackmessage
+            newvalue.show = false
+            return {snackmessage:newvalue}
+        })
+    }
+
     handleSubmit =(e)=>{
         const formdata = new FormData()
         this.state.fileList.forEach((file)=>{
@@ -74,7 +94,7 @@ class CreateProject extends Component {
         formdata.append("title",this.state.values.name)
         formdata.append("description",this.state.values.description)
         this.setState({creating:true})
-        fetch("/api/new_project",{
+        fetch("/api/new_project/",{
             method:'POST',
             body:formdata,
             mode:'cors',
@@ -83,24 +103,42 @@ class CreateProject extends Component {
                 'X-CSRFToken':cookie.load('csrftoken')
             }
         })
+        .then(fetchHandle)
         .then((res)=>{
-            
             return res.json()
         })
         .then((msg)=>{
             this.setState({creating:false})
             console.log(msg)
-            if(msg.status!='ok'){
+            if(msg.status!='1'){
                 // if something went wrong:
-                /*
-                    this.setState({
-                        errorField:{field:msg.field, helperText:msg.helperText}  //assumes that only mark one of them
-                    })
-                */
-            }else{//ok
+                this.showSnackMessage('error',"表单错误："+msg.msg)
+                this.setState({
+                    errorField:{field:msg.field, helperText:msg.helperText}  //assumes that only mark one of them
+                })
                 
+            }else{//ok
+                this.showSnackMessage('success','创建项目成功,正在跳转至项目列表页面')
+                setTimeout(()=>{
+                    this.props.navigate(urlMapping.list+'/'+this.state.values.type)
+                },3000)
             }
         })
+        .catch(e=>{
+            //console.log(e.name)
+            this.showSnackMessage('error',e.name +":"+e.message)
+            //console.log(msgstate)
+            this.setState({creating:false})
+            
+        })
+    }
+
+    showSnackMessage = (severity, text)=>{
+        let msgstate = this.state.snackmessage
+        msgstate.show = true
+        msgstate.severity = severity
+        msgstate.text = text
+        this.setState({snackmessage:msgstate})
     }
 
     uploadProps = {
@@ -149,6 +187,7 @@ class CreateProject extends Component {
         })
         return flag
     }
+
     handleblur =(prop)=>(e)=>{
         this.isCorrectInput(prop)
     }    
@@ -173,6 +212,11 @@ class CreateProject extends Component {
             titleTypographyProps={{variant:'h5',fontWeight:'bold'}}
         />
         <CardContent>
+            <Snackbar onClose={this.handleCloseSnackbar} anchorOrigin={{vertical:'top',horizontal:'center'}} open={this.state.snackmessage.show} autoHideDuration={3000}>
+                <Alert onClose={this.handleCloseSnackbar} severity={this.state.snackmessage.severity} sx={{width:'50ch'}}>
+                    {this.state.snackmessage.text}
+                </Alert>
+            </Snackbar>
             <Stack sx={{minHeight:'75vh', display:'flex',flexWrap:'wrap',overflow:'auto'}} spacing={2}>
                 <Divider flexItem textAlign='left'><Typography variant='h6' fontWeight='bold'>项目属性</Typography></Divider>
                 <Grid container>

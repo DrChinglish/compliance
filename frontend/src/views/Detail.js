@@ -18,11 +18,10 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
 
  class Detail extends Component {
 
-  projectType(index){
+  async projectType(index){
     console.log('here')
-    //分类项目类型（结构化数据、图片音频等）,还需要后续实现
     
-    fetch(`/api/project_info/${index}/`,{
+    await fetch(`/api/project_info/${index}/`,{
       method:'GET' 
     })
     .then((res)=>{
@@ -36,24 +35,47 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     
   }
 
+  async getFileList(){
+    let data
+    await fetch(`/api/file_list/${this.props.params.id}/`,{
+      method:'GET' 
+    })
+    .then((res)=>{
+      return res.json()
+    })
+    .then((res)=>{
+      console.log(res)
+     data =  res.data
+    })
+    console.log(data)
+    return data
+  }
+
   async componentDidMount(){
-     this.projectType(this.props.params.id)
+    await this.projectType(this.props.params.id)
+    let fileList = await this.getFileList()
+    console.log(fileList)
+    this.setState({
+      fileList:fileList
+    })
   }
 
   constructor(props){
     super(props)
     console.log(this.props.params.id)
     this.state={
-      type:''
+      type:'',
+      fileList:[]
     }
   }
 
   render() {
+    console.log(this.state.fileList)
     var content
     let defaultsx={px:2}
     switch(this.state.type){
       case 'table': content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'game': content = <GameMeta fileList={fileList}/> ;defaultsx={px:0};break;
+      case 'game': content = <GameMeta fileList={this.state.fileList}/> ;defaultsx={px:0};break;
       case 'image': content = <DataGridP columns={columnsP} rows={rows}/>;break;
       default: content = <h6> 404 </h6>
     }

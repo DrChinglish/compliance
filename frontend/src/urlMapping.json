@@ -4,5 +4,6 @@
     "imagelist":"/list/image",
     "tablelist":"/list/table",
     "textlist":"/list/text",
-    "newproject":"/new"
+    "newproject":"/new",
+    "list":"/list"
 }
