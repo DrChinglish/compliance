@@ -1,5 +1,8 @@
+from http.client import HTTPResponse
+import imp
 import sys
 from turtle import title
+from unittest.mock import patch
 
 sys.path.append("./../env/Lib/site-packages/bert")
 sys.path.append("./../env/Lib/site-packages/bert/NER")
@@ -20,8 +23,11 @@ from django.urls import reverse
 from .forms import ProjectForm, UserForm, PostForm, RegisterForm
 from .models import FileUploaded, Post, Project, User, Operation
 from django.views.generic import TemplateView
+from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
 from slugify import slugify
+from .util import convert_size,convert_type
 import pandas as pd
 import openpyxl
 import os, math
@@ -113,6 +119,20 @@ def logout(request):
 
     return redirect('/')
 
+def file_list(request,id):
+    project = Project.objects.get(id=id)
+    files = project.project_files.all()
+    filelist = []
+    print(files)
+    for f in files:
+        file_info={'id':f.id,
+        'name':os.path.split(f.file.name)[1],
+        'size':convert_size(f.file.size),
+        'type':convert_type(f.file.name),
+        'content':''}
+        filelist.append(file_info)
+        #os.stat(f.file).st_size
+    return JsonResponse({'data':filelist})
 
 def post_list(request):
     if not request.session.get('is_login', None):
@@ -142,7 +162,7 @@ def text_list(request):
 class MainView(TemplateView):
     template_name = 'dataapp/main.html'
 
-
+@ensure_csrf_cookie
 def create_project_view(request):
     if request.method == "POST":
         project_form = ProjectForm(request.POST)
@@ -150,17 +170,34 @@ def create_project_view(request):
             current_project = Project.objects.filter(title=project_form.cleaned_data['title'])
             if current_project:
                 #duplicate!
-                return JsonResponse({'res':0, 'msg':'已经存在同名项目！'})
+                return JsonResponse({'status':0, 'msg':'已经存在同名项目！'})
             # upload files
-            for f in request.FILES.getlist('file_field'):
-                instance = FileUploaded(file=f)
-                instance.save()
+            print(request.FILES.getlist('files[]'))
+            
             project_form.save()
-            return JsonResponse({'res':1, 'msg':'创建项目成功!'})
+            for f in request.FILES.getlist('files[]'):    
+                instance = FileUploaded(project_name=project_form.clean().get('title'), file=f,project=project_form.instance)
+                instance.save()
+            
+            return JsonResponse({'status':1, 'msg':'创建项目成功!'})
         else:
             project_form = ProjectForm()
+            return JsonResponse({'status':0,'msg':'Invalid form data'})
     else:
-        redirect("/")
+        return HttpResponse()
+
+
+def project_info(request,id):
+    if request.method=='GET':
+        
+        project = Project.objects.get(id=id)
+        print(project.created)
+        pd = Project.to_dict(project)
+        print(pd)
+        return JsonResponse({'data':pd})
+    else:
+        # print('in')
+        return HttpResponse()
 
 
 def file_upload_view(request):
@@ -433,6 +470,26 @@ def handle_high_level(request, post):
     return render(request, 'post_detail.html',
                   {'post': post, 'excel_data': excel_data, page: 'pages', 'table_head': table_head})
 
+@ensure_csrf_cookie
+def project_list(request):
+    # print(request.POST.get('category'))
+    if request.method == 'POST':
+        project_list = Project.objects.filter(category = request.POST.get('category')).values()
+        #print(project_list)
+        plist = list(project_list)
+        print(plist)
+        return JsonResponse({'data':plist,'status':1})
+    else:
+        return JsonResponse({'msg':'Invalid method','status':0})
+
+@ensure_csrf_cookie
+def project_delete(request):
+    project = Project.objects.get(id=request.POST.get('id'))
+    project.delete()
+    path = 'media/project_'+str(project.title)
+    print(path)
+    os.removedirs(path)
+    return HttpResponse()
 
 def post_delete(requst, pk):
     post = Post.objects.get(id=pk)
@@ -538,6 +595,21 @@ def search_keyword(request):
     print(res)
     return JsonResponse({'data':res})
 
+def text_censor(request,fid):
+    import re
+    import docx
+    path = 'media/filter/keywords.docx'
+    file_path = FileUploaded.objects.get(id=fid).file.path
+    content = []
+    content_str =''
+    file = docx.Document(file_path)
+    for para in file.paragraphs:
+        content_str+=str(para.text)
+    filter = DFAFilter()
+    filter.init_chains(path)
+    res = filter.filter(content_str)
+    print(res)
+    return JsonResponse({'data':res})
 
 
 def text_detail(request, post):
@@ -695,28 +767,6 @@ def text_detail(request, post):
             print('中风险数处理时间', request.GET.get('middle_level_handle_time'))
        
     return render(request, 'text_detail.html', {'post': post, 'content':content ,'data_to_frontend':dataJSON})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

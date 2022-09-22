@@ -1,0 +1,9 @@
+{
+    "gamelist":"/list/game",
+    "voicelist":"/list/voice",
+    "imagelist":"/list/image",
+    "tablelist":"/list/table",
+    "textlist":"/list/text",
+    "newproject":"/new",
+    "list":"/list"
+}

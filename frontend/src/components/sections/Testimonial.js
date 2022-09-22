@@ -80,12 +80,8 @@ const Testimonial = ({
               <div className="tiles-item-inner">
                 <div className="testimonial-item-content">
                   <p className="text-sm mb-0">
-<<<<<<< HEAD
-                    — 文本数据是同样是一种比较常见的数据格式，不同数据格式中直接或间接包含的个人信息、敏感信息、儿童信息、不良信息、公共信息等进行合规认定，其中敏感信息包括一旦泄露或者非法使用，容易导致自然人的人格尊严受到侵害或者人身、财产安全受到危害的个人信息。
-=======
                   新出台的《数据安全法》、《个人信息保护法》与《网络安全法》一同形成了数据合规领域的“三架马车”，这标志着数据合规的基本法律架构已初步搭建完成。网络安全法中 “个人信息”被提及21次之多；个人信息保护法中首次对个人信息保护合规审计提出了明确要求，这为下一步各行业数据合规合法处理与流动提供了法律保障。
 
->>>>>>> 5f89cb6b02656fe8d413a658fc36858fced61fbc
                       </p>
                 </div>
                 <div className="testimonial-item-footer text-xs mt-32 mb-0 has-top-divider">
@@ -102,11 +98,7 @@ const Testimonial = ({
               <div className="tiles-item-inner">
                 <div className="testimonial-item-content">
                   <p className="text-sm mb-0">
-<<<<<<< HEAD
-                    — 图像数据当图片给人们带来快捷的信息记录和分享方式的同时，海量图片广泛地传播在大众视野下，相应的问题也随之而来。同样图像数据也直接或间接包含个人信息、敏感信息、不良信息、公共信息等，因此对于图片数据中敏感信息脱敏也尤为重要。
-=======
                   国际上对于数据安全监管愈发严格。截至2021年9月30日，GDPR执法总数894起，总罚金超过13亿欧元，欧盟所有成员国均有相关执法记录。我国仅2021 年度与数据安全和个人信息保护相关立法活动就达75次。我国网信办7月正式公布对滴滴事件的处罚结果：对滴滴全球股份有限公司处人民币80.26亿元罚款。
->>>>>>> 5f89cb6b02656fe8d413a658fc36858fced61fbc
                       </p>
                 </div>
                 <div className="testimonial-item-footer text-xs mt-32 mb-0 has-top-divider">

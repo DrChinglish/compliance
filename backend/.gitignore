@@ -3,7 +3,7 @@ venv_back/
 # data files
 *.csv
 *.docx
-
+*.sqlite3
 # Django 
 # Created by .ignore support plugin (hsz.mobi)
 ### Maven template

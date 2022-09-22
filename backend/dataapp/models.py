@@ -39,28 +39,52 @@ class Project(models.Model):
         ('game','Game'),
     )
 
+    STATUS_CHOICES=(
+        ('open','Open'),
+        ('closed','Closed'),
+        ('aborted','Aborted'),
+        ('pending','Pending'),
+        ('other',"Other")
+    )
     title = models.CharField(max_length=50)
     #author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_posts') # not yet supported
     description = models.TextField()
+    status = models.CharField(max_length=10,choices=STATUS_CHOICES,default='open')
     #upload = models.FileField(upload_to=get_file_dir)
     #upload = models.FileField(upload_to='files/')
     # For multiple file uploads
     category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='table')
-
+    publish = models.DateTimeField(default=timezone.now)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
     #publish = models.DateTimeField(default=timezone.now)
     #created = models.DateTimeField(auto_now_add=True)
     #updated = models.DateTimeField(auto_now=True)
 
-    
+    def to_dict(self):
+        """重写model_to_dict()方法转字典"""
+        from datetime import datetime
+
+        opts = self._meta
+        data = {}
+        for f in opts.concrete_fields:
+            value = f.value_from_object(self)
+            if isinstance(value, datetime):
+                value = value.strftime('%Y-%m-%d %H:%M:%S')
+            elif isinstance(f, models.FileField):
+                value = value.url if value else None
+            data[f.name] = value
+        return data
 
     #status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 
 '''文件'''
 def get_file_dir(instance, filename):
     print(instance)
-    return 'project_{0}/{1}'.format(instance.project.title,filename)
+    return 'project_{0}/{1}'.format(instance.project_name,filename)
 
 class FileUploaded(models.Model):
+    project_name = models.CharField(max_length=250)
     project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_files')
     file = models.FileField(upload_to=get_file_dir)
 
