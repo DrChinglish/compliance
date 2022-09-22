@@ -191,9 +191,9 @@ def project_info(request,id):
     if request.method=='GET':
         
         project = Project.objects.get(id=id)
-        # print(id)
-        pd = model_to_dict(project)
-        # print(pd)
+        print(project.created)
+        pd = Project.to_dict(project)
+        print(pd)
         return JsonResponse({'data':pd})
     else:
         # print('in')
@@ -477,7 +477,7 @@ def project_list(request):
         project_list = Project.objects.filter(category = request.POST.get('category')).values()
         #print(project_list)
         plist = list(project_list)
-
+        print(plist)
         return JsonResponse({'data':plist,'status':1})
     else:
         return JsonResponse({'msg':'Invalid method','status':0})

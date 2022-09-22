@@ -1,6 +1,7 @@
 import { Box, Card, Tab, Tabs } from '@mui/material'
 import React, { Component } from 'react'
 import GameFileList from './GameFileList';
+import GameInfo from './GameInfo';
 import TabPanel from './TabPanel';
 
 function a11yProps(index) {
@@ -11,6 +12,14 @@ function a11yProps(index) {
   }
 
 export default class GameMeta extends Component {
+
+    getFileCount=()=>{
+        let count = 0
+        count += this.state.fileList.text.length
+        count += this.state.fileList.image.length
+        count += this.state.fileList.other.length
+        return count
+    }
 
     static getDerivedStateFromProps(props,state){
         let fileList={
@@ -62,7 +71,7 @@ export default class GameMeta extends Component {
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>
-                Item 2
+                <GameInfo info={{...this.props.info,['filecount']:this.getFileCount()}}/>
             </TabPanel>
             <TabPanel value={value} index={1}>
                 <GameFileList fileList={this.state.fileList.text} variant='text'/>

@@ -61,7 +61,20 @@ class Project(models.Model):
     #created = models.DateTimeField(auto_now_add=True)
     #updated = models.DateTimeField(auto_now=True)
 
-    
+    def to_dict(self):
+        """重写model_to_dict()方法转字典"""
+        from datetime import datetime
+
+        opts = self._meta
+        data = {}
+        for f in opts.concrete_fields:
+            value = f.value_from_object(self)
+            if isinstance(value, datetime):
+                value = value.strftime('%Y-%m-%d %H:%M:%S')
+            elif isinstance(f, models.FileField):
+                value = value.url if value else None
+            data[f.name] = value
+        return data
 
     #status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
 

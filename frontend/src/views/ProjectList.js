@@ -42,6 +42,13 @@ async function retrieveProjectList(type){
 
 
  class ProjectList extends Component {
+  static getDerivedStateFromProps(props,state){
+    if(props.params.type!=state.type){
+      return{reset:true,type:props.params.type}
+    }
+    return null
+  }
+
   async componentDidMount(){
     await fetch("/api/project_list/",{
       method:'GET',
@@ -54,7 +61,7 @@ async function retrieveProjectList(type){
           console.log("cookie error!")
     })
     let res = await retrieveProjectList(this.props.params.type)
-    console.log(res)
+    // console.log(res)
     if(res.status){
       this.setState({
         rows:res.data,
@@ -62,14 +69,23 @@ async function retrieveProjectList(type){
       })
     }
   }
-  
+
+  async resetList(){
+    let res = await retrieveProjectList(this.props.params.type)
+    // console.log(res)
+    this.setState({
+      rows:res.data,
+      reset:false
+    })
+  }
+
   constructor(props) {
       super(props)
-      
-      
       this.state = {
         rows:[],
         loading:true,
+        reset:false,
+        type:props.params.type
       }
     }
 
@@ -89,6 +105,10 @@ async function retrieveProjectList(type){
   }
   
   render() {
+    if(this.state.reset){
+      this.resetList()
+    }
+    // console.log(this.state.rows)
     const {params} = this.props
     let listTypeText
     switch(params.type){

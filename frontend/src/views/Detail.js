@@ -28,8 +28,11 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
       return res.json()
     })
     .then((res)=>{
+
+      console.log(res)
       this.setState({
-        type:res.data.category
+        type:res.data.category,
+        info: res.data
       })
     })
     
@@ -75,7 +78,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     let defaultsx={px:2}
     switch(this.state.type){
       case 'table': content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'game': content = <GameMeta fileList={this.state.fileList}/> ;defaultsx={px:0};break;
+      case 'game': content = <GameMeta fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
       case 'image': content = <DataGridP columns={columnsP} rows={rows}/>;break;
       default: content = <h6> 404 </h6>
     }
