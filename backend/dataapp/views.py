@@ -515,6 +515,8 @@ def generate_report(request, post):
         return redirect("dataapp:post_detail", post=post.slug)
     if post.category=='text':
         return redirect("dataapp:text_detail", post=post.slug)
+
+
 class DFAFilter(object):
     def __init__(self):
         self.keyword_chains = {}  # 敏感词链表
@@ -583,12 +585,13 @@ def search_keyword(request):
     import re
     import docx
     path = 'media/filter/keywords.docx'
-    file_path = 'media/files/sample.docx'
+    file_path = 'media/files/text.docx'
     content = []
     content_str =''
     file = docx.Document(file_path)
     for para in file.paragraphs:
         content_str+=str(para.text)
+    content_str = '卧槽你妈的，你是傻逼吗性爱电影，狗东西是个什么玩意儿李红智'
     filter = DFAFilter()
     filter.init_chains(path)
     res = filter.filter(content_str)
