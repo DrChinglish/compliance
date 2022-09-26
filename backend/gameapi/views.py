@@ -429,10 +429,10 @@ class DocProcess(object):
         count = 0    #敏感词数量
         senstive_item = []   #敏感词
 
-        for line in self.txts:           
-            if len(self.recongnize_sensitive(line)):
-                senstive_item += self.recongnize_sensitive(line)
-                count += 1
+              
+        if len(self.recongnize_sensitive(self.string)):
+            senstive_item += self.recongnize_sensitive(self.string)
+            count += 1
                 
         self.process_result['senstive_characters'] = {'count':count,'senstive_item':senstive_item}
         
@@ -456,6 +456,7 @@ class DocProcess(object):
         filter = TrantitionalCharacterFilter()
         filter.filter(text)
         res = filter.english_list()
+        res = list(set(res))
         return res    
 
     #判断是否有敏感词
@@ -465,11 +466,13 @@ class DocProcess(object):
         filter.init_chains(keywords_path)
         filter.filter(text)
         res = filter.sensitive_list()
+        res = list(set(res))
         return res
 
     #判断是否有英文
     def recongnize_english(self,text): 
         res = english(text)
+        res = list(set(res))
         return res
 
 
