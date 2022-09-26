@@ -520,7 +520,11 @@ class DFAFilter(object):
         self.keyword_chains = {}  # 敏感词链表
         self.delimit = '\x00'  # 敏感词词尾标识
         self.whitelist=['的'] # 白名单
+        self.uncertain=['性','日','死'] #不确定的，多为单个字
     def add(self, keyword):
+        flag = 1
+        if keyword in self.uncertain:
+            flag = 2
         keyword = keyword.lower()  # 关键词英文变为小写
         chars = keyword.strip()  # 关键字去除首尾空格和换行
         if not chars:  # 如果关键词为空直接返回
@@ -538,10 +542,10 @@ class DFAFilter(object):
                     level[chars[j]] = {}
                     last_level, last_char = level, chars[j]
                     level = level[chars[j]]
-                last_level[last_char] = {self.delimit: 0}
+                last_level[last_char] = {self.delimit: flag}
                 break
         if i == len(chars) - 1:
-            level[self.delimit] = 0
+            level[self.delimit] = flag
         
     def init_chains(self, path):
         import docx
@@ -567,7 +571,7 @@ class DFAFilter(object):
                     if self.delimit not in level[char] or message[start:start+step_ins] in self.whitelist: # current serial is legal
                         level = level[char]
                     else:
-                        ret.append({'flag':1,'text':message[start:start+step_ins]})
+                        ret.append({'flag':level[char][self.delimit],'text':message[start:start+step_ins]})
                         start += step_ins - 1
                         break
                 else:

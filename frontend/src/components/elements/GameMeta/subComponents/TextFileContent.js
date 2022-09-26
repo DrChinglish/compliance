@@ -1,15 +1,20 @@
 import React from 'react'
 import { Stack, Typography, Divider, List, ListItem, Box } from '@mui/material'
 export default function TextFileContent(props){
+    let color = 'red'
     let text=[]
     for(let index in props.file.contentlist){
       let s = props.file.contentlist[index]
+      switch (s.flag){
+        case 2:color = 'orange';break;
+        default: color = 'red'
+      }
       console.log(s)
       if(s.flag == 0){ //legal
         
         text.push(<span>{s.text}</span>)
       }else{
-        text.push(<span style={{background:'red', borderRadius:'3px', color:'white'}} className='highlighted'>{s.text}</span>)
+        text.push(<span style={{background:color, borderRadius:'3px', color:'white'}} className='highlighted'>{s.text}</span>)
       }
     }
   

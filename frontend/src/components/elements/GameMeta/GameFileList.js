@@ -30,7 +30,7 @@ export default class GameFileList extends Component {
     let fetchAPI =`/${this.state.fileList[value].id}/`
     switch(this.props.variant){
       case 'text':fetchAPI = '/api/text_censor'+fetchAPI;break;
-      case 'image':fetchAPI = 'to/be/implemented/'+fetchAPI;break;
+      case 'image':fetchAPI = 'to/be/implemented'+fetchAPI;break;
     }
     fetch(fetchAPI,{
       method:'GET',
