@@ -591,7 +591,7 @@ def search_keyword(request):
     file = docx.Document(file_path)
     for para in file.paragraphs:
         content_str+=str(para.text)
-    content_str = '卧槽你妈的，你是傻逼吗性爱电影，狗东西是个什么玩意儿李红智'
+    # content_str = '卧槽你妈的，你是傻逼吗性爱电影，狗东西是个什么玩意儿李红智'
     filter = DFAFilter()
     filter.init_chains(path)
     res = filter.filter(content_str)
@@ -784,67 +784,5 @@ def project_configration(request):
     return render(request, 'project_configration.html') 
 
 
-
-def re(request):
-    import re
-    
-    
-    phoneRegex = re.compile(r'''(
-               (13\d|14[5|7]|15\d|166|17[3|6|7]|18\d)\d{8}
-                )''', re.VERBOSE)
-
-
-    idnumberRegex = re.compile(r'''(
-            #    [1-9]\d{7}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}$|^[1-9]\d{5}[1-9]\d{3}((0\d)|(1[0-2]))(([0|1|2]\d)|3[0-1])\d{3}([0-9]|X)
-               [1-9]\d{5}[12]\d{3}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\d{3}[0-9xX]
-                )''', re.VERBOSE)
-    
-    emailRegex = re.compile(r'''(
-                [a-zA-Z0-9._%+-]+          
-                @
-                [a-zA-Z0-9.-]+             
-                (\.[a-zA-Z]{2,4})
-                )''', re.VERBOSE)
-
-    adressRegex = re.compile(r'''(
-        ([\u4e00-\u9fa5]{2}?(?:市)){0,1}
-        ([\u4e00-\u9fa5]{2,5}?(?:区|县|州)){1}
-        ([\u4e00-\u9fa5]{2,5}?(?:村|镇|街道|路)){1}
-        ([\d]{1,3}(?:号)){0,1}
-        ([\u4e00-\u9fa5]{2,5}?(?:小区)){0,1}
-        ([\d]{1,3}(?:号楼|幢)){0,1}
-        ([\d]{1,3}(?:单元)){0,1}
-        ([\d]{1,5}(?:室){0,1}){0,1}
-                )''', re.VERBOSE)
-
-    
-    text = '''我是12656319960222311X我的邮件是abcd@abcd.com,18612341234，640302199802234113是我的电话你家住在哪里啊? 黄渤，我13314206322家住在北京市海淀区北三环西路43号,
-    mac地址 06-06-06-aa-bb-cc我叫贺泉贵。
-                            手机号码：18612341234,浙江省嘉兴市秀洲区高照街道112号辽宁省沈阳市和平区文化东路44号。19911223366，15599996666@163.com宁夏回族自治区银川市贺兰县大连东路33号
-                            杭州市网监局：您好，我叫王强，性别男，民族汉，1972年2月22日生，身份证号码312626197202223115 , 住址：浙江省杭州市西湖区余杭塘路866号，工作单位：浙江大学嘉兴
-                            研究院， 现就黄宝翔通过诈骗手段诈骗我8.5万人民币向你处报案，请依法对黄宝翔利用诈骗手段给我造成经济损失的行为进行立案侦查。黄宝翔，男，联系方式：15516165252，黄渤
-                            家住杭州市余杭区解放路空中花园小区3号楼2单元1106室，身份证号640302199505143115。事实如 下：2021年5月12日，黄宝翔以卖房为由12656229960222311X收取我人民币一万元作为定金
-                            复杂电路的修复是很难的，我叫贺泉贵'''
-    
-    
-    matches = []
-    for groups in phoneRegex.findall(text) :
-        matches.append(groups[0])
-
-    for groups in idnumberRegex.findall(text) :
-        matches.append(groups[0])
-
-    for groups in emailRegex.findall(text) :
-        matches.append(groups[0])
-
-    for groups in adressRegex.findall(text) :
-        if len(groups[0]):
-            matches.append(groups[0])
-
-
-    result=bert.name_predict(input_str=text)
-
-
-    return HttpResponse(result)
 
 

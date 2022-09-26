@@ -58,13 +58,21 @@ class ProjectModelViewSet(ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance=instance)
 
-        # instance = Project.objects.get(id=pk)
-        # path = 'media/files/game_projects/project_{}'.format(instance.title)
-        # img_data_file = get_img(path)
-        # doc_data_file = get_doc(path)
-        # print(serializer.data)
+        instance = Project.objects.get(id=pk)
+        path = 'media/files/game_projects/project_{}'.format(instance.title)
+        res={}
+        img_data_file = get_img(path)
+        doc_data_file = get_doc(path)
+        res['file_num'] = len(img_data_file)+len(doc_data_file)
+        res['img_num'] = len(img_data_file)
+        res['doc_num'] = len(doc_data_file)
+        res['img_data_file'] = img_data_file
+        res['doc_data_file'] = doc_data_file
+        serializer.data['res'] = res
+        res.update(serializer.data)
+        
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(res, status=status.HTTP_201_CREATED)
 
 
 
@@ -121,13 +129,30 @@ class ProjectModelViewSet(ModelViewSet):
     '''获取一张图片'''
     # @action(methods=["get"], detail=True, url_path="process_img")
     def get_one_img(self, request, pk, file_id):
-    
+        from PIL import Image
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
         path = file.file 
-        context = img_base64(path)
+        image = Image.open(path).convert('RGB')
+        context = img_base64(image)
 
         return Response({'image':context}, status=status.HTTP_204_NO_CONTENT)
+    
+
+    '''获取一个文档'''
+    # @action(methods=["get"], detail=True, url_path="process_img")
+    def get_one_doc(self, request, pk, file_id):
+        import re
+        import docx
+        instance = Project.objects.get(id=pk)
+        file = File.objects.get(id=file_id)
+        path = file.file 
+        content_str =''
+        file = docx.Document(path)
+        for para in file.paragraphs:
+            content_str+=str(para.text)
+
+        return Response({'text':content_str}, status=status.HTTP_204_NO_CONTENT)
 
 
     '''处理一张图片'''
@@ -139,13 +164,32 @@ class ProjectModelViewSet(ModelViewSet):
         path = file.file
 
         # # 开始处理图片
-        res = []
         imgfilter = ImageProcess()
         imgfilter.init_para(path)
         imgfilter.process_traditional_characters()
         imgfilter.process_sensitive_word()
-        imgfilter.img_base64()
-        res.append(imgfilter.keyword_chains)
+        imgfilter.process_english_word()
+        imgfilter.get_img_base64()
+        res = imgfilter.process_result
+
+        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+
+    '''处理一个文档'''
+    # @action(methods=["get"], detail=True, url_path="process_doc")
+    def process_doc(self, request, pk, file_id):
+    
+        instance = Project.objects.get(id=pk)
+        file = File.objects.get(id=file_id)
+        path = file.file
+
+        # # 开始处理图片
+        docfilter = DocProcess()
+        docfilter.init_para(path)
+        docfilter.process_traditional_characters()
+        docfilter.process_sensitive_word()
+        docfilter.process_english_word()
+        
+        res = docfilter.process_result
 
         return Response(data=res, status=status.HTTP_204_NO_CONTENT)
 
@@ -166,8 +210,9 @@ def get_img(rootdir):
             pre, ending = path.splitext(name)
             if ending != ".jpg" and ending != ".jepg" and ending != ".png":
                 continue
-            else:            
-                img_data.append(root+'/' + name)
+            else:  
+                print(name)          
+                img_data.append(name)
                 # prefix.append(pre)
 
     return img_data
@@ -183,8 +228,9 @@ def get_doc(rootdir):
             if ending != ".docx" and ending != ".txt" and ending != ".doc":
                 continue
             else:
-                print(root)
-                doc_data.append(root+'/' + name)
+                print(name)
+                doc_data.append(name)
+                # doc_data.append(root+'/' + name)
                 # prefix.append(pre)
 
     return doc_data
@@ -203,28 +249,28 @@ def unzip_file(zip_file: ZipFile):
 
 
 # 4.PIL映像从 Django REST 框架后端获取到前端
-def img_base64(img_path):
+def img_base64(image):
     import io
     import base64
-    from PIL import Image
-    image = Image.open(img_path).convert('RGB')
     im_io = io.BytesIO()
     image.save(im_io, 'png', quality=70)
     im_io.seek(0)
     im_io_png = base64.b64encode(im_io.getvalue())
     context = im_io_png.decode('UTF-8')
     return context
+
+
+
         
 
 
 # 5.处理图片数据
-class ImageProcess(object):
-    
+class ImageProcess(object): 
     def __init__(self):
         self.txts = []  # 图片中文字
         self.boxes = []  # 图片中文字对应坐标
         self.image = None
-        self.keyword_chains = {}  # 敏感词链表
+        self.process_result = {}  # 敏感词
         self.keyword_box = {}  # 敏感词所在坐标
         
 
@@ -252,21 +298,21 @@ class ImageProcess(object):
         import numpy as np
         count = 0    #繁体字数量
         traditional_item = []   #繁体字
-        traditional_characters = [line for line in self.txts if self.recongnize_traditional(line)]
-        traditional_characters_box = [box for box,line in zip(self.boxes,self.txts) if self.recongnize_traditional(line)]
+        traditional_characters = [line for line in self.txts if len(self.recongnize_traditional(line))]
+        traditional_characters_box = [box for box,line in zip(self.boxes,self.txts) if len(self.recongnize_traditional(line))]
         img_ocr = draw_ocr(self.image, traditional_characters_box, font_path='./fonts/simfang.ttf')
       
         img = np.asarray(img_ocr)
         self.image = Image.fromarray(np.uint8(img))
         for character in traditional_characters:
             for item in character:
-                if self.recongnize_traditional(item):
+                if len(self.recongnize_traditional(item)):
                     traditional_item.append(item)
                     count += 1
                 else:
                     pass
         
-        self.keyword_chains['traditional_characters'] = {'count':count,'traditional_item':traditional_item}
+        self.process_result['traditional_characters'] = {'count':count,'traditional_item':traditional_item}
 
         
 
@@ -275,9 +321,7 @@ class ImageProcess(object):
         from paddleocr import draw_ocr
         from PIL import Image
         import numpy as np
-        import docx
         
-
         count = 0    #敏感词数量
         senstive_item = []   #敏感词
         senstive_characters = [line for line in self.txts if len(self.recongnize_sensitive(line))]
@@ -293,57 +337,146 @@ class ImageProcess(object):
                 senstive_item += self.recongnize_sensitive(line)
                 count += 1
                 
-        self.keyword_chains['senstive_characters'] = {'count':count,'senstive_item':senstive_item}
+        self.process_result['senstive_characters'] = {'count':count,'senstive_item':senstive_item}
         
-
 
 
     #处理图片上的英文
     def process_english_word(self):
-        pass
+        from paddleocr import draw_ocr
+        from PIL import Image
+        import numpy as np
+        count = 0    #敏感词数量
+        english_item = []   #敏感词
+        senstive_characters = [line for line in self.txts if len(self.recongnize_english(line))]
+        senstive_characters_box = [box for box,line in zip(self.boxes,self.txts) if len(self.recongnize_english(line))]
+        img_ocr = draw_ocr(self.image, senstive_characters_box, font_path='./fonts/simfang.ttf')
 
+        img = np.asarray(img_ocr)
+        self.image = Image.fromarray(np.uint8(img))
+      
+        for line in senstive_characters:
+            
+            if len(self.recongnize_english(line)):
+                english_item += self.recongnize_english(line)
+                count += 1
+
+        self.process_result['english_word'] = {'count':count,'english_item':english_item}
 
 
     # PIL映像从 Django REST 框架后端获取到前端
-    def img_base64(self):
-        import io
-        import base64
-        im_io = io.BytesIO()
-        self.image.save(im_io, 'png', quality=70)
-        im_io.seek(0)
-        im_io_png = base64.b64encode(im_io.getvalue())
-        context = im_io_png.decode('UTF-8')
-        self.keyword_chains['image'] = context
-
+    def get_img_base64(self):
+        context = img_base64(self.image)
+        self.process_result['image'] = context
 
 
     #判断是否有繁体字
     def recongnize_traditional(self,text):
-        from zhconv import convert
-        try:
-            text.encode('big5hkscs')
-            if convert(text, 'zh-hans')!=text:
-                return True
-            else:
-                return False
-        except:
-            if convert(text, 'zh-hans')!=text:
-                return True
-            else:
-                return False
+        filter = TrantitionalCharacterFilter()
+        filter.filter(text)
+        res = filter.english_list()
+        return res    
 
     #判断是否有敏感词
     def recongnize_sensitive(self,text): 
         keywords_path = 'media/filter/keywords.docx'
-       
         filter = DFAFilter()
         filter.init_chains(keywords_path)
         filter.filter(text)
         res = filter.sensitive_list()
         return res
 
+    #判断是否有英文
+    def recongnize_english(self,text): 
+        res = english(text)
+        return res
 
 
+
+
+
+# 5.处理文档数据
+class DocProcess(object): 
+    def __init__(self):
+        self.txts = []  # 文档文字，按段落成list
+        self.string = '' 
+        self.process_result = {}  # 敏感词
+ 
+    def init_para(self, path):    
+        import docx
+        file = docx.Document(path)
+        for para in file.paragraphs:
+            self.txts.append(str(para.text))
+            self.string += str(para.text)
+        
+    #处理文档的繁体字
+    def process_traditional_characters(self):
+       
+        count = 0    #繁体字数量
+        traditional_item = []   #繁体字
+        for character in self.txts:
+            for item in character:
+                if len(self.recongnize_traditional(item)):
+                    traditional_item.append(item)
+                    count += 1
+        
+        self.process_result['traditional_characters'] = {'count':count,'traditional_item':traditional_item}
+     
+
+    #处理文档的敏感词
+    def process_sensitive_word(self):
+        
+        count = 0    #敏感词数量
+        senstive_item = []   #敏感词
+
+        for line in self.txts:           
+            if len(self.recongnize_sensitive(line)):
+                senstive_item += self.recongnize_sensitive(line)
+                count += 1
+                
+        self.process_result['senstive_characters'] = {'count':count,'senstive_item':senstive_item}
+        
+
+    #处理文档的英文
+    def process_english_word(self):
+
+        count = 0    #敏感词数量
+        english_item = []   #敏感词
+    
+        for line in self.txts:
+            if len(self.recongnize_english(line)):
+                english_item += self.recongnize_english(line)
+                count += 1
+
+        self.process_result['english_word'] = {'count':count,'english_item':english_item}
+
+
+    #判断是否有繁体字
+    def recongnize_traditional(self,text):
+        filter = TrantitionalCharacterFilter()
+        filter.filter(text)
+        res = filter.english_list()
+        return res    
+
+    #判断是否有敏感词
+    def recongnize_sensitive(self,text): 
+        keywords_path = 'media/filter/keywords.docx'
+        filter = DFAFilter()
+        filter.init_chains(keywords_path)
+        filter.filter(text)
+        res = filter.sensitive_list()
+        return res
+
+    #判断是否有英文
+    def recongnize_english(self,text): 
+        res = english(text)
+        return res
+
+
+
+
+
+# 6.敏感词处理
 class DFAFilter(object):
     def __init__(self):
         self.keyword_chains = {}  # 敏感词链表
@@ -412,10 +545,60 @@ class DFAFilter(object):
         sensitive=[]
         for word in self.ret:  
             if word['flag']==1:
-                sensitive.append([word['text']])
+                sensitive.append(word['text'])
         return sensitive
 
-       
+
+
+# 6.繁体字词处理
+class TrantitionalCharacterFilter(object):
+    def __init__(self):
+        self.ret = []  # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"简体字"}, {'flag':1 ,'text':"繁体字"}]的形式返回
+
+
+    def filter(self,text):
+        for i in text:
+            if self.recongnize_traditional(i):
+                self.ret.append({'flag':1 ,'text':i})
+            else:
+                self.ret.append({'flag':0 ,'text':i})
+
+
+    def english_list(self):
+        english=[]
+        for word in self.ret:  
+            if word['flag']==1:
+                english.append(word['text'])
+        return english
+        
+
+    #判断是否有繁体字
+    def recongnize_traditional(self,text):
+        from zhconv import convert
+        try:
+            text.encode('big5hkscs')
+            if convert(text, 'zh-hans')!=text:
+                return True
+            else:
+                return False
+        except:
+            if convert(text, 'zh-hans')!=text:
+                return True
+            else:
+                return False
+      
+
+# 5.英文处理
+def english(string):
+    import re
+    adressRegex = re.compile(r'''(
+                [a-zA-Z]+
+                    )''', re.VERBOSE)
+    res = adressRegex.findall(string) 
+    for i in ['PC','3D','2D','H5','VR','AR','HD','Q','K']:
+            if i in res:
+                res.pop(res.index(i))
+    return res
 
 
 
