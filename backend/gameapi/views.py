@@ -163,7 +163,7 @@ class ProjectModelViewSet(ModelViewSet):
         file = File.objects.get(id=file_id)
         path = file.file
 
-        # # 开始处理
+        # # 开始处理图片
         imgfilter = ImageProcess()
         imgfilter.init_para(path)
         imgfilter.process_traditional_characters()
@@ -388,7 +388,7 @@ class ImageProcess(object):
 
     #判断是否有英文
     def recongnize_english(self,text): 
-        res = english(text)
+        res,_ = english(text)
         return res
 
 
@@ -414,13 +414,13 @@ class DocProcess(object):
        
         count = 0    #繁体字数量
         traditional_item = []   #繁体字
-        for character in self.txts:
-            for item in character:
-                if len(self.recongnize_traditional(item)):
-                    traditional_item.append(item)
-                    count += 1
         
-        self.process_result['traditional_characters'] = {'count':count,'traditional_item':traditional_item}
+        for item in self.string:
+            if len(self.recongnize_traditional(item)[0]):
+                traditional_item.append(item)
+                count += 1
+        
+        self.process_result['traditional_characters'] = {'count':count,'traditional_item':traditional_item,'fulltext':self.recongnize_traditional(self.string)[1]}
      
 
     #处理文档的敏感词
@@ -430,11 +430,11 @@ class DocProcess(object):
         senstive_item = []   #敏感词
 
               
-        if len(self.recongnize_sensitive(self.string)):
-            senstive_item += self.recongnize_sensitive(self.string)
+        if len(self.recongnize_sensitive(self.string)[0]):
+            senstive_item += self.recongnize_sensitive(self.string)[0]
             count = len(senstive_item)
                 
-        self.process_result['senstive_characters'] = {'count':count,'senstive_item':senstive_item}
+        self.process_result['senstive_characters'] = {'count':count,'senstive_item':senstive_item, 'fulltext':self.recongnize_sensitive(self.string)[1]}
         
 
     #处理文档的英文
@@ -443,21 +443,21 @@ class DocProcess(object):
         count = 0    #敏感词数量
         english_item = []   #敏感词
     
-        for line in self.txts:
-            if len(self.recongnize_english(line)):
-                english_item += self.recongnize_english(line)
-                count = len(english_item)
+        
+        if len(self.recongnize_english(self.string)[0]):
+            english_item += self.recongnize_english(self.string)[0]
+            count = len(english_item)
 
-        self.process_result['english_word'] = {'count':count,'english_item':english_item}
+        self.process_result['english_word'] = {'count':count,'english_item':english_item, 'fulltext':self.recongnize_english(self.string)[1]}
 
 
     #判断是否有繁体字
     def recongnize_traditional(self,text):
         filter = TrantitionalCharacterFilter()
         filter.filter(text)
-        res = filter.english_list()
+        res = filter.trantitional_list()
         res = list(set(res))
-        return res    
+        return res,filter.ret
 
     #判断是否有敏感词
     def recongnize_sensitive(self,text): 
@@ -467,15 +467,13 @@ class DocProcess(object):
         filter.filter(text)
         res = filter.sensitive_list()
         res = list(set(res))
-        return res
+        return res,filter.ret
 
     #判断是否有英文
     def recongnize_english(self,text): 
-        res = english(text)
+        res,ret= english(text)
         res = list(set(res))
-        return res
-
-
+        return res, ret
 
 
 
@@ -556,23 +554,23 @@ class DFAFilter(object):
 # 6.繁体字词处理
 class TrantitionalCharacterFilter(object):
     def __init__(self):
-        self.ret = []  # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"简体字"}, {'flag':1 ,'text':"繁体字"}]的形式返回
+        self.ret = []  # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"简体字"}, {'flag': 2 ,'text':"繁体字"}]的形式返回
 
 
     def filter(self,text):
         for i in text:
             if self.recongnize_traditional(i):
-                self.ret.append({'flag':1 ,'text':i})
+                self.ret.append({'flag':2 ,'text':i})
             else:
                 self.ret.append({'flag':0 ,'text':i})
 
 
-    def english_list(self):
-        english=[]
+    def trantitional_list(self):
+        trantitional=[]
         for word in self.ret:  
-            if word['flag']==1:
-                english.append(word['text'])
-        return english
+            if word['flag']==2:
+                trantitional.append(word['text'])
+        return trantitional
         
 
     #判断是否有繁体字
@@ -601,15 +599,18 @@ def english(string):
     for i in ['PC','3D','2D','H5','VR','AR','HD','Q','K']:
             if i in res:
                 res.pop(res.index(i))
-    return res
+
+    ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
+    for idenx,item in enumerate(re.split("[ ,.，。]",string)):
+        if item in res:
+            ret.append({'flag':3 ,'text':item})
+        else:
+            ret.append({'flag':0 ,'text':item})
+
+
+    
+    return res, ret
 
 
 
-
-
-
-
-
-
-
-      
+   
