@@ -432,7 +432,7 @@ class DocProcess(object):
               
         if len(self.recongnize_sensitive(self.string)):
             senstive_item += self.recongnize_sensitive(self.string)
-            count += 1
+            count = len(senstive_item)
                 
         self.process_result['senstive_characters'] = {'count':count,'senstive_item':senstive_item}
         
@@ -446,7 +446,7 @@ class DocProcess(object):
         for line in self.txts:
             if len(self.recongnize_english(line)):
                 english_item += self.recongnize_english(line)
-                count += 1
+                count = len(english_item)
 
         self.process_result['english_word'] = {'count':count,'english_item':english_item}
 
