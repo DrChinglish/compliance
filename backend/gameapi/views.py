@@ -163,7 +163,7 @@ class ProjectModelViewSet(ModelViewSet):
         file = File.objects.get(id=file_id)
         path = file.file
 
-        # # 开始处理图片
+        # # 开始处理
         imgfilter = ImageProcess()
         imgfilter.init_para(path)
         imgfilter.process_traditional_characters()
@@ -182,7 +182,7 @@ class ProjectModelViewSet(ModelViewSet):
         file = File.objects.get(id=file_id)
         path = file.file
 
-        # # 开始处理图片
+        # # 开始处理
         docfilter = DocProcess()
         docfilter.init_para(path)
         docfilter.process_traditional_characters()
