@@ -1,16 +1,17 @@
-
 from rest_framework.routers import DefaultRouter,SimpleRouter
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('gameupload/', views.gameupload, name='gameupload'),
+    path("projects/<int:pk>/images/<int:file_id>/", views.ProjectModelViewSet.as_view({"get":"get_one_img"})),
+    path("projects/<int:pk>/texts/<int:file_id>/", views.ProjectModelViewSet.as_view({"get":"get_one_doc"})),
+    path("projects/<int:pk>/images/<int:file_id>/process_img", views.ProjectModelViewSet.as_view({"get":"process_img"})),
+    path("projects/<int:pk>/texts/<int:file_id>/process_doc", views.ProjectModelViewSet.as_view({"get":"process_doc"})),
+   
 ]
 
 
 router = DefaultRouter()
-# 注册视图(访问前缀，视图集类，调用别名)
 router.register("projects", views.ProjectModelViewSet, "projects")
-# 把路由对象生成的视图集路由列表合并追加路由列表中
-# print(router.urls)
+router.register("files", views.FileModelViewSet, "files")
 urlpatterns += router.urls

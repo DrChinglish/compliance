@@ -29,7 +29,7 @@ urlpatterns=[
     path('new_post/', views.MainView.as_view(), name="upload-view"),
     path('new_project/',views.create_project_view,name="create_new_project"),
     path('new_post/upload/', views.file_upload_view, name="upload_view"),
-    path('re/',views.re, name='re'),
+
 
     path('project_delete/',views.project_delete,name='project_delete'),
     path('project_list/',views.project_list,name = "project_list"),
