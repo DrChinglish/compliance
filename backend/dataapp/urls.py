@@ -37,5 +37,6 @@ urlpatterns=[
     path('file_list/<int:id>/',views.file_list,name = "file_list"),
     path('text_censor/<int:fid>/',views.text_censor,name = "text_censor"),
 
-    path('test/',views.search_keyword,name = "search_keyword")
+    path('test/',views.search_keyword,name = "search_keyword"),
+    path('test_db/',views.test_db,name = "test_db"),
     ]

@@ -9,7 +9,7 @@ sys.path.append("./../env/Lib/site-packages/bert/NER")
 # sys.path.append("./../env/Lib/site-packages")
 #import NER.predict as bert
 # import bert
-
+from .DBConnection import DBConnection
 import datetime
 from multiprocessing import context
 import string
@@ -771,6 +771,15 @@ def text_detail(request, post):
             print('中风险数处理时间', request.GET.get('middle_level_handle_time'))
        
     return render(request, 'text_detail.html', {'post': post, 'content':content ,'data_to_frontend':dataJSON})
+
+def test_db(request):
+    address = request.POST.get('address')
+    user = request.POST.get('user')
+    pwd = request.POST.get('pwd')
+    dbname = request.POST.get('dbname')
+    conn = DBConnection(user,pwd,address,dbname)
+    ret = conn.test_fetch()
+    return JsonResponse({"data":ret})
 
 
 

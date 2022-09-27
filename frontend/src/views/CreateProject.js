@@ -9,7 +9,6 @@ import cookie from 'react-cookies'
 import SaveIcon from '@mui/icons-material/Save';
 import fetchHandle from '../utils/FetchErrorhandle' 
 import urlMapping from '../urlMapping.json'
-import DBConnection from '../utils/DBConnection'
 const {Dragger} = Upload
 //import "../assets/scss/createProject.scss"
 
@@ -21,12 +20,6 @@ const helperText={
 
 
 class CreateProject extends Component {
-
-    testDBConnection=(e)=>{
-        let conn = new DBConnection('mysql')
-        conn.connect('localhost:3306','root','123456','student')
-    }
-
     componentDidMount=()=>{
         fetch("/api/new_project",{
             method:'GET',
