@@ -284,9 +284,6 @@ class CreateProject extends Component {
                     
                 </Stack>
                 <Stack justifyContent='center' alignItems='center'>
-                    <Button variant='contained' onClick={this.testDBConnection}>
-                        测试数据库连接
-                    </Button>
                     <LoadingButton variant='contained' loading={this.state.creating} onClick={this.handleSubmit}>
                         创建项目
                     </LoadingButton>

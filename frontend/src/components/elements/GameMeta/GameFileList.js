@@ -22,6 +22,25 @@ export default class GameFileList extends Component {
     }
   }
 
+  generateSuggestion=(type,items)=>{
+    let title
+    console.log(type,items)
+    switch(type){
+      case 'senstive_characters':title="发现敏感词";break;
+      case 'traditional_characters':title="发现违规繁体字";break;
+      case 'english_word':title="发现违规英文单词";break;
+    }
+    let display=''
+    for(let i in items){
+      if(i!=0){
+        display+=', '
+      }
+      display+=items[i]
+    }
+    let des = `共发现${items.length}个违规项，包括${display}等。`
+    return {title:title,description:des,seriousness:'high'}
+  }
+
   handleClick=(e,value)=>{
     //TODO: add backend interaction here
     this.setState({
@@ -40,6 +59,23 @@ export default class GameFileList extends Component {
       return res.json()
     }).then((res)=>{
       console.log(res)
+      let suggs=[]
+      if(res.senstive_characters.count>0){
+        let sugg = this.generateSuggestion('senstive_characters',res.senstive_characters.senstive_item)
+        sugg.id = suggs.length
+        suggs.push(sugg)
+      }
+      if(res.traditional_characters.count>0){
+        let sugg = this.generateSuggestion('traditional_characters',res.traditional_characters.traditional_item)
+        sugg.id = suggs.length
+        suggs.push(sugg)
+      }
+      if(res.english_word.count>0){
+        let sugg = this.generateSuggestion('english_word',res.english_word.english_item)
+        sugg.id = suggs.length
+        suggs.push(sugg)
+      }
+      this.props.setSuggestions(suggs)
       let newfileList = this.state.fileList
       //console.log(res)
       newfileList[value].contentlist = res //censored content in list

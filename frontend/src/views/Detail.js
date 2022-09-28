@@ -41,6 +41,12 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     
   }
 
+  setSuggestions= (newSuggestions)=>{
+    this.setState({
+      suggestions:newSuggestions
+    })
+  }
+
   async getFileList(){
     let data
     await fetch(`/api/file_list/${this.props.params.id}/`,{
@@ -71,7 +77,8 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     console.log(this.props.params.id)
     this.state={
       type:'',
-      fileList:[]
+      fileList:[],
+      suggestions:suggestions
     }
   }
 
@@ -81,7 +88,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     let defaultsx={px:2}
     switch(this.state.type){
       case 'table': content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'game': content = <GameMeta fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
+      case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
       case 'image': content = <DataGridP columns={columnsP} rows={rows}/>;break;
       default: content = <h6> 404 </h6>
     }
@@ -113,7 +120,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
           <Stack sx={{width:'40%',maxWidth:'40%'}} spacing={2}>
 
             {/* 审计结果（suggestion） */}
-            <ResultS suggestions={suggestions}>
+            <ResultS suggestions={this.state.suggestions}>
 
             </ResultS>
 

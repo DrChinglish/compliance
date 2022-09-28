@@ -240,16 +240,24 @@ class ProjectModelViewSet(ModelViewSet):
                 row_dic[formheader[i]]=j
             res['table'].append(row_dic)
 
-
+        nametemplate = "在{0}行的{1}列中发现敏感姓名信息。"
+        addresstemplate = "在{0}行的{1}列中发现敏感地址信息。"
+        phonetemplate = "在{0}行的{1}列中发现敏感电话号码信息。"
+        agetemplate = "在{0}行的{1}列中发现敏感年龄信息。"
+        suggcount=0
         if 'name' in formheader:
             col=formheader.index('name')
             for i,item in enumerate(df.values[:,col]) :
                 if not item.count('*'):
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'name',
-                        'severity':'high',
+                        'seriousness':'high',
+                        'title':'发现敏感姓名数据',
+                        'description':nametemplate.format(i,'name'),
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
 
 
@@ -258,10 +266,14 @@ class ProjectModelViewSet(ModelViewSet):
             for i,item in enumerate(df.values[:,col]) :
                 if not item.count('*'):
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'address',
-                        'severity':'medium',
+                        'seriousness':'medium',
+                        'title':'发现敏感地址数据',
+                        'description':nametemplate.format(i,'address'),
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
 
         if 'phone_number' in formheader:
@@ -269,10 +281,14 @@ class ProjectModelViewSet(ModelViewSet):
             for i,item in enumerate(df.values[:,col]) :
                 if not item.count('*'):
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'phone_number',
-                        'severity':'high',
+                        'seriousness':'high',
+                        'title':'发现敏感电话号码数据',
+                        'description':nametemplate.format(i,'phone_number'),
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
 
 
@@ -281,10 +297,14 @@ class ProjectModelViewSet(ModelViewSet):
             for i,item in enumerate(df.values[:,col]) :
                 if  item != 'nan':
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'age',
-                        'severity':'low',
+                        'seriousness':'low',
+                        'title':'发现敏感年龄数据',
+                        'description':nametemplate.format(i,'age'),
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
                
         return Response( data={'data':res},status=status.HTTP_201_CREATED)
