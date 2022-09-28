@@ -5,5 +5,15 @@
     "tablelist":"/list/table",
     "textlist":"/list/text",
     "newproject":"/new",
-    "list":"/list"
+    "list":"/list",
+    "apibase":{
+        "game":"/apigame",
+        "other":"/api"
+    },
+    "apis":{
+        "create_project":"/api/projects/",
+        "project_list":"/project_list/",
+        "project_list_game":"/api/projects/",
+        "project_info":"/api/projects/"
+    }
 }

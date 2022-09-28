@@ -22,12 +22,13 @@ const helperText={
 class CreateProject extends Component {
 
     componentDidMount=()=>{
-        fetch("/api/new_project",{
+        let url = urlMapping.apis.create_project
+        fetch(url,{
             method:'GET',
             mode:'cors'
         })
         .then((res)=>{
-            console.log(res.json())
+            //console.log(res.json())
             if(cookie.load("csrftoken")!=undefined)
                 console.log("cookie ok!")
             else
@@ -94,7 +95,9 @@ class CreateProject extends Component {
         formdata.append("title",this.state.values.name)
         formdata.append("description",this.state.values.description)
         this.setState({creating:true})
-        fetch("/api/new_project/",{
+        //let url = "/api/new_project/" //old api
+        let url = urlMapping.apis.create_project
+        fetch(url,{
             method:'POST',
             body:formdata,
             mode:'cors',

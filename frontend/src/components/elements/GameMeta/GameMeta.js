@@ -1,5 +1,6 @@
 import { Box, Card, Tab, Tabs } from '@mui/material'
 import React, { Component } from 'react'
+import DataGridS from '../DataGridS/DataGridS';
 import GameFileList from './GameFileList';
 import GameInfo from './GameInfo';
 import TabPanel from './TabPanel';
@@ -68,6 +69,7 @@ export default class GameMeta extends Component {
                     <Tab label="游戏信息" {...a11yProps(0)} />
                     <Tab label="文本合规" {...a11yProps(1)} />
                     <Tab label="图片合规" {...a11yProps(2)} />
+                    <Tab label="数据库检测" {...a11yProps(3)} />
                 </Tabs>
             </Box>
             <TabPanel value={value} index={0}>
@@ -78,6 +80,9 @@ export default class GameMeta extends Component {
             </TabPanel>
             <TabPanel value={value} index={2}>
                 <GameFileList fileList={this.state.fileList.image} variant='image'/>
+            </TabPanel>
+            <TabPanel value={value} index={3}>
+                <DataGridS fileList={this.state.fileList.image} variant='image'/>
             </TabPanel>
         </Box>
     )

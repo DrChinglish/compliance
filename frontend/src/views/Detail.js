@@ -8,6 +8,8 @@ import { GridActionsCellItem} from '@mui/x-data-grid'
 import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 import { useParams } from 'react-router-dom';
 import withRouter from '../utils/WithRouter';
+import urlmapping from '../urlMapping.json'
+
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
@@ -18,10 +20,10 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
 
  class Detail extends Component {
 
-  async projectType(index){
+  async projectInfo(index){
     console.log('here')
-    
-    await fetch(`/api/project_info/${index}/`,{
+    let url = urlmapping.apibase.game+urlmapping.apis.project_info+`${index}/`
+    await fetch(url,{
       method:'GET' 
     })
     .then((res)=>{
@@ -31,8 +33,9 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
 
       console.log(res)
       this.setState({
-        type:res.data.category,
-        info: res.data
+        type:res.category,
+        info:res,
+        fileList:res.fileList
       })
     })
     
@@ -55,12 +58,12 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
   }
 
   async componentDidMount(){
-    await this.projectType(this.props.params.id)
-    let fileList = await this.getFileList()
+    await this.projectInfo(this.props.params.id)
+    //let fileList = await this.getFileList()
     console.log(fileList)
-    this.setState({
-      fileList:fileList
-    })
+    // this.setState({
+    //   fileList:fileList
+    // })
   }
 
   constructor(props){

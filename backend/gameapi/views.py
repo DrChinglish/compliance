@@ -49,11 +49,15 @@ class ProjectModelViewSet(ModelViewSet):
 
     """添加一个项目"""
     def create(self, request):
+        print(request.FILES.getlist('files[]'))
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        for f in request.FILES.getlist('files[]'):  
+                # This looks not so right, could have cause some undesire behaviors....  
+                instance = File(file=f ,project=Project.objects.last())
+                instance.save()
+        return Response({'status':1}, status=status.HTTP_201_CREATED)
 
 
 
@@ -65,6 +69,18 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         path = 'media/files/game_projects/project_{}'.format(instance.title)
         res={}
+        files = instance.project_files.all()
+        filelist = []
+        print(files)
+        from .util import convert_size, convert_type
+        for f in files:
+            file_info={'id':f.id,
+            'name':os.path.split(f.file.name)[1],
+            'size':convert_size(f.file.size),
+            'type':convert_type(f.file.name),
+            'content':''}
+            filelist.append(file_info)
+        res['fileList'] = filelist
         img_data_file = get_img(path)
         doc_data_file = get_doc(path)
         res['file_num'] = len(img_data_file)+len(doc_data_file)
@@ -74,7 +90,6 @@ class ProjectModelViewSet(ModelViewSet):
         res['doc_data_file'] = doc_data_file
         serializer.data['res'] = res
         res.update(serializer.data)
-        
 
         return Response(res, status=status.HTTP_201_CREATED)
 
