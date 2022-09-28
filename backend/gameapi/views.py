@@ -1,4 +1,4 @@
-from curses import curs_set
+# from curses import curs_set
 from os import walk, path
 from sqlite3 import Cursor
 from zipfile import ZipFile
@@ -25,7 +25,7 @@ class FileModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         print(request._request.FILES.getlist('file'))
-
+        
         # 如果上传的是zip压缩包，则解压到当前目录
         instance = File.objects.last()
         file = instance.file
@@ -192,7 +192,7 @@ class ProjectModelViewSet(ModelViewSet):
         # imgfilter.get_img_base64()
         res = imgfilter.process_result
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
     '''处理一个文档'''
     # @action(methods=["get"], detail=True, url_path="process_doc")
@@ -210,11 +210,10 @@ class ProjectModelViewSet(ModelViewSet):
         docfilter.process_english_word()
         
         res = docfilter.process_result
-
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        
+        return Response(data=res, status=status.HTTP_200_OK)
     
-    
-     '''链接数据库并获取数据'''
+    '''链接数据库并获取数据'''
     @action(methods=["post"], detail=False, url_path="conndb")
     def conndb(self, request):
         import pandas as pd

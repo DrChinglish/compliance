@@ -76,10 +76,10 @@ export default class GameMeta extends Component {
                 <GameInfo info={{...this.props.info,['filecount']:this.getFileCount()}}/>
             </TabPanel>
             <TabPanel value={value} index={1}>
-                <GameFileList fileList={this.state.fileList.text} variant='text'/>
+                <GameFileList pid={this.props.info.id} fileList={this.state.fileList.text} variant='text'/>
             </TabPanel>
             <TabPanel value={value} index={2}>
-                <GameFileList fileList={this.state.fileList.image} variant='image'/>
+                <GameFileList pid={this.props.info.id} fileList={this.state.fileList.image} variant='image'/>
             </TabPanel>
             <TabPanel value={value} index={3}>
                 <DataGridS fileList={this.state.fileList.image} variant='image'/>

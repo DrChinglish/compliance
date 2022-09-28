@@ -21,7 +21,7 @@ const helperText={
 
 class CreateProject extends Component {
     componentDidMount=()=>{
-        let url = urlMapping.apis.create_project
+        let url = urlMapping.apibase.game+urlMapping.apis.create_project
         fetch(url,{
             method:'GET',
             mode:'cors'
@@ -95,7 +95,7 @@ class CreateProject extends Component {
         formdata.append("description",this.state.values.description)
         this.setState({creating:true})
         //let url = "/api/new_project/" //old api
-        let url = urlMapping.apis.create_project
+        let url = urlMapping.apibase.game+urlMapping.apis.create_project
         fetch(url,{
             method:'POST',
             body:formdata,
