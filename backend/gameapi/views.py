@@ -271,7 +271,7 @@ class ProjectModelViewSet(ModelViewSet):
                         'column':'address',
                         'seriousness':'medium',
                         'title':'发现敏感地址数据',
-                        'description':nametemplate.format(i,'address'),
+                        'description':addresstemplate.format(i,'address'),
                     }
                     suggcount+=1
                     res['suggestion'].append(sug)
@@ -286,7 +286,7 @@ class ProjectModelViewSet(ModelViewSet):
                         'column':'phone_number',
                         'seriousness':'high',
                         'title':'发现敏感电话号码数据',
-                        'description':nametemplate.format(i,'phone_number'),
+                        'description':phonetemplate.format(i,'phone_number'),
                     }
                     suggcount+=1
                     res['suggestion'].append(sug)
@@ -302,7 +302,7 @@ class ProjectModelViewSet(ModelViewSet):
                         'column':'age',
                         'seriousness':'low',
                         'title':'发现敏感年龄数据',
-                        'description':nametemplate.format(i,'age'),
+                        'description':agetemplate.format(i,'age'),
                     }
                     suggcount+=1
                     res['suggestion'].append(sug)
