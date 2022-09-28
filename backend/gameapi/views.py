@@ -45,104 +45,6 @@ class ProjectModelViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectModelSerializer
 
-    '''链接数据库并获取数据'''
-    @action(methods=["post"], detail=False, url_path="conndb")
-    def conndb(self, request):
-        import pandas as pd
-        form_data=request.data
-        request._request.session['user'] = form_data['user']
-        request._request.session['pwd'] = form_data['pwd']
-        request._request.session['dbname'] = form_data['dbname']
-        request._request.session['tablename'] = form_data['tablename']
- 
-        dbcursor = DBConnection(user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
-        dbcursor.conn()
-        data = dbcursor.get_data()
-        formheader = dbcursor.formheader
-        df = pd.DataFrame(data[1000:1500],columns=formheader)
-      
-        print(df.values)
-
-        res = {'table':[],'suggestion':[]  }
-        for row in df.values:
-            row_dic={}
-            for i,j in enumerate(row):
-                row_dic[formheader[i]]=j
-            res['table'].append(row_dic)
-               
-        return Response( data={'data':res},status=status.HTTP_201_CREATED)
-
-
-    '''处理数据库数据'''
-    @action(methods=["get"], detail=False, url_path="conndb/process_db")
-    def process_db(self, request):
-        import pandas as pd
-        user = request.session.get('user')
-        pwd = request.session.get('pwd')
-        dbname = request.session.get('dbname')
-        tablename = request.session.get('tablename')
-
-        if not user:
-            return Response({'mes': '请先链接数据库'}, status=status.HTTP_204_NO_CONTENT)
-
-
-        dbcursor = DBConnection(user=user,pwd=pwd,dbname=dbname,tablename=tablename)
-        dbcursor.conn()
-        data = dbcursor.get_data()
-        formheader = dbcursor.formheader
-        df = pd.DataFrame(data[1000:1500],columns=formheader)
-        header=dbcursor.formheader
-
-        res = {'table':[],
-       'suggestion':[]  
-       }
-
-        for row in df.values:
-            row_dic={}
-            for i,j in enumerate(row):
-                row_dic[header[i]]=j
-            res['table'].append(row_dic)
-            
-            
-        if 'name' in header:
-            col=header.index('name')
-            for i,item in enumerate(df.values[:,col]) :
-                if not item.count('*'):
-                    sug={
-                        'rowid':i,
-                        'column':'name',
-                        'severity':'high',
-                    }
-                    res['suggestion'].append(sug)
-
-
-        if 'address' in header:
-            col=header.index('address')
-            for i,item in enumerate(df.values[:,col]) :
-                if not item.count('*'):
-                    sug={
-                        'rowid':i,
-                        'column':'address',
-                        'severity':'medium',
-                    }
-                    res['suggestion'].append(sug)
-
-
-        if 'age' in header:
-            col=header.index('age')
-            for i,item in enumerate(df.values[:,col]) :
-                if  item != 'nan':
-                    sug={
-                        'rowid':i,
-                        'column':'age',
-                        'severity':'low',
-                    }
-                    res['suggestion'].append(sug)
-        
-
-        return Response( data={'data': res},status=status.HTTP_201_CREATED)
-
-
 
 
     """添加一个项目"""
@@ -295,6 +197,117 @@ class ProjectModelViewSet(ModelViewSet):
         res = docfilter.process_result
 
         return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+    
+    
+     '''链接数据库并获取数据'''
+    @action(methods=["post"], detail=False, url_path="conndb")
+    def conndb(self, request):
+        import pandas as pd
+        form_data=request.data
+        request._request.session['user'] = form_data['user']
+        request._request.session['pwd'] = form_data['pwd']
+        request._request.session['dbname'] = form_data['dbname']
+        request._request.session['tablename'] = form_data['tablename']
+ 
+        dbcursor = DBConnection(user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
+        dbcursor.conn()
+        data = dbcursor.get_data()
+        formheader = dbcursor.formheader
+        df = pd.DataFrame(data[1000:1500],columns=formheader)
+      
+        print(df.values)
+
+        res = {'table':[],'suggestion':[]  }
+        for row in df.values:
+            row_dic={}
+            for i,j in enumerate(row):
+                row_dic[formheader[i]]=j
+            res['table'].append(row_dic)
+               
+        return Response( data={'data':res},status=status.HTTP_201_CREATED)
+
+
+    '''处理数据库数据'''
+    @action(methods=["get"], detail=False, url_path="conndb/process_db")
+    def process_db(self, request):
+        import pandas as pd
+        user = request.session.get('user')
+        pwd = request.session.get('pwd')
+        dbname = request.session.get('dbname')
+        tablename = request.session.get('tablename')
+
+        if not user:
+            return Response({'mes': '请先链接数据库'}, status=status.HTTP_204_NO_CONTENT)
+
+
+        dbcursor = DBConnection(user=user,pwd=pwd,dbname=dbname,tablename=tablename)
+        dbcursor.conn()
+        data = dbcursor.get_data()
+        formheader = dbcursor.formheader
+        df = pd.DataFrame(data[1000:1500],columns=formheader)
+        header=dbcursor.formheader
+
+        res = {'table':[],
+       'suggestion':[]  
+       }
+
+        for row in df.values:
+            row_dic={}
+            for i,j in enumerate(row):
+                row_dic[header[i]]=j
+            res['table'].append(row_dic)
+            
+            
+        if 'name' in header:
+            col=header.index('name')
+            for i,item in enumerate(df.values[:,col]) :
+                if not item.count('*'):
+                    sug={
+                        'rowid':i,
+                        'column':'name',
+                        'severity':'high',
+                    }
+                    res['suggestion'].append(sug)
+                    
+
+        
+        if 'phone_number' in header:
+            col=header.index('phone_number')
+            for i,item in enumerate(df.values[:,col]) :
+                if not item.count('*'):
+                    sug={
+                        'rowid':i,
+                        'column':'phone_number',
+                        'severity':'high',
+                    }
+                    res['suggestion'].append(sug)
+        
+        
+        if 'address' in header:
+            col=header.index('address')
+            for i,item in enumerate(df.values[:,col]) :
+                if not item.count('*'):
+                    sug={
+                        'rowid':i,
+                        'column':'address',
+                        'severity':'medium',
+                    }
+                    res['suggestion'].append(sug)
+
+
+        if 'age' in header:
+            col=header.index('age')
+            for i,item in enumerate(df.values[:,col]) :
+                if  item != 'nan':
+                    sug={
+                        'rowid':i,
+                        'column':'age',
+                        'severity':'low',
+                    }
+                    res['suggestion'].append(sug)
+        
+
+        return Response( data={'data': res},status=status.HTTP_201_CREATED)
 
 
 
