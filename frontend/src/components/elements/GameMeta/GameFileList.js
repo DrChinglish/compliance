@@ -75,7 +75,7 @@ export default class GameFileList extends Component {
         sugg.id = suggs.length
         suggs.push(sugg)
       }
-      this.props.setSuggestions(suggs)
+      this.props.setSuggestions(suggs,`game_${this.props.variant}`)
       let newfileList = this.state.fileList
       //console.log(res)
       newfileList[value].contentlist = res //censored content in list

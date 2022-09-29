@@ -42,7 +42,7 @@ export default class GameMeta extends Component {
             }
             target.push(file)
         }
-        console.log(fileList)
+        //console.log(fileList)
         return {fileList:fileList}
     }
 
@@ -60,6 +60,7 @@ export default class GameMeta extends Component {
     }
 
     handleChange=(e,value)=>{
+        this.props.setSuggestions([],'null')
         if(value === 3){
             this.setState({
                 tableLoading:true
@@ -82,9 +83,10 @@ export default class GameMeta extends Component {
                     rows:res.data.table,
                     tableLoading:false
                 })
-                this.props.setSuggestions(res.data.suggestion)
+                this.props.setSuggestions(res.data.suggestion,'databasescan')
             })
         }
+        
         this.setState({
             value: value
         })

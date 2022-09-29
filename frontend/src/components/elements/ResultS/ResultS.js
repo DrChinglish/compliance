@@ -14,6 +14,28 @@ import IosShareIcon from '@mui/icons-material/IosShare';
 export default class ResultS extends Component {
 
 static getDerivedStateFromProps(props,state){
+    //console.log(props,state)
+    if(state.title!==props.title){
+        //switch to new suggestions
+        //console.log("switch to new...")
+        if(state.savedSelected[props.title]){
+            // old save available
+            //console.log("old save...")
+            return {title:props.title, 
+                selected: state.savedSelected[props.title],
+                savedSelected:{...state.savedSelected,[state.title]:state.selected}
+            }
+        }else{
+            //console.log("new save")
+            return {title:props.title, selected:{
+                high:[],
+                medium:[],
+                low:[]
+            },
+            savedSelected:{...state.savedSelected,[state.title]:state.selected}
+        }
+        }
+    }
     return null
     // //get new suggestions
     // return {
@@ -61,7 +83,7 @@ handleSelectAll=(type)=>{
 }
 
 handleCheck=(type,id)=>{
-    console.log('in handle check',id)
+    //console.log('in handle check',id)
     let index = -1
     let newchecked = {...this.state.selected}
     let modified = []
@@ -88,6 +110,11 @@ handleCheck=(type,id)=>{
 constructor(props){
     super(props)
     this.state={
+
+        title:props.title,
+        savedSelected:{
+
+        },
         //selected(checked) suggestion
         selected:{
             high:[],

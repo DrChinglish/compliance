@@ -23,8 +23,8 @@ export default function ImageFileContent(props) {
     }else{
         imageSrc = "data:image/png;base64,"+res[activeContent].image
     }
-    image = <img src={imageSrc} onClick={handleClick}></img>
-    let imageBig = <img style={{maxWidth:'100vw',maxHeight:'100vh'}} src={imageSrc}></img>
+    image = <img alt='preview' src={imageSrc} onClick={handleClick}></img>
+    let imageBig = <img alt='large' style={{maxWidth:'100vw',maxHeight:'100vh'}} src={imageSrc}></img>
   return (
     <Stack spacing={2} sx={{px:2,height:'100%',py:2}} justifyContent="spcae-between" alignItems="center">
         <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}

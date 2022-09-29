@@ -41,9 +41,10 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     
   }
 
-  setSuggestions= (newSuggestions)=>{
+  setSuggestions= (newSuggestions,title)=>{
     this.setState({
-      suggestions:newSuggestions
+      suggestions:newSuggestions,
+      suggestionTitle:title
     })
   }
 
@@ -78,7 +79,8 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     this.state={
       type:'',
       fileList:[],
-      suggestions:suggestions
+      suggestions:suggestions,
+      suggestionTitle:""
     }
   }
 
@@ -86,10 +88,11 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     console.log(this.state.fileList)
     var content
     let defaultsx={px:2}
+    let {suggestionTitle} = this.state
     switch(this.state.type){
-      case 'table': content = <DataGridS columns={columns} rows={rows}/>;break;
+      case 'table':suggestionTitle='table'; content = <DataGridS columns={columns} rows={rows}/>;break;
       case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
-      case 'image': content = <DataGridP columns={columnsP} rows={rows}/>;break;
+      case 'image':suggestionTitle='image'; content = <DataGridP columns={columnsP} rows={rows}/>;break;
       default: content = <h6> 404 </h6>
     }
     return (
@@ -120,7 +123,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
           <Stack sx={{width:'40%',maxWidth:'40%'}} spacing={2}>
 
             {/* 审计结果（suggestion） */}
-            <ResultS suggestions={this.state.suggestions}>
+            <ResultS suggestions={this.state.suggestions} title={suggestionTitle}>
 
             </ResultS>
 

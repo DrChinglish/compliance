@@ -42,7 +42,7 @@ export default class LayoutDetail extends Component {
                     <Menu/>
                 </IconButton>
                 <Typography variant="h6" noWrap component="div" >
-                    项目详情
+                    数据合规审计
                 </Typography>
             </Toolbar>
         </AppBar>
