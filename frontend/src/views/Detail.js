@@ -8,6 +8,8 @@ import { GridActionsCellItem} from '@mui/x-data-grid'
 import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 import { useParams } from 'react-router-dom';
 import withRouter from '../utils/WithRouter';
+import urlmapping from '../urlMapping.json'
+
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
@@ -18,10 +20,10 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
 
  class Detail extends Component {
 
-  async projectType(index){
+  async projectInfo(index){
     console.log('here')
-    
-    await fetch(`/api/project_info/${index}/`,{
+    let url = urlmapping.apibase.game+urlmapping.apis.project_info+`${index}/`
+    await fetch(url,{
       method:'GET' 
     })
     .then((res)=>{
@@ -31,11 +33,19 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
 
       console.log(res)
       this.setState({
-        type:res.data.category,
-        info: res.data
+        type:res.category,
+        info:res,
+        fileList:res.fileList
       })
     })
     
+  }
+
+  setSuggestions= (newSuggestions,title)=>{
+    this.setState({
+      suggestions:newSuggestions,
+      suggestionTitle:title
+    })
   }
 
   async getFileList(){
@@ -55,12 +65,12 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
   }
 
   async componentDidMount(){
-    await this.projectType(this.props.params.id)
-    let fileList = await this.getFileList()
+    await this.projectInfo(this.props.params.id)
+    //let fileList = await this.getFileList()
     console.log(fileList)
-    this.setState({
-      fileList:fileList
-    })
+    // this.setState({
+    //   fileList:fileList
+    // })
   }
 
   constructor(props){
@@ -68,7 +78,9 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     console.log(this.props.params.id)
     this.state={
       type:'',
-      fileList:[]
+      fileList:[],
+      suggestions:suggestions,
+      suggestionTitle:""
     }
   }
 
@@ -76,10 +88,11 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     console.log(this.state.fileList)
     var content
     let defaultsx={px:2}
+    let {suggestionTitle} = this.state
     switch(this.state.type){
-      case 'table': content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'game': content = <GameMeta fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
-      case 'image': content = <DataGridP columns={columnsP} rows={rows}/>;break;
+      case 'table':suggestionTitle='table'; content = <DataGridS columns={columns} rows={rows}/>;break;
+      case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
+      case 'image':suggestionTitle='image'; content = <DataGridP columns={columnsP} rows={rows}/>;break;
       default: content = <h6> 404 </h6>
     }
     return (
@@ -110,7 +123,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
           <Stack sx={{width:'40%',maxWidth:'40%'}} spacing={2}>
 
             {/* 审计结果（suggestion） */}
-            <ResultS suggestions={suggestions}>
+            <ResultS suggestions={this.state.suggestions} title={suggestionTitle}>
 
             </ResultS>
 

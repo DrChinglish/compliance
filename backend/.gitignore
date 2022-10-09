@@ -1,5 +1,6 @@
 # virtual environment... modify this accordingly
 venv_back/
+media/
 # data files
 *.csv
 *.docx

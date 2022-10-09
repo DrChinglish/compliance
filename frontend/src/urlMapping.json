@@ -5,5 +5,18 @@
     "tablelist":"/list/table",
     "textlist":"/list/text",
     "newproject":"/new",
-    "list":"/list"
+    "list":"/list",
+    "apibase":{
+        "game":"/apigame",
+        "other":"/api"
+    },
+    "apis":{
+        "create_project":"/api/projects/",
+        "project_list":"/project_list/",
+        "project_list_game":"/api/projects/",
+        "project_info":"/api/projects/",
+        "censor_text":"/api/projects/{0}/texts/{1}/process_doc/",
+        "censor_image":"/api/projects/{0}/images/{1}/process_image/",
+        "dbscan":"/api/projects/conndb/"
+    }
 }

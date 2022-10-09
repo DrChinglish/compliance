@@ -1,4 +1,4 @@
-from curses import curs_set
+# from curses import curs_set
 from os import walk, path
 from sqlite3 import Cursor
 from zipfile import ZipFile
@@ -25,7 +25,7 @@ class FileModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         print(request._request.FILES.getlist('file'))
-
+        
         # 如果上传的是zip压缩包，则解压到当前目录
         instance = File.objects.last()
         file = instance.file
@@ -49,11 +49,15 @@ class ProjectModelViewSet(ModelViewSet):
 
     """添加一个项目"""
     def create(self, request):
+        print(request.FILES.getlist('files[]'))
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        for f in request.FILES.getlist('files[]'):  
+                # This looks not so right, could have cause some undesire behaviors....  
+                instance = File(file=f ,project=Project.objects.last())
+                instance.save()
+        return Response({'status':1}, status=status.HTTP_201_CREATED)
 
 
 
@@ -65,6 +69,18 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         path = 'media/files/game_projects/project_{}'.format(instance.title)
         res={}
+        files = instance.project_files.all()
+        filelist = []
+        print(files)
+        from .util import convert_size, convert_type
+        for f in files:
+            file_info={'id':f.id,
+            'name':os.path.split(f.file.name)[1],
+            'size':convert_size(f.file.size),
+            'type':convert_type(f.file.name),
+            'content':''}
+            filelist.append(file_info)
+        res['fileList'] = filelist
         img_data_file = get_img(path)
         doc_data_file = get_doc(path)
         res['file_num'] = len(img_data_file)+len(doc_data_file)
@@ -74,7 +90,6 @@ class ProjectModelViewSet(ModelViewSet):
         res['doc_data_file'] = doc_data_file
         serializer.data['res'] = res
         res.update(serializer.data)
-        
 
         return Response(res, status=status.HTTP_201_CREATED)
 
@@ -177,7 +192,7 @@ class ProjectModelViewSet(ModelViewSet):
         # imgfilter.get_img_base64()
         res = imgfilter.process_result
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
     '''处理一个文档'''
     # @action(methods=["get"], detail=True, url_path="process_doc")
@@ -195,9 +210,8 @@ class ProjectModelViewSet(ModelViewSet):
         docfilter.process_english_word()
         
         res = docfilter.process_result
-
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
-    
+        
+        return Response(data=res, status=status.HTTP_200_OK)
     
      
     '''链接数据库并获取数据'''
@@ -227,15 +241,27 @@ class ProjectModelViewSet(ModelViewSet):
             res['table'].append(row_dic)
 
 
+        nametemplate = "在{0}行的{1}列中发现敏感姓名信息。"
+        addresstemplate = "在{0}行的{1}列中发现敏感地址信息。"
+        phonetemplate = "在{0}行的{1}列中发现敏感电话号码信息。"
+        agetemplate = "在{0}行的{1}列中发现敏感年龄信息。"
+        suggcount=0
+
+
+
         if 'name' in formheader:
             col=formheader.index('name')
             for i,item in enumerate(df.values[:,col]) :
                 if not item.count('*'):
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'name',
-                        'severity':'high',
+                        'seriousness':'high',
+                        'title':'发现敏感姓名数据',
+                        'description':nametemplate.format(i,'name'),
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
 
 
@@ -244,10 +270,18 @@ class ProjectModelViewSet(ModelViewSet):
             for i,item in enumerate(df.values[:,col]) :
                 if not item.count('*'):
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'address',
+
+                        'seriousness':'medium',
+                        'title':'发现敏感地址数据',
+                        'description':addresstemplate.format(i,'address'),
+
                         'severity':'medium',
+
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
 
         if 'phone_number' in formheader:
@@ -255,10 +289,18 @@ class ProjectModelViewSet(ModelViewSet):
             for i,item in enumerate(df.values[:,col]) :
                 if not item.count('*'):
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'phone_number',
+
+                        'seriousness':'high',
+                        'title':'发现敏感电话号码数据',
+                        'description':phonetemplate.format(i,'phone_number'),
+
                         'severity':'high',
+
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
 
 
@@ -267,10 +309,14 @@ class ProjectModelViewSet(ModelViewSet):
             for i,item in enumerate(df.values[:,col]) :
                 if  item != 'nan':
                     sug={
+                        'id':suggcount+1,
                         'rowid':i,
                         'column':'age',
-                        'severity':'low',
+                        'seriousness':'low',
+                        'title':'发现敏感年龄数据',
+                        'description':agetemplate.format(i,'age'),
                     }
+                    suggcount+=1
                     res['suggestion'].append(sug)
                
         return Response( data={'data':res},status=status.HTTP_201_CREATED)
@@ -287,6 +333,7 @@ class ProjectModelViewSet(ModelViewSet):
 
 #         if not user:
 #             return Response({'mes': '请先链接数据库'}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 #         dbcursor = DBConnection(user=user,pwd=pwd,dbname=dbname,tablename=tablename)
@@ -353,6 +400,71 @@ class ProjectModelViewSet(ModelViewSet):
 #                     res['suggestion'].append(sug)
         
 
+
+
+#         dbcursor = DBConnection(user=user,pwd=pwd,dbname=dbname,tablename=tablename)
+#         dbcursor.conn()
+#         data = dbcursor.get_data()
+#         formheader = dbcursor.formheader
+#         df = pd.DataFrame(data[1000:1500],columns=formheader)
+
+#         res = {'table':[],
+#        'suggestion':[]  
+#        }
+
+#         for row in df.values:
+#             row_dic={}
+#             for i,j in enumerate(row):
+#                 row_dic[formheader[i]]=j
+#             res['table'].append(row_dic)
+            
+            
+#         if 'name' in formheader:
+#             col=formheader.index('name')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if not item.count('*'):
+#                     sug={
+#                         'rowid':i,
+#                         'column':'name',
+#                         'severity':'high',
+#                     }
+#                     res['suggestion'].append(sug)
+
+
+#         if 'address' in formheader:
+#             col=formheader.index('address')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if not item.count('*'):
+#                     sug={
+#                         'rowid':i,
+#                         'column':'address',
+#                         'severity':'medium',
+#                     }
+#                     res['suggestion'].append(sug)
+
+#         if 'phone_number' in formheader:
+#             col=formheader.index('phone_number')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if not item.count('*'):
+#                     sug={
+#                         'rowid':i,
+#                         'column':'phone_number',
+#                         'severity':'high',
+#                     }
+#                     res['suggestion'].append(sug)
+
+
+#         if 'age' in formheader:
+#             col=formheader.index('age')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if  item != 'nan':
+#                     sug={
+#                         'rowid':i,
+#                         'column':'age',
+#                         'severity':'low',
+#                     }
+#                     res['suggestion'].append(sug)
+        
 #         return Response( data={'data': res},status=status.HTTP_201_CREATED)
 
 

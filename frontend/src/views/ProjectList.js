@@ -15,10 +15,13 @@ async function retrieveProjectList(type){
   let plist = rows
   let status = false
   formData.append('category',type)
-  await fetch("/api/project_list/",{
-    method:'POST',
+  let url = type === 'game' ? urlmapping.apibase.game+ urlmapping.apis.project_list_game:urlmapping.apibase.other+urlmapping.apis.project_list
+  let method = type === 'game' ? 'GET':'POST'
+  let body = type === 'game' ? null:formData
+  await fetch(url,{
+    method:method,
     mode:'cors',
-    body:formData,
+    body:body,
     headers:{
       'X-CSRFToken':cookie.load('csrftoken')
     }
@@ -27,14 +30,12 @@ async function retrieveProjectList(type){
     return res.json()
   })
   .then((res)=>{
-    if(res.status == 1){//ok
-      plist = res.data
-      status = true
-    }else{
-      console.log("Failed to fetch!")
-      //handle something else
-    }
-    
+    plist = type === 'game'? res: res.data
+    status = true
+  })
+  .catch((e)=>{
+    console.log("Failed to fetch!")
+    //handle something else
   })
     console.log(status,plist)
     return {data:plist,status:status}
@@ -50,7 +51,7 @@ async function retrieveProjectList(type){
   }
 
   async componentDidMount(){
-    await fetch("/api/project_list/",{
+    await fetch(urlmapping.apibase.game+urlmapping.apis.project_list_game,{
       method:'GET',
       mode:'cors'
     })

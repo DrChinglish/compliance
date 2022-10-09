@@ -1,5 +1,6 @@
 const { Tune } = require("@mui/icons-material");
 const path = require("path");
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
 const webpack = require("webpack");
 
 module.exports = {
@@ -8,6 +9,12 @@ module.exports = {
     path: path.resolve(__dirname, "../backend/dataappentry/static/frontend"),
     filename: "[name].js",
   },
+  resolve:{
+    fallback:{
+      "stream":require.resolve("stream-browserify"),
+    }
+  }
+  ,
   module: {
     rules: [
       {
@@ -64,5 +71,6 @@ module.exports = {
         NODE_ENV: JSON.stringify("development"),
       },
     }),
+    new NodePolyfillPlugin()
   ],
 };
