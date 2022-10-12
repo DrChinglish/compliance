@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, Stack, Box, Button } from '@mui/material'
+import { Card, CardContent, CardHeader, Stack, Box, Button, Chip } from '@mui/material'
 import TablePaginationActions from '@mui/material/TablePagination/TablePaginationActions'
 import React, { Component } from 'react'
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -10,6 +10,11 @@ import urlmapping from '../urlMapping.json'
 import DataGridPagination from '../components/elements/DataGridPartial/DataGridPagination';
 import cookie from 'react-cookies'
 import { DataGridToolbar } from '../components/elements/DataGridPartial/DataGridToolbar';
+import SyncIcon from '@mui/icons-material/Sync';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import PendingIcon from '@mui/icons-material/Pending';
+import QuestionMarkOutlinedIcon from '@mui/icons-material/QuestionMarkOutlined';
 async function retrieveProjectList(type){
   let formData = new FormData()
   let plist = rows
@@ -156,7 +161,7 @@ async function retrieveProjectList(type){
     {field: 'title', headerName: '项目名称',flex:6,type:'string'},
     {field: 'created', headerName: '创建日期',flex: 3,type:'dateTime',valueGetter: ({ value }) => value && new Date(value),},
     {field: 'updated' ,headerName: '修改日期' , flex: 3, type: 'dateTime',valueGetter: ({ value }) => value && new Date(value),},
-    {field: 'status', headerName: '项目状态',flex:3},
+    {field: 'status', headerName: '项目状态',flex:3,renderCell: RenderStatus },
     {field: '_operation', headerName: '操作',width: 100,type: 'actions', getActions: (params)=>[
       <Stack spacing={1} direction="row">
         <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{console.log(params)}} label="删除" />
@@ -169,7 +174,22 @@ async function retrieveProjectList(type){
 
 export default withRouter(ProjectList)
 
-
+//渲染项目状态单元格
+const RenderStatus = (props)=>{
+  let color
+  let label
+  let icon
+  switch (props.value){
+    case 'open': color = 'info';label = "Open";icon = <SyncIcon/>; break;
+    case 'closed': color = 'success';label = 'Closed';icon = <CheckIcon/>;break;
+    case 'aborted': color = 'error';label = 'Aborted';icon = <CloseIcon/>;break;
+    case 'pending': color = 'primary';label = 'Pending';icon = <PendingIcon/>;break;
+    default :color = 'warning';label = 'Unknown';icon = <QuestionMarkOutlinedIcon/>;
+  }
+  return (
+    <Chip size='small' icon={icon} label={label} color={color}/>
+  )
+}
 
 const rows = [
 {

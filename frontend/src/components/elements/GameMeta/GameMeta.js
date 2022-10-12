@@ -117,9 +117,9 @@ export default class GameMeta extends Component {
                 <GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} fileList={this.state.fileList.image} 
                 variant='image'/>
             </TabPanel>
-            <TabPanel value={value} index={3}>
+            <TabPanel value={value} index={3} >
                 {this.state.tableLoading?
-                <LoadingProgress/>:<DataGridS columns={columns}  rows={this.state.rows}/>}
+                <LoadingProgress/>:<DataGridS columns={columns} sx={{pb:5}} rows={this.state.rows}/>}
             </TabPanel>
         </Box>
     )

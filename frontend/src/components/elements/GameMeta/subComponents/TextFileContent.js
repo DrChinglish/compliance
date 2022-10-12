@@ -27,7 +27,7 @@ export default function TextFileContent(props){
     console.log(text.length)
   
     return(
-      <Stack spacing={2} sx={{px:2,height:'100%',py:2}} justifyContent="center" alignItems="center">
+      <Stack spacing={2} sx={{px:2,height:'100%',py:2}} justifyContent="spcae-between" alignItems="center">
         <Typography align='center' variant='h5' fontWeight='bold'>{props.file.name}</Typography>
         <Divider/>
         <List sx={{maxHeight:'70%',overflowY:'scroll',overflowX:'clip',maxWidth:'100%',borderRadius:'5px', border:"thin solid #a9a9a9"}}>
