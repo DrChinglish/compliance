@@ -240,11 +240,15 @@ class ProjectModelViewSet(ModelViewSet):
                 row_dic[formheader[i]]=j
             res['table'].append(row_dic)
 
+
         nametemplate = "在{0}行的{1}列中发现敏感姓名信息。"
         addresstemplate = "在{0}行的{1}列中发现敏感地址信息。"
         phonetemplate = "在{0}行的{1}列中发现敏感电话号码信息。"
         agetemplate = "在{0}行的{1}列中发现敏感年龄信息。"
         suggcount=0
+
+
+
         if 'name' in formheader:
             col=formheader.index('name')
             for i,item in enumerate(df.values[:,col]) :
@@ -269,9 +273,13 @@ class ProjectModelViewSet(ModelViewSet):
                         'id':suggcount+1,
                         'rowid':i,
                         'column':'address',
+
                         'seriousness':'medium',
                         'title':'发现敏感地址数据',
                         'description':addresstemplate.format(i,'address'),
+
+                        'severity':'medium',
+
                     }
                     suggcount+=1
                     res['suggestion'].append(sug)
@@ -284,9 +292,13 @@ class ProjectModelViewSet(ModelViewSet):
                         'id':suggcount+1,
                         'rowid':i,
                         'column':'phone_number',
+
                         'seriousness':'high',
                         'title':'发现敏感电话号码数据',
                         'description':phonetemplate.format(i,'phone_number'),
+
+                        'severity':'high',
+
                     }
                     suggcount+=1
                     res['suggestion'].append(sug)
@@ -321,6 +333,7 @@ class ProjectModelViewSet(ModelViewSet):
 
 #         if not user:
 #             return Response({'mes': '请先链接数据库'}, status=status.HTTP_204_NO_CONTENT)
+
 
 
 #         dbcursor = DBConnection(user=user,pwd=pwd,dbname=dbname,tablename=tablename)
@@ -387,6 +400,71 @@ class ProjectModelViewSet(ModelViewSet):
 #                     res['suggestion'].append(sug)
         
 
+
+
+#         dbcursor = DBConnection(user=user,pwd=pwd,dbname=dbname,tablename=tablename)
+#         dbcursor.conn()
+#         data = dbcursor.get_data()
+#         formheader = dbcursor.formheader
+#         df = pd.DataFrame(data[1000:1500],columns=formheader)
+
+#         res = {'table':[],
+#        'suggestion':[]  
+#        }
+
+#         for row in df.values:
+#             row_dic={}
+#             for i,j in enumerate(row):
+#                 row_dic[formheader[i]]=j
+#             res['table'].append(row_dic)
+            
+            
+#         if 'name' in formheader:
+#             col=formheader.index('name')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if not item.count('*'):
+#                     sug={
+#                         'rowid':i,
+#                         'column':'name',
+#                         'severity':'high',
+#                     }
+#                     res['suggestion'].append(sug)
+
+
+#         if 'address' in formheader:
+#             col=formheader.index('address')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if not item.count('*'):
+#                     sug={
+#                         'rowid':i,
+#                         'column':'address',
+#                         'severity':'medium',
+#                     }
+#                     res['suggestion'].append(sug)
+
+#         if 'phone_number' in formheader:
+#             col=formheader.index('phone_number')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if not item.count('*'):
+#                     sug={
+#                         'rowid':i,
+#                         'column':'phone_number',
+#                         'severity':'high',
+#                     }
+#                     res['suggestion'].append(sug)
+
+
+#         if 'age' in formheader:
+#             col=formheader.index('age')
+#             for i,item in enumerate(df.values[:,col]) :
+#                 if  item != 'nan':
+#                     sug={
+#                         'rowid':i,
+#                         'column':'age',
+#                         'severity':'low',
+#                     }
+#                     res['suggestion'].append(sug)
+        
 #         return Response( data={'data': res},status=status.HTTP_201_CREATED)
 
 
