@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader, Stack, Box, Button, Chip } from '@mui/material'
-import TablePaginationActions from '@mui/material/TablePagination/TablePaginationActions'
+import { Card, CardContent, CardHeader, Stack, Box, Button, Chip, Snackbar, Alert } from '@mui/material'
 import React, { Component } from 'react'
 import DeleteIcon from '@mui/icons-material/Delete';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
@@ -21,7 +20,7 @@ async function retrieveProjectList(type){
   let status = false
   formData.append('category',type)
   let url = type === 'game' ? urlmapping.apibase.game+ urlmapping.apis.project_list_game:urlmapping.apibase.other+urlmapping.apis.project_list
-  let method = type === 'game' ? 'GET':'POST'
+  let method = type === 'game' ? 'GET':'DELETE'
   let body = type === 'game' ? null:formData
   await fetch(url,{
     method:method,
@@ -91,15 +90,44 @@ async function retrieveProjectList(type){
         rows:[],
         loading:true,
         reset:false,
+        snackmessage:{
+          show:false,
+          severity:'success',
+          text:''
+        },
         type:props.params.type
       }
     }
 
-  handleClickDelete=(e)=>{
-    let formData = new FormData()
-    formData.append('id')
-    fetch("/api/delete_project/",{
-      method:'POST',
+  handleCloseSnackbar = (e,reason)=>{
+    if(reason === 'clickaway'){
+        return
+    }
+    this.setState((state)=>{
+        let newvalue = state.snackmessage
+        newvalue.show = false
+        return {snackmessage:newvalue}
+      })
+  }
+
+  showSnackMessage = (severity, text)=>{
+      let msgstate = this.state.snackmessage
+      msgstate.show = true
+      msgstate.severity = severity
+      msgstate.text = text
+      this.setState({snackmessage:msgstate})
+  }
+  handleClickDelete=(e,param)=>{
+    // console.log(this.props.params.type === 'game')
+    let url
+    if(this.props.params.type === 'game'){
+      url = urlmapping.apibase.game+urlmapping.apis.delete_project+param.id.toString()+'/'
+    }
+    else{
+      url = urlmapping.apibase.other+urlmapping.apis.delete_project+param.id.toString()+'/'
+    }
+    fetch(url,{
+      method:'DELETE',
       mode:'cors',
       headers:{
         'X-CSRFToken':cookie.load('csrftoken')
@@ -108,6 +136,23 @@ async function retrieveProjectList(type){
   .then((res)=>{
       return res.json()
   })
+  .then((res)=>{
+    console.log(param,this.state.rows)
+    let index = this.state.rows.findIndex((value)=>{return value.id === param.id})
+    console.log(index)
+    if(index>=0){
+      this.showSnackMessage('success','删除成功')
+    this.setState((state)=>{
+      let newrows = state.rows.slice()
+      newrows.splice(index,1)
+      return {rows:newrows}
+    })
+    }
+    else{
+      this.showSnackMessage('error','删除失败')
+    }
+  })
+  
   }
   
   render() {
@@ -132,12 +177,20 @@ async function retrieveProjectList(type){
             titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
             action={
               <Stack direction='row' spacing={2} sx={{pr:5,pt:2}}>
-                  <Button variant='contained' startIcon={<AddIcon/>}  onClick={(e)=>{this.props.navigate(urlmapping.newproject)}}>创建新项目</Button>
+                  <Button variant='contained' startIcon={<AddIcon/>}  onClick=
+                  {(e)=>{this.props.navigate(urlmapping.newproject)}}>创建新项目</Button>
               </Stack>
             }
         />
         <CardContent>
             <Box sx={{height:'100vh'}}>
+                <Snackbar onClose={this.handleCloseSnackbar} anchorOrigin={{vertical:'top',horizontal:'center'}}
+                 open={this.state.snackmessage.show} autoHideDuration={3000}>
+                    <Alert onClose={this.handleCloseSnackbar} severity={this.state.snackmessage.severity} 
+                    sx={{width:'50ch'}}>
+                        {this.state.snackmessage.text}
+                    </Alert>
+                </Snackbar>
                 <DataGrid columns={this.columns} rows={this.state.rows}
                 loading={this.state.loading}
                 localeText={zhCN.components.MuiDataGrid.defaultProps.localeText}
@@ -164,7 +217,7 @@ async function retrieveProjectList(type){
     {field: 'status', headerName: '项目状态',flex:3,renderCell: RenderStatus },
     {field: '_operation', headerName: '操作',width: 100,type: 'actions', getActions: (params)=>[
       <Stack spacing={1} direction="row">
-        <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{console.log(params)}} label="删除" />
+        <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{this.handleClickDelete(e,params)}} label="删除" />
         <GridActionsCellItem icon={<RemoveRedEyeIcon/>} onClick={(e)=>{console.log(params);this.props.navigate(`/detail/${params.id}`)}} label="查看详情" />
       </Stack>
     ]},

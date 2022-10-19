@@ -107,7 +107,7 @@ class ProjectModelViewSet(ModelViewSet):
 
        # 删除项目
         self.get_object().delete()
-        return Response({'mes': '删除成功'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'mes': '删除成功'}, status=status.HTTP_200_OK)
         
 
 
