@@ -14,16 +14,16 @@ def convert_type(name):
     text = ['.txt','.docx','.doc']
     image = ['.jpg','.jpeg','.gif','.png','.svg','.psd','.pcd','.raw','.bmp','.tif']
     table = ['.csv','.xls','.xlsx']
-    speech = ['.mp3','.wav','.aac','.wma']
+    audio = ['.mp3','.wav','.aac','.wma']
 
     ext = os.path.splitext(name)[1]
-    # print(ext)
+    print(ext)
     if ext in text:
         return 'text'
     if ext in image:
         return 'image'
     if ext in table:
         return 'table'
-    if ext in speech:
-        return 'speech'
+    if ext in audio:
+        return 'audio'
     return 'other'

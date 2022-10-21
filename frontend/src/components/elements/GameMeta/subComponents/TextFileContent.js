@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {ToggleButton, ToggleButtonGroup, Stack, Typography, Divider, List, ListItem, Box } from '@mui/material'
+import Titles from '../../../typography/Titles'
 export default function TextFileContent(props){
     const [activeContent, setActiveContent] = useState('traditional_characters')
     let color = 'red'
@@ -28,7 +29,7 @@ export default function TextFileContent(props){
   
     return(
       <Stack spacing={2} sx={{px:2,height:'100%',py:2}} justifyContent="spcae-between" alignItems="center">
-        <Typography align='center' variant='h5' fontWeight='bold'>{props.file.name}</Typography>
+        <Titles>{props.file.name}</Titles>
         <Divider/>
         <List sx={{maxHeight:'70%',overflowY:'scroll',overflowX:'clip',maxWidth:'100%',borderRadius:'5px', border:"thin solid #a9a9a9"}}>
           <ListItem>

@@ -1,7 +1,7 @@
-import { Box, ListItemButton, ListItemIcon, ListItemText, List, Paper, Grid, Divider, Typography, CircularProgress, Stack, ListItem } from '@mui/material'
+import { List, Grid, Divider} from '@mui/material'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import {FixedSizeList} from 'react-window'
+// import {FixedSizeList} from 'react-window'
 import urlmapping from "../../../urlMapping.json"
 
 import EmptyHint from './subComponents/EmptyHint';
@@ -10,11 +10,12 @@ import TextFileContent from './subComponents/TextFileContent';
 import './GameFileList.css'
 import LoadingProgress from './subComponents/LoadingProgress';
 import ImageFileContent from './subComponents/ImageFileContent'
+import AudioFileContent from './subComponents/AudioFileContent'
 
 export default class GameFileList extends Component {
   constructor(props) {
     super(props)
-  
+    console.log(this.props.fileList)
     this.state = {
        selected: -1,
        fileList: this.props.fileList,
@@ -42,6 +43,14 @@ export default class GameFileList extends Component {
   }
 
   handleClick=(e,value)=>{
+    /*---DEV ONLY---*/
+    if(this.props.variant==='audio'){
+      this.setState({
+        selected: value
+      })
+      return  
+    }
+    /*---DEV ONLY---*/
     //TODO: add backend interaction here
     this.setState({
       selected: value,
@@ -49,8 +58,8 @@ export default class GameFileList extends Component {
     })
     let fetchAPI =`/${this.state.fileList[value].id}/`
     switch(this.props.variant){
-      case 'text':fetchAPI = urlmapping.apibase.game+`/api/projects/${this.props.pid}/texts/${this.state.fileList[value].id}/process_doc`;break;
-      case 'image':fetchAPI = urlmapping.apibase.game+`/api/projects/${this.props.pid}/images/${this.state.fileList[value].id}/process_img`;break;
+      case 'text':fetchAPI = urlmapping.apibase.game+`/projects/${this.props.pid}/texts/${this.state.fileList[value].id}/process_doc`;break;
+      case 'image':fetchAPI = urlmapping.apibase.game+`/projects/${this.props.pid}/images/${this.state.fileList[value].id}/process_img`;break;
     }
     fetch(fetchAPI,{
       method:'GET',
@@ -99,18 +108,20 @@ export default class GameFileList extends Component {
     }else{
       if(this.props.variant==='text')
         content = <TextFileContent file={fileList[this.state.selected]}/>
-      else
+      else if(this.props.variant==='image')
         content = <ImageFileContent image={fileList[this.state.selected]}/>
+      else
+        content = <AudioFileContent audio={fileList[this.state.selected]}/>
     }
     return (
       
         <Grid container sx={{height:'100%',maxWidth:'100%'}}>
           <Grid item xs={4} sx={{height:'100%'}}>
-            <List dense>
+            {fileList.length>0?<List dense>
             {fileList?.map((file,index)=>(
               <ListItemFile index={index} selected={this.state.selected} file={file} onClick={this.handleClick}/>
             ))}
-            </List>
+            </List>:<EmptyHint text='暂无文件'/>}
           </Grid>
           <Divider orientation='vertical' flexItem sx={{height:'100%'}}/>
           <Grid item xs alignItems='center' justifyContent='center' sx={{height:'100%'}}>  
@@ -125,5 +136,5 @@ export default class GameFileList extends Component {
 
 GameFileList.propTypes={
   fileList:PropTypes.array,
-  variant:PropTypes.oneOf(['image','text'])
+  variant:PropTypes.oneOf(['image','text','audio'])
 }

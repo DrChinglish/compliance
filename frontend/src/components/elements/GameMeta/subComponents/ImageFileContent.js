@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {ToggleButton, ToggleButtonGroup, Stack, Typography, Divider, Box, Backdrop, List, ListItem } from '@mui/material'
+import Titles from '../../../typography/Titles'
 export default function ImageFileContent(props) {
     const [activeContent, setActiveContent] = useState('traditional_characters')
     const [open, setOpen] = useState(false)
@@ -32,7 +33,7 @@ export default function ImageFileContent(props) {
         onClick={handleClose}>
             {imageBig}
         </Backdrop>
-        <Typography align='center' variant='h5' fontWeight='bold'>{props.image.name}</Typography>
+        <Titles>{props.file.name}</Titles>
         <Divider/>
         <List sx={{maxHeight:'70%',overflowY:'scroll',maxWidth:'100%'}}>
             <ListItem>

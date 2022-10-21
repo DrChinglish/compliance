@@ -1,19 +1,18 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import {Drawer, AppBar, Typography, Stack, Card, CardHeader, Button, CardContent, IconButton, Accordion, AccordionSummary, AccordionDetails, ButtonGroup, CssBaseline, Chip, ListItem} from "@mui/material"
+import { Stack, Card, CardHeader, Button, CardContent, IconButton, CssBaseline} from "@mui/material"
 import DataGridS from '../components/elements/DataGridS/DataGridS'
 import DataGridP from '../components/elements/DataGridP/DataGridP'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { GridActionsCellItem} from '@mui/x-data-grid'
 import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
-import { useParams } from 'react-router-dom';
 import withRouter from '../utils/WithRouter';
 import urlmapping from '../urlMapping.json'
 
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
-import { CheckBox, ExpandMore, MoreVert } from '@mui/icons-material';
+import { MoreVert } from '@mui/icons-material';
 import ResultS from '../components/elements/ResultS/ResultS';
 import GameMeta from '../components/elements/GameMeta/GameMeta'
 
@@ -75,7 +74,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
 
   constructor(props){
     super(props)
-    console.log(this.props.params.id)
+    //console.log(this.props.params.id)
     this.state={
       type:'',
       fileList:[],
@@ -85,7 +84,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
   }
 
   render() {
-    console.log(this.state.fileList)
+    //console.log(this.state.fileList)
     var content
     let defaultsx={px:2}
     let {suggestionTitle} = this.state

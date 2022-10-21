@@ -78,6 +78,7 @@ class ProjectModelViewSet(ModelViewSet):
             'name':os.path.split(f.file.name)[1],
             'size':convert_size(f.file.size),
             'type':convert_type(f.file.name),
+            'url':f.file.url,
             'content':''}
             filelist.append(file_info)
         res['fileList'] = filelist
@@ -91,7 +92,7 @@ class ProjectModelViewSet(ModelViewSet):
         serializer.data['res'] = res
         res.update(serializer.data)
 
-        return Response(res, status=status.HTTP_201_CREATED)
+        return Response(res, status=status.HTTP_200_OK)
 
 
 
