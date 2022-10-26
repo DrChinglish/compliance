@@ -1,8 +1,9 @@
-import { List, Grid, Divider} from '@mui/material'
+import { List, Grid, Divider, IconButton} from '@mui/material'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 // import {FixedSizeList} from 'react-window'
 import urlmapping from "../../../urlMapping.json"
+import RefreshIcon from '@mui/icons-material/Refresh';
 
 import EmptyHint from './subComponents/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
@@ -11,6 +12,8 @@ import './GameFileList.css'
 import LoadingProgress from './subComponents/LoadingProgress';
 import ImageFileContent from './subComponents/ImageFileContent'
 import AudioFileContent from './subComponents/AudioFileContent'
+import fetchHandle from '../../../utils/FetchErrorhandle';
+import ErrorHint from '../ErrorHint';
 
 export default class GameFileList extends Component {
   constructor(props) {
@@ -19,13 +22,19 @@ export default class GameFileList extends Component {
     this.state = {
        selected: -1,
        fileList: this.props.fileList,
-       loading:false
+       loading:false,
+       loaderr:{
+        status:false,
+        index:-1,
+        text:'未知错误'
+       },
+
     }
   }
 
   generateSuggestion=(type,items)=>{
     let title
-    console.log(type,items)
+    //console.log(type,items)
     switch(type){
       case 'senstive_characters':title="发现敏感词";break;
       case 'traditional_characters':title="发现违规繁体字";break;
@@ -46,7 +55,8 @@ export default class GameFileList extends Component {
     /*---DEV ONLY---*/
     if(this.props.variant==='audio'){
       this.setState({
-        selected: value
+        selected: value,
+        loaderr:{status:false,index:-1,text:'未知错误'}
       })
       return  
     }
@@ -55,7 +65,8 @@ export default class GameFileList extends Component {
     //TODO: add backend interaction here
     this.setState({
       selected: value,
-      loading:true
+      loading:true,
+      loaderr:{status:false,index:-1,text:'未知错误'}
     })
     let fetchAPI =`/${this.state.fileList[value].id}/`
     switch(this.props.variant){
@@ -65,9 +76,12 @@ export default class GameFileList extends Component {
     fetch(fetchAPI,{
       method:'GET',
       mode:'cors'
-    }).then((res)=>{
+    })
+    .then(fetchHandle)
+    .then((res)=>{
       return res.json()
-    }).then((res)=>{
+    })
+    .then((res)=>{
       console.log(res)
       let suggs=[]
       if(res.senstive_characters.count>0){
@@ -95,6 +109,16 @@ export default class GameFileList extends Component {
       })
       //console.log(this.state.fileList)
     })
+    .catch((reason)=>{
+      //console.log(reason)
+      this.setState({
+        loaderr:{
+          index:value,
+          status:true,
+          text:`发生了一个错误：${reason.name} ${reason.message}`
+        }
+      })
+    })
     
   }
 
@@ -103,10 +127,12 @@ export default class GameFileList extends Component {
     let content
     if(this.state.selected==-1){
       content = <EmptyHint text="选择一个文件以查看详情"/>
+    }else if(this.state.loaderr.status){
+      content = <ErrorHint text={this.state.loaderr.text} 
+      extra={<IconButton onClick={(e)=>this.handleClick(e,this.state.loaderr.index)}><RefreshIcon/></IconButton>}/>
     }else if(this.state.loading){
       content = <LoadingProgress/>
-      
-    }else{
+    } else{
       if(this.props.variant==='text')
         content = <TextFileContent file={fileList[this.state.selected]}/>
       else if(this.props.variant==='image')

@@ -78,6 +78,7 @@ class ProjectModelViewSet(ModelViewSet):
             'name':os.path.split(f.file.name)[1],
             'size':convert_size(f.file.size),
             'type':convert_type(f.file.name),
+            'ext':os.path.splitext(f.file.name)[1],
             'url':f.file.url,
             'content':''}
             filelist.append(file_info)
@@ -705,14 +706,17 @@ class DocProcess(object):
         docpath = path
         print(path)
         if os.path.splitext(path)[1] == '.doc' :
-            # Preprocess doc 
+            # Preprocess doc. If corresponding .docx file does not exsit, create one
             if not os.path.exists(path+'x'):
                 from win32com import client as wc
+                import pythoncom
+                pythoncom.CoInitialize()
                 word = wc.Dispatch("Word.Application")
                 doc = word.Documents.Open(path)
                 doc.SaveAs(path+'x',12, False, "", True, "", False, False, False, False) 
                 doc.Close()
                 word.Quit()
+                pythoncom.CoUninitialize()
             docpath = path+'x'                
 
         import docx

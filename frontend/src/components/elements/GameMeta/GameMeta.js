@@ -1,15 +1,18 @@
-import { Box, Tab, Tabs, Stack } from '@mui/material'
+import { Box, Tab, Tabs, Stack, IconButton } from '@mui/material'
 import React, { Component } from 'react'
 import DataGridS from '../DataGridS/DataGridS';
 import GameFileList from './GameFileList';
 import GameInfo from './GameInfo';
 import TabPanel from './TabPanel';
 import BuildIcon from '@mui/icons-material/Build';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import urlmapping from "../../../urlMapping.json"
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import {GridActionsCellItem} from '@mui/x-data-grid'
 import LoadingProgress from './subComponents/LoadingProgress';
 import ProjectCheckList from './ProjectCheckList';
+import fetchHandle from '../../../utils/FetchErrorhandle'
+import ErrorHint from '../ErrorHint';
 function a11yProps(index) {
     return {
       id: `game-meta-tab-${index}`,
@@ -48,7 +51,9 @@ export default class GameMeta extends Component {
         this.state={
             value:0, //currently selected tab index
             tableLoading:false,
+            loaderror:false,
             rows:[],
+            errmsg:'未知错误',
             fileList:{
                 text:[],
                 image:[],
@@ -89,34 +94,48 @@ export default class GameMeta extends Component {
         return {fileList:fileList}
     }
 
-    
+    loadDBScan=()=>{
+        this.setState({
+            tableLoading:true,
+            loaderror:false
+        })
+        let fetchurl = urlmapping.apibase.game + urlmapping.apis.dbscan
+        const formdata = new FormData()
+        formdata.append('user','root')
+        formdata.append('pwd',123456)
+        formdata.append('dbname','testdb')
+        formdata.append('tablename','data')
+        fetch(fetchurl,{
+            mode:'cors',
+            method:'POST',
+            body:formdata
+        })
+        .then(fetchHandle)
+        .then((res)=>{
+            //console.log(res)
+            return res.json()
+        })
+        .then((res)=>{
+            //console.log(res)
+            this.setState({
+                rows:res.data.table,
+                tableLoading:false
+            })
+            this.props.setSuggestions(res.data.suggestion,'databasescan')
+        })
+        .catch((reason)=>{
+            this.setState({
+                loaderror:true,
+                errmsg:`发生了一个错误：${reason.name} ${reason.message}`
+            })
+            console.log(reason.message)
+        })
+    }
 
     handleChange=(dbindex)=>(e,value)=>{
         this.props.setSuggestions([],'null')
         if(value === dbindex){
-            this.setState({
-                tableLoading:true
-            })
-            let fetchurl = urlmapping.apibase.game + urlmapping.apis.dbscan
-            const formdata = new FormData()
-            formdata.append('user','root')
-            formdata.append('pwd',123456)
-            formdata.append('dbname','testdb')
-            formdata.append('tablename','data')
-            fetch(fetchurl,{
-                mode:'cors',
-                method:'POST',
-                body:formdata
-            }).then((res)=>{
-                return res.json()
-            })
-            .then((res)=>{
-                this.setState({
-                    rows:res.data.table,
-                    tableLoading:false
-                })
-                this.props.setSuggestions(res.data.suggestion,'databasescan')
-            })
+            this.loadDBScan()
         }
         
         this.setState({
@@ -127,6 +146,7 @@ export default class GameMeta extends Component {
   render() {
     //console.log(this.state.fileList)
     // Define the panels here
+    
     let panels=[
         {
             label:'审核概览',
@@ -153,8 +173,9 @@ export default class GameMeta extends Component {
         {
             label:'数据库检测',
             variant:'dbscan',
-            content:this.state.tableLoading?
-                <LoadingProgress/>:<DataGridS columns={columns} sx={{pb:5}} rows={this.state.rows}/>,
+            content:this.state.loaderror?<ErrorHint text={this.state.errmsg} 
+            extra={<IconButton onClick={()=>{this.loadDBScan()}}><RefreshIcon/></IconButton>}/>:(this.state.tableLoading?
+                <LoadingProgress/>:<DataGridS columns={columns} sx={{pb:5}} rows={this.state.rows}/>),
         },
         {
             label:'音频检测',
