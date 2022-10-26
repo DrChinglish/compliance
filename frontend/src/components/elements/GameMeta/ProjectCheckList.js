@@ -7,6 +7,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import GppGoodIcon from '@mui/icons-material/GppGood';
 import EmptyHint from './subComponents/EmptyHint';
+import HealthyReminder from './subComponents/CheckListContents/HealthyReminder';
 
 export default class ProjectCheckList extends Component {
     constructor(props){
@@ -41,7 +42,12 @@ render() {
         {activeStep>=0 && <Titles>{steps[activeStep].label}</Titles>}
         <IconButton color='primary' disabled={activeStep===steps.length-1} onClick={this.handlePreviousNext(false)}><ArrowForwardIosIcon/></IconButton>
     </Stack>
-
+    let content = <Stack sx={{p:2, overflowY:'scroll'}}><HealthyReminder /></Stack>
+    let detail = <Stack height='100%' paddingBottom={4}>
+        {header}
+        <Divider flexItem/>
+        {content}
+    </Stack>
     return (
         <Grid container sx={{height:'100%',maxWidth:'100%'}}>
             <Grid item xs={4} sx={{height:'100%'}}>
@@ -63,9 +69,9 @@ render() {
                 </Stepper>
             </Grid>
                 <Divider orientation='vertical' flexItem sx={{height:'100%'}}/>
-            <Grid item xs alignItems='center' justifyContent='center' sx={{height:'100%'}}>  
-                {this.state.activeStep===-1?<EmptyHint text={'在左侧列表中选择一个项目以查看详情'}/>:header}
-                <Divider flexItem/>
+            <Grid item xs alignItems='center' justifyContent='center' sx={{height:'100%',px:2}}>  
+                {this.state.activeStep===-1?<EmptyHint text={'在左侧列表中选择一个项目以查看详情'}/>:detail}
+                
             </Grid>
       </Grid>
     )

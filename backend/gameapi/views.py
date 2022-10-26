@@ -201,7 +201,7 @@ class ProjectModelViewSet(ModelViewSet):
     
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
-        path = file.file
+        path = file.file.path
 
         # # 开始处理
         docfilter = DocProcess()
@@ -560,7 +560,17 @@ class ImageProcess(object):
         # self.image = self.image.resize((base_width, h_size), Image.ANTIALIAS)
         #调用模型处理图片
         ocr = PaddleOCR(use_angle_cls=True,det=True, lang="ch")  
-        result = ocr.ocr(np.array(self.image), cls=True) 
+        result = ocr.ocr(np.array(self.image), cls=True)
+        # It seems there is something strange right here:
+        # result= [[ 
+        # [ [[24.0, 8.0], [277.0, 8.0], [277.0, 38.0], [24.0, 38.0]], ('MTV开发模式', 0.8464175462722778) ],
+        # [ [[503.0, 103.0], [592.0, 103.0], [592.0, 121.0], [503.0, 121.0]], ('templates', 0.986018717288971) ],
+        #  ...
+        # [ [[118.0, 345.0], [162.0, 345.0], [162.0, 368.0], [118.0, 368.0]], ('接口', 0.9990861415863037) ],
+        # [ [[591.0, 352.0], [741.0, 352.0], [741.0, 365.0], [591.0, 365.0]], ('nttps://blog.csdn.net/v', 0.8825844526290894) ]
+        # ]]
+        # So I modified it.(Using paddle-gpu version)
+        result =result[0]
         self.boxes = [line[0] for line in result ]
         self.txts = [line[1][0] for line in result ]
         
@@ -691,9 +701,22 @@ class DocProcess(object):
         self.string = '' 
         self.process_result = {}  # 敏感词
  
-    def init_para(self, path):    
+    def init_para(self, path):
+        docpath = path
+        print(path)
+        if os.path.splitext(path)[1] == '.doc' :
+            # Preprocess doc 
+            if not os.path.exists(path+'x'):
+                from win32com import client as wc
+                word = wc.Dispatch("Word.Application")
+                doc = word.Documents.Open(path)
+                doc.SaveAs(path+'x',12, False, "", True, "", False, False, False, False) 
+                doc.Close()
+                word.Quit()
+            docpath = path+'x'                
+
         import docx
-        file = docx.Document(path)
+        file = docx.Document(docpath)
         for para in file.paragraphs:
             self.txts.append(str(para.text))
             self.string += str(para.text)
@@ -837,7 +860,6 @@ class TrantitionalCharacterFilter(object):
     def __init__(self):
         self.ret = []  # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"简体字"}, {'flag': 2 ,'text':"繁体字"}]的形式返回
 
-
     def filter(self,text):
         for i in text:
             if self.recongnize_traditional(i):
@@ -877,19 +899,44 @@ def english(string):
                 [a-zA-Z]+
                     )''', re.VERBOSE)
     res = adressRegex.findall(string) 
-    for i in ['PC','3D','2D','H5','VR','AR','HD','Q','K']:
+    whitelist =  ['PC','3D','2D','H5','VR','AR','HD','Q','K']
+    for i in whitelist:
             if i in res:
                 res.pop(res.index(i))
 
-    ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
-    for idenx,item in enumerate(re.split("[ ,.，。]",string)):
-        if item in res:
-            ret.append({'flag':3 ,'text':item})
+    # ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
+    # for idenx,item in enumerate(re.split("[ ,.，。]",string)):
+    #     if item in res:
+    #         ret.append({'flag':3 ,'text':item})
+    #     else:
+    #         ret.append({'flag':0 ,'text':item})
+    import string as s
+    eng_word=''
+    word=''
+    lasttype = 0 #标识上一次检测到的字符类型 0：初始，1：其他文本，-1：英文
+    wordlist=[]
+    for ch in string:
+        if ch not in s.ascii_lowercase + s.ascii_uppercase:
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                if eng_word in whitelist:
+                    wordlist.append({'flag':0 ,'text':eng_word})
+                else:
+                    wordlist.append({'flag':3 ,'text':eng_word})
+                eng_word = ''
+            # Not english
+            word+=ch
+            lasttype=1
         else:
-            ret.append({'flag':0 ,'text':item})
-
-    
-    return res, ret
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                wordlist.append({'flag':0 ,'text':word})
+                word = ''
+            eng_word+=ch
+            lasttype = -1
+            
+        
+    return res, wordlist
 
 
 

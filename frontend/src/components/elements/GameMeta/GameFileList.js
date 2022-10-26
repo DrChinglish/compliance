@@ -51,6 +51,7 @@ export default class GameFileList extends Component {
       return  
     }
     /*---DEV ONLY---*/
+
     //TODO: add backend interaction here
     this.setState({
       selected: value,
@@ -124,7 +125,7 @@ export default class GameFileList extends Component {
             </List>:<EmptyHint text='暂无文件'/>}
           </Grid>
           <Divider orientation='vertical' flexItem sx={{height:'100%'}}/>
-          <Grid item xs alignItems='center' justifyContent='center' sx={{height:'100%'}}>  
+          <Grid item xs zeroMinWidth alignItems='center' justifyContent='center' sx={{height:'100%'}}>  
             {content}
           </Grid>
         </Grid>

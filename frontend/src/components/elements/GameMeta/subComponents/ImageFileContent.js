@@ -33,9 +33,9 @@ export default function ImageFileContent(props) {
         onClick={handleClose}>
             {imageBig}
         </Backdrop>
-        <Titles>{props.file.name}</Titles>
+        <Titles>{props.image.name}</Titles>
         <Divider/>
-        <List sx={{maxHeight:'70%',overflowY:'scroll',maxWidth:'100%'}}>
+        <List sx={{maxHeight:'70%',overflowY:'scroll',maxWidth:'100%', cursor:'pointer'}}>
             <ListItem>
                 <Box>
                     {image}  
