@@ -9,7 +9,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import urlmapping from "../../../urlMapping.json"
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import {GridActionsCellItem} from '@mui/x-data-grid'
-import LoadingProgress from './subComponents/LoadingProgress';
+import LoadingProgress from './subComponents/CheckListContents/CheckIndicators/LoadingProgress';
 import ProjectCheckList from './ProjectCheckList';
 import fetchHandle from '../../../utils/FetchErrorhandle'
 import ErrorHint from '../ErrorHint';
@@ -64,13 +64,22 @@ export default class GameMeta extends Component {
     }
 
     getFileCount=()=>{
-        let count = 0
+        let counts={
+            total:0,
+            image:0,
+            text:0,
+            audio:0,
+            other:0
+        }
         //console.log(this)
-        count += this.state.fileList?.text.length
-        count += this.state.fileList?.image.length
-        count += this.state.fileList?.other.length
-        return count
+        Object.entries(this.state.fileList).forEach((value)=>{
+            counts[value[0]]+=value[1].length
+            counts.total+=value[1].length
+        })
+        return counts
     }
+
+    
 
     static getDerivedStateFromProps(props,state){
         let fileList={
@@ -151,7 +160,7 @@ export default class GameMeta extends Component {
         {
             label:'审核概览',
             variant:'summary',
-            content:<ProjectCheckList/>,
+            content:<ProjectCheckList info={{fileCount:this.getFileCount()}}/>,
         },
         {
             label:'游戏信息',

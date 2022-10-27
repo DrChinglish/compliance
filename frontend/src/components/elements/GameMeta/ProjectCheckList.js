@@ -8,6 +8,7 @@ import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import GppGoodIcon from '@mui/icons-material/GppGood';
 import EmptyHint from './subComponents/EmptyHint';
 import HealthyReminder from './subComponents/CheckListContents/HealthyReminder';
+import TextSummary from './subComponents/CheckListContents/TextSummary';
 
 export default class ProjectCheckList extends Component {
     constructor(props){
@@ -35,6 +36,33 @@ export default class ProjectCheckList extends Component {
     }
 
 render() {
+    let {fileCount} = this.props.info
+
+    let steps = [
+        {
+            label:'图片检测',
+            description:'Some description here'
+        },
+        {
+            label:'文本检测',
+            description:'Some description here',
+            content:<TextSummary fileCount={fileCount}></TextSummary>
+        },
+        {
+            label:'数据库检测',
+            description:'Some description here'
+        },
+        {
+            label:'音频检测',
+            description:'Some description here'
+        },
+        {
+            label:'游戏健康忠告',
+            description:'Some description here',
+            content:<HealthyReminder />
+        },
+    ]
+     
     let {activeStep} = this.state
     let header =
     <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{p:2}}>
@@ -42,7 +70,7 @@ render() {
         {activeStep>=0 && <Titles>{steps[activeStep].label}</Titles>}
         <IconButton color='primary' disabled={activeStep===steps.length-1} onClick={this.handlePreviousNext(false)}><ArrowForwardIosIcon/></IconButton>
     </Stack>
-    let content = <Stack sx={{p:2, overflowY:'scroll'}}><HealthyReminder /></Stack>
+    let content = activeStep>=0 ? steps[activeStep].content??<EmptyHint text='暂时没有内容'></EmptyHint>:<></>
     let detail = <Stack height='100%' paddingBottom={4}>
         {header}
         <Divider flexItem/>
@@ -79,25 +107,3 @@ render() {
 }
 
 
-const steps = [
-    {
-        label:'图片检测',
-        description:'Some description here'
-    },
-    {
-        label:'文本检测',
-        description:'Some description here'
-    },
-    {
-        label:'数据库检测',
-        description:'Some description here'
-    },
-    {
-        label:'音频检测',
-        description:'Some description here'
-    },
-    {
-        label:'游戏健康忠告',
-        description:'Some description here'
-    },
-]

@@ -1,25 +1,25 @@
 import React, { Component } from 'react'
-import { Stack, Box, Paper } from '@mui/material';
+import { Stack, Box, Paper, Button } from '@mui/material';
 import ReactAplayer from 'react-aplayer';
 import urlmapping from '../../../../urlMapping.json'
 import Titles from '../../../typography/Titles';
 import { Container } from '@mui/system';
 import Paragraphs from '../../../typography/Paragraphs';
-import LoadingProgress from './LoadingProgress';
+import LoadingProgress from './CheckListContents/CheckIndicators/LoadingProgress';
 export default class AudioFileContent extends Component {
 
   constructor(props){
     super(props)
     this.state={
       loading:true,
-      audioname:'',
-      url:''
+      audioname:props.audio.name??'',
+      url:props.audio.url??''
     }
   }
 
    static getDerivedStateFromProps(props,state){
       if(props.audio.name!=state.audioname){
-        
+        console.log(props.audio)
         return{audioname:props.audio.name,url:props.audio.url,loading:true}
       }
       return false
@@ -50,10 +50,12 @@ export default class AudioFileContent extends Component {
         <Stack spacing={2} sx={{p:2,height:'100%'}} justifyContent="spcae-between" alignItems="center">
             <Titles>音频文件</Titles>
             
-            <Container sx={{width:'100%',display:this.state.loading?'none':'inline'}}>
-              <ReactAplayer onInit={(ap)=>this.ap=ap} {...props}  onCanplay={()=>{console.log('ok');this.setState({loading:false})}}/>
+            <Container sx={{width:'100%',display:this.state.loading?'none':'inline', height:'150px'}}>
+              <ReactAplayer onInit={(ap)=>{this.ap=ap;this.setState({loading:true})}} {...props} onSeeked={()=>{console.log('seeked')}} onSeeking={()=>console.log('seeking')}
+                onCanplay={()=>{console.log('ok');if(this.state.loading)this.setState({loading:false})}}/>
+              {/* <Button variant='contained' onClick={()=>this.ap.seek(10)}>seek</Button> */}
             </Container>
-            <Container sx={{width:'100%',display:this.state.loading?'block':'none'}}>
+            <Container sx={{width:'100%',display:this.state.loading?'block':'none', height:'150px'}}>
               <LoadingProgress label='音频文件加载中...'/>
             </Container>
             <Titles>识别结果</Titles>

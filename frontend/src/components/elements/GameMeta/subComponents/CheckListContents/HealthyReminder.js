@@ -3,7 +3,7 @@ import Paragraphs from '../../../../typography/Paragraphs'
 import Titles from '../../../../typography/Titles'
 import { Box, Backdrop, Paper, Stack, Divider, CircularProgress } from '@mui/material'
 import LabelCircularProgress from '../LabelCircularProgress'
-import CheckStatus from '../CheckStatus'
+import CheckStatus from './CheckIndicators/CheckStatus'
 
 export default class HealthyReminder extends Component {
     constructor(props){
@@ -22,7 +22,7 @@ export default class HealthyReminder extends Component {
     let imagesrc = this.props.imageurl??'https://img0.baidu.com/it/u=2850780439,3869294322&fm=253&fmt=auto&app=138&f=JPEG?w=916&h=500'
     let imageBig = <img src={imagesrc} onClick={this.handleClose}/>
     return (
-      <React.Fragment>
+      <Stack sx={{p:2, overflowY:'auto'}}>
         <Titles variant='left' gutterBottom>审核内容</Titles>
         <Paragraphs>
             检查游戏上传的开始画面中是否包含国家相关法律规定所必须拥有的“健康游戏忠告”：
@@ -56,9 +56,9 @@ export default class HealthyReminder extends Component {
         <Titles variant={'left'} gutterBottom>结果分析</Titles>
         <Stack direction='row' spacing={2} divider={<Divider orientation='vertical' sx={{height:'80%'}}/>} alignItems='center' justifyContent='center'>
             <LabelCircularProgress value={50} title='匹配程度'/>
-            <CheckStatus status={true}/>
+            <CheckStatus status={undefined}/>
         </Stack>
-      </React.Fragment>
+      </Stack>
     )
   }
 }

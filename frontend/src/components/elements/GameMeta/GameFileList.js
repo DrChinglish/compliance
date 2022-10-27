@@ -9,7 +9,7 @@ import EmptyHint from './subComponents/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
 import TextFileContent from './subComponents/TextFileContent';
 import './GameFileList.css'
-import LoadingProgress from './subComponents/LoadingProgress';
+import LoadingProgress from './subComponents/CheckListContents/CheckIndicators/LoadingProgress';
 import ImageFileContent from './subComponents/ImageFileContent'
 import AudioFileContent from './subComponents/AudioFileContent'
 import fetchHandle from '../../../utils/FetchErrorhandle';
@@ -112,6 +112,7 @@ export default class GameFileList extends Component {
     .catch((reason)=>{
       //console.log(reason)
       this.setState({
+        loading:false,
         loaderr:{
           index:value,
           status:true,
