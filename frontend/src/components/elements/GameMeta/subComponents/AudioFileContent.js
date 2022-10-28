@@ -5,7 +5,7 @@ import urlmapping from '../../../../urlMapping.json'
 import Titles from '../../../typography/Titles';
 import { Container } from '@mui/system';
 import Paragraphs from '../../../typography/Paragraphs';
-import LoadingProgress from './CheckListContents/CheckIndicators/LoadingProgress';
+import LoadingProgress from './LoadingProgress';
 export default class AudioFileContent extends Component {
 
   constructor(props){

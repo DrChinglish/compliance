@@ -9,7 +9,7 @@ import EmptyHint from './subComponents/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
 import TextFileContent from './subComponents/TextFileContent';
 import './GameFileList.css'
-import LoadingProgress from './subComponents/CheckListContents/CheckIndicators/LoadingProgress';
+import LoadingProgress from './subComponents/LoadingProgress';
 import ImageFileContent from './subComponents/ImageFileContent'
 import AudioFileContent from './subComponents/AudioFileContent'
 import fetchHandle from '../../../utils/FetchErrorhandle';

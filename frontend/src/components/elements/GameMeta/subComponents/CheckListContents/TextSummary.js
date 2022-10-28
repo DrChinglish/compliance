@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import Paragraphs from '../../../../typography/Paragraphs'
 import Titles from '../../../../typography/Titles'
 import CheckStatus from './CheckIndicators/CheckStatus'
-import LabelCircularProgress from '../LabelCircularProgress' 
+import LabelCircularProgress from './CheckIndicators/LabelCircularProgress' 
 
 import { Backdrop, Box, Paper, Stack, Divider } from '@mui/material'
 import NumberDisplay from './CheckIndicators/NumberDisplay'

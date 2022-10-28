@@ -9,7 +9,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import urlmapping from "../../../urlMapping.json"
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import {GridActionsCellItem} from '@mui/x-data-grid'
-import LoadingProgress from './subComponents/CheckListContents/CheckIndicators/LoadingProgress';
+import LoadingProgress from './subComponents/LoadingProgress';
 import ProjectCheckList from './ProjectCheckList';
 import fetchHandle from '../../../utils/FetchErrorhandle'
 import ErrorHint from '../ErrorHint';

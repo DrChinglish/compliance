@@ -9,7 +9,7 @@ export default class GameInfo extends Component {
             <Descriptions.Item label='标题'>{ this.props.info.title}</Descriptions.Item>
             <Descriptions.Item label='创建时间'>{Date(this.props.info.created)}</Descriptions.Item>
             <Descriptions.Item label='最后修改'>{Date(this.props.info.updated)}</Descriptions.Item>
-            <Descriptions.Item label='文件数量'>{this.props.info.filecount}</Descriptions.Item>
+            <Descriptions.Item label='文件数量'>{this.props.info.filecount.total}</Descriptions.Item>
             <Descriptions.Item label='描述' span={2}>{this.props.info.description}</Descriptions.Item>
             </Descriptions>
         </div>

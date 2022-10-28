@@ -1,16 +1,21 @@
 import React from 'react'
-import { PropTypes } from 'prop-types'
 import { CircularProgress, Box, Typography } from '@mui/material'
-import Paragraphs from '../../../typography/Paragraphs'
-import Titles from '../../../typography/Titles'
-export default function LabelCircularProgress({
-    title:title,
-    ...rest
-}) {
+import  {
+  CircularProgressProps,
+} from '@mui/material/CircularProgress';
+import CheckIndicatorLayout from './CheckIndicatorLayout'
+
+interface LabelCircularProgressProps{
+  title: string,
+  value: number,
+}
+
+export default function LabelCircularProgress(
+  props:CircularProgressProps & LabelCircularProgressProps,...rest:any
+) {
   return (
-    <Box>
-        <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-            <CircularProgress variant="determinate" {...rest} size={60} />
+    <CheckIndicatorLayout label={props.title}>
+            <CircularProgress variant="determinate" {...props} size={60} />
             <Box
                 sx={{
                 top: 0,
@@ -24,12 +29,10 @@ export default function LabelCircularProgress({
                 }}
             >
                 <Typography variant="caption" component="div" color="text.secondary">
-                {`${Math.round(rest.value)}%`}
+                {`${Math.round(props.value)}%`}
                 </Typography>
             </Box>
-        </Box>
-        <Titles variant='iconlabel'>{title}</Titles>
-    </Box>
+    </CheckIndicatorLayout>
     
   )
 }

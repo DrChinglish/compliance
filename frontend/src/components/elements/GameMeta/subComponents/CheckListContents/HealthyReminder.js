@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import Paragraphs from '../../../../typography/Paragraphs'
 import Titles from '../../../../typography/Titles'
 import { Box, Backdrop, Paper, Stack, Divider, CircularProgress } from '@mui/material'
-import LabelCircularProgress from '../LabelCircularProgress'
+import LabelCircularProgress from './CheckIndicators/LabelCircularProgress'
 import CheckStatus from './CheckIndicators/CheckStatus'
 
 export default class HealthyReminder extends Component {
@@ -56,7 +56,7 @@ export default class HealthyReminder extends Component {
         <Titles variant={'left'} gutterBottom>结果分析</Titles>
         <Stack direction='row' spacing={2} divider={<Divider orientation='vertical' sx={{height:'80%'}}/>} alignItems='center' justifyContent='center'>
             <LabelCircularProgress value={50} title='匹配程度'/>
-            <CheckStatus status={undefined}/>
+            <CheckStatus status={true}/>
         </Stack>
       </Stack>
     )

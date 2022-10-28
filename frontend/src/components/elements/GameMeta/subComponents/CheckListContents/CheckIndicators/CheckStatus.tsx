@@ -7,10 +7,12 @@ import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
 import Titles from '../../../../../typography/Titles';
 import PopoverHint from '../../../../PopoverHint';
 import CheckIndicatorLayout from './CheckIndicatorLayout';
-export default function CheckStatus({
-    status:pass,
-    ...rest
-}) {
+
+interface CheckStatusProps{
+  status:boolean
+}
+
+export default function CheckStatus(props:CheckStatusProps,...rest:any) {
     const [anchorEl,setAnchorEl] = React.useState(null)
     const [hintText,setHinttext] = React.useState('text')
     const handlePopoverOpen =(text)=> (event) => {
@@ -21,7 +23,7 @@ export default function CheckStatus({
       const handlePopoverClose = () => {
         setAnchorEl(null);
       };
-      let props={
+      let iconProps={
         sx:{
             fontSize:'60px'
         },
@@ -32,9 +34,9 @@ export default function CheckStatus({
   return (
     <CheckIndicatorLayout label='审查结论'>
             <PopoverHint anchorEl={anchorEl} open={open}>{hintText}</PopoverHint>
-            {pass===true?<DoneIcon {...props} color='success'  onMouseEnter={handlePopoverOpen('审核通过')}/>:
-            (pass===undefined?<QuestionMarkIcon  {...props} color='warning' onMouseEnter={handlePopoverOpen('未知状态')}/>:
-            <CloseIcon {...props} color='error' onMouseEnter={handlePopoverOpen('审核不通过')}/>)}
+            {props.status===true?<DoneIcon {...iconProps} color='success'  onMouseEnter={handlePopoverOpen('审核通过')}/>:
+            (props.status===undefined?<QuestionMarkIcon  {...iconProps} color='warning' onMouseEnter={handlePopoverOpen('未知状态')}/>:
+            <CloseIcon {...iconProps} color='error' onMouseEnter={handlePopoverOpen('审核不通过')}/>)}
     </CheckIndicatorLayout>
   )
 }
