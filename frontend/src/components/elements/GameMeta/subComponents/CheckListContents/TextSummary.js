@@ -23,7 +23,6 @@ export default class TextSummary extends Component {
             <Titles variant='left' gutterBottom>审核内容</Titles>
             <Paragraphs>
                 检查游戏的文本素材文件中是否包含违规文字信息，如敏感词，英文单词，繁体字等。
-                
             </Paragraphs>
             <br/>
             <Titles variant='left' gutterBottom>审核概览</Titles>      
@@ -31,7 +30,8 @@ export default class TextSummary extends Component {
             <br/>
             <Titles variant={'left'} gutterBottom>结果分析</Titles>
             <Stack direction='row' spacing={2} divider={<Divider orientation='vertical' sx={{height:'80%'}}/>} alignItems='center' justifyContent='center'>
-                <NumberDisplay value1={100}/>
+                <NumberDisplay value1={800} title='发现问题' color1='#d32f2f'/>
+                <NumberDisplay value1={800} value2={998} title='问题文件' color1='#d32f2f'/>
                 <LabelCircularProgress value={50} title='匹配程度'/>
                 <CheckStatus status={this.props.pass}/>
             </Stack>

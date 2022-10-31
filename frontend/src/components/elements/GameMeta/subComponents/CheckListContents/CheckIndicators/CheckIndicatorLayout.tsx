@@ -8,8 +8,8 @@ interface CheckIndicatorLayoutProps  {
 
 const CheckIndicatorLayout=(props: CheckIndicatorLayoutProps)=> {
   return (
-    <Stack direction='column' height='100%' justifyContent='space-between' alignItems='center'>
-      <Box position='relative' display='inline-flex' >
+    <Stack direction='column' height='100%' justifyContent='space-between'  alignItems='center'>
+      <Box position='relative' display='inline-flex' width='60px' height='60px'>
         {props.children}
       </Box>
       <Titles variant='iconlabel'>{props.label}</Titles>
