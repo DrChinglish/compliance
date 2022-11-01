@@ -15,7 +15,7 @@ def convert_type(name):
     image = ['.jpg','.jpeg','.gif','.png','.svg','.psd','.pcd','.raw','.bmp','.tif']
     table = ['.csv','.xls','.xlsx']
     audio = ['.mp3','.wav','.aac','.wma']
-
+    video = ['.mp4']
     ext = os.path.splitext(name)[1]
     print(ext)
     if ext in text:
@@ -26,4 +26,7 @@ def convert_type(name):
         return 'table'
     if ext in audio:
         return 'audio'
+    if ext in video:
+        return 'video'
     return 'other'
+

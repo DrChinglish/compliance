@@ -4,14 +4,15 @@ import PropTypes from 'prop-types'
 // import {FixedSizeList} from 'react-window'
 import urlmapping from "../../../urlMapping.json"
 import RefreshIcon from '@mui/icons-material/Refresh';
-
+import {getProcessedFile} from '../../../utils/APIs'
 import EmptyHint from './subComponents/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
-import TextFileContent from './subComponents/TextFileContent';
+import TextFileContent from './subComponents/FileContents/TextFileContent';
 import './GameFileList.css'
 import LoadingProgress from './subComponents/LoadingProgress';
-import ImageFileContent from './subComponents/ImageFileContent'
-import AudioFileContent from './subComponents/AudioFileContent'
+import ImageFileContent from './subComponents/FileContents/ImageFileContent'
+import AudioFileContent from './subComponents/FileContents/AudioFileContent'
+import VideoFileContent from './subComponents/FileContents/VideoFileContent'
 import fetchHandle from '../../../utils/FetchErrorhandle';
 import ErrorHint from '../ErrorHint';
 
@@ -53,7 +54,7 @@ export default class GameFileList extends Component {
 
   handleClick=(e,value)=>{
     /*---DEV ONLY---*/
-    if(this.props.variant==='audio'){
+    if(['audio','video'].indexOf(this.props.variant)!==-1){
       this.setState({
         selected: value,
         loaderr:{status:false,index:-1,text:'未知错误'}
@@ -68,11 +69,11 @@ export default class GameFileList extends Component {
       loading:true,
       loaderr:{status:false,index:-1,text:'未知错误'}
     })
-    let fetchAPI =`/${this.state.fileList[value].id}/`
-    switch(this.props.variant){
-      case 'text':fetchAPI = urlmapping.apibase.game+`/projects/${this.props.pid}/texts/${this.state.fileList[value].id}/process_doc`;break;
-      case 'image':fetchAPI = urlmapping.apibase.game+`/projects/${this.props.pid}/images/${this.state.fileList[value].id}/process_img`;break;
-    }
+    let fetchAPI = getProcessedFile(this.props.pid,this.state.fileList[value].id,this.props.variant)
+    // switch(this.props.variant){
+    //   case 'text':fetchAPI = urlmapping.apibase.game+`/projects/${this.props.pid}/texts/${this.state.fileList[value].id}/process_doc`;break;
+    //   case 'image':fetchAPI = urlmapping.apibase.game+`/projects/${this.props.pid}/images/${this.state.fileList[value].id}/process_img`;break;
+    // }
     fetch(fetchAPI,{
       method:'GET',
       mode:'cors'
@@ -138,18 +139,25 @@ export default class GameFileList extends Component {
         content = <TextFileContent file={fileList[this.state.selected]}/>
       else if(this.props.variant==='image')
         content = <ImageFileContent image={fileList[this.state.selected]}/>
-      else
+      else if(this.props.variant ==='audio')
         content = <AudioFileContent audio={fileList[this.state.selected]}/>
+      else
+        content = <VideoFileContent video={fileList[this.state.selected]}/>
     }
     return (
       
         <Grid container sx={{height:'100%',maxWidth:'100%'}}>
           <Grid item xs={4} sx={{height:'100%'}}>
-            {fileList.length>0?<List dense>
-            {fileList?.map((file,index)=>(
-              <ListItemFile index={index} selected={this.state.selected} file={file} onClick={this.handleClick}/>
-            ))}
-            </List>:<EmptyHint text='暂无文件'/>}
+            {fileList.length>0?
+            <List dense>
+            {fileList?.map((file,index)=>{
+              let thumbnailUrl = this.props.variant === 'image'?file.url:
+              (this.props.variant==='video'?file.content.coverurl:undefined)
+              return <ListItemFile index={index} selected={this.state.selected} file={file} 
+              thumbnailUrl={thumbnailUrl} onClick={this.handleClick}/>
+            })}
+            </List>
+            :<EmptyHint text='暂无文件'/>}
           </Grid>
           <Divider orientation='vertical' flexItem sx={{height:'100%'}}/>
           <Grid item xs zeroMinWidth alignItems='center' justifyContent='center' sx={{height:'100%'}}>  
@@ -164,5 +172,5 @@ export default class GameFileList extends Component {
 
 GameFileList.propTypes={
   fileList:PropTypes.array,
-  variant:PropTypes.oneOf(['image','text','audio'])
+  variant:PropTypes.oneOf(['image','text','audio','video'])
 }

@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import { Stack, Box, Paper, Button } from '@mui/material';
 import ReactAplayer from 'react-aplayer';
-import urlmapping from '../../../../urlMapping.json'
-import Titles from '../../../typography/Titles';
+import urlmapping from '../../../../../urlMapping.json'
+import Titles from '../../../../typography/Titles';
 import { Container } from '@mui/system';
-import Paragraphs from '../../../typography/Paragraphs';
-import LoadingProgress from './LoadingProgress';
+import Paragraphs from '../../../../typography/Paragraphs';
+import LoadingProgress from '../LoadingProgress';
 export default class AudioFileContent extends Component {
 
   constructor(props){

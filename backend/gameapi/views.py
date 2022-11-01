@@ -1,6 +1,8 @@
 # from curses import curs_set
+from distutils.util import convert_path
 from os import walk, path
 from sqlite3 import Cursor
+import subprocess
 from zipfile import ZipFile
 import os
 from rest_framework.response import Response
@@ -46,17 +48,32 @@ class ProjectModelViewSet(ModelViewSet):
     serializer_class = ProjectModelSerializer
 
 
-
     """添加一个项目"""
     def create(self, request):
-        print(request.FILES.getlist('files[]'))
+        # print(request.FILES.getlist('files[]'))
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        for f in request.FILES.getlist('files[]'):  
-                # This looks not so right, could have cause some undesire behaviors....  
-                instance = File(file=f ,project=Project.objects.last())
-                instance.save()
+        for f in request.FILES.getlist('files[]'):
+            # This looks not so right, could have cause some undesire behaviors....  
+            instance = File(file=f ,project=Project.objects.last())
+            instance.save()
+            print(f,'111',instance,'111',instance.file.path)
+            from .util import convert_type
+            if convert_type(instance.file.path) == 'video':
+                # Generate a video cover
+                videoname = os.path.splitext(instance.file.name)[0]
+                coverdir =  os.path.join(os.path.dirname(instance.file.path),'videocovers')
+                if not os.path.exists(coverdir):
+                    os.makedirs(coverdir)
+                coverpath = os.path.join (coverdir,'{}.jpg'.format(os.path.splitext(os.path.basename(videoname))[0]))
+                
+                print(coverpath)
+                ffmpeg_cmd = 'ffmpeg -i \"{}\" -ss 1 -f image2 -frames:v 1 \"{}\"'.format(instance.file.path,coverpath)
+                print(ffmpeg_cmd)
+                ffmpeg_pipe = subprocess.Popen(ffmpeg_cmd,shell=True)
+                ffmpeg_pipe.wait()
+
         return Response({'status':1}, status=status.HTTP_201_CREATED)
 
 
@@ -74,13 +91,26 @@ class ProjectModelViewSet(ModelViewSet):
         print(files)
         from .util import convert_size, convert_type
         for f in files:
-            file_info={'id':f.id,
-            'name':os.path.split(f.file.name)[1],
-            'size':convert_size(f.file.size),
-            'type':convert_type(f.file.name),
-            'ext':os.path.splitext(f.file.name)[1],
-            'url':f.file.url,
-            'content':''}
+            type = convert_type(f.file.name)
+            extname = os.path.split(f.file.name)[1]
+            purename = os.path.splitext(extname)[0]
+            extracontent={}
+            if type == 'video':
+                basepath = os.path.dirname(f.file.url)
+                coverpath = os.path.join(basepath,'videocovers','{}.jpg'.format(purename))
+                # It would be something like
+                # /media/files/game_projects/project_video%20test\\videocovers\\浙江大学文琴合唱团_-_浙大校歌.jpg
+                # But the requests worked fine in the tests so far...
+                extracontent['coverurl'] = coverpath
+            file_info={
+                'id':f.id,
+                'name':extname,
+                'size':convert_size(f.file.size),
+                'type':type,
+                'ext':os.path.splitext(f.file.name)[1],
+                'url':f.file.url,
+                'content':extracontent
+            }
             filelist.append(file_info)
         res['fileList'] = filelist
         img_data_file = get_img(path)

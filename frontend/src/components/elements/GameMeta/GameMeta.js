@@ -58,6 +58,7 @@ export default class GameMeta extends Component {
                 text:[],
                 image:[],
                 audio:[],
+                video:[],
                 other:[]
             }
         }
@@ -69,6 +70,7 @@ export default class GameMeta extends Component {
             image:0,
             text:0,
             audio:0,
+            video:0,
             other:0
         }
         //console.log(this)
@@ -86,6 +88,7 @@ export default class GameMeta extends Component {
             text:[],
             image:[],
             audio:[],
+            video:[],
             other:[]
         }
         //console.log(props.fileList)
@@ -95,6 +98,7 @@ export default class GameMeta extends Component {
                 case 'text': target = fileList.text;break;
                 case 'image':target = fileList.image;break;
                 case 'audio':target = fileList.audio;break;
+                case 'video':target = fileList.video;break;
                 default : target = fileList.other;break;
             }
             target.push(file)
@@ -191,6 +195,12 @@ export default class GameMeta extends Component {
             variant:'audio',
             content:<GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} 
             fileList={this.state.fileList.audio} variant='audio'/>,
+        },
+        {
+            label:'视频检测',
+            variant:'video',
+            content:<GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} 
+            fileList={this.state.fileList.video} variant='video'/>,
         },
     ]
 

@@ -76,7 +76,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     super(props)
     //console.log(this.props.params.id)
     this.state={
-      type:'',
+      type:'loading',
       fileList:[],
       suggestions:suggestions,
       suggestionTitle:""
@@ -92,6 +92,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
       case 'table':suggestionTitle='table'; content = <DataGridS columns={columns} rows={rows}/>;break;
       case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
       case 'image':suggestionTitle='image'; content = <DataGridP columns={columnsP} rows={rows}/>;break;
+      case 'loading':content = <h6> Loading... </h6>
       default: content = <h6> 404 </h6>
     }
     return (
