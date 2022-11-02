@@ -45,8 +45,24 @@ async function retrieveProjectList(type){
     return {data:plist,status:status}
 }
 
+//渲染项目状态单元格
+const RenderStatus = (props)=>{
+  let color
+  let label
+  let icon
+  switch (props.value){
+    case 'open': color = 'info';label = "Open";icon = <SyncIcon/>; break;
+    case 'closed': color = 'success';label = 'Closed';icon = <CheckIcon/>;break;
+    case 'aborted': color = 'error';label = 'Aborted';icon = <CloseIcon/>;break;
+    case 'pending': color = 'primary';label = 'Pending';icon = <PendingIcon/>;break;
+    default :color = 'warning';label = 'Unknown';icon = <QuestionMarkOutlinedIcon/>;
+  }
+  return (
+    <Chip size='small' icon={icon} label={label} color={color}/>
+  )
+}
 
- class ProjectList extends Component {
+class ProjectList extends Component {
   static getDerivedStateFromProps(props,state){
     if(props.params.type!=state.type){
       return{reset:true,type:props.params.type}
@@ -154,7 +170,19 @@ async function retrieveProjectList(type){
   })
   
   }
-  
+  columns = [
+    {field: 'id', headerName: '#',flex:1,type:'string'},
+    {field: 'title', headerName: '项目名称',flex:6,type:'string'},
+    {field: 'created', headerName: '创建日期',flex: 3,type:'dateTime',valueGetter: ({ value }) => value && new Date(value),},
+    {field: 'updated' ,headerName: '修改日期' , flex: 3, type: 'dateTime',valueGetter: ({ value }) => value && new Date(value),},
+    {field: 'status', headerName: '项目状态',flex:3,renderCell: RenderStatus },
+    {field: '_operation', headerName: '操作',width: 100,type: 'actions', getActions: (params)=>[
+      <Stack spacing={1} direction="row">
+        <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{this.handleClickDelete(e,params)}} label="删除" />
+        <GridActionsCellItem icon={<RemoveRedEyeIcon/>} onClick={(e)=>{console.log(params);this.props.navigate(`/detail/${params.id}`)}} label="查看详情" />
+      </Stack>
+    ]},
+]
   render() {
     if(this.state.reset){
       this.resetList()
@@ -208,41 +236,13 @@ async function retrieveProjectList(type){
       </Card>
     )
   }
-  columns = [
-        
-    {field: 'id', headerName: '#',flex:1,type:'string'},
-    {field: 'title', headerName: '项目名称',flex:6,type:'string'},
-    {field: 'created', headerName: '创建日期',flex: 3,type:'dateTime',valueGetter: ({ value }) => value && new Date(value),},
-    {field: 'updated' ,headerName: '修改日期' , flex: 3, type: 'dateTime',valueGetter: ({ value }) => value && new Date(value),},
-    {field: 'status', headerName: '项目状态',flex:3,renderCell: RenderStatus },
-    {field: '_operation', headerName: '操作',width: 100,type: 'actions', getActions: (params)=>[
-      <Stack spacing={1} direction="row">
-        <GridActionsCellItem icon={<DeleteIcon color='error'/>} onClick={(e)=>{this.handleClickDelete(e,params)}} label="删除" />
-        <GridActionsCellItem icon={<RemoveRedEyeIcon/>} onClick={(e)=>{console.log(params);this.props.navigate(`/detail/${params.id}`)}} label="查看详情" />
-      </Stack>
-    ]},
-]
+ 
 
 }
 
 export default withRouter(ProjectList)
 
-//渲染项目状态单元格
-const RenderStatus = (props)=>{
-  let color
-  let label
-  let icon
-  switch (props.value){
-    case 'open': color = 'info';label = "Open";icon = <SyncIcon/>; break;
-    case 'closed': color = 'success';label = 'Closed';icon = <CheckIcon/>;break;
-    case 'aborted': color = 'error';label = 'Aborted';icon = <CloseIcon/>;break;
-    case 'pending': color = 'primary';label = 'Pending';icon = <PendingIcon/>;break;
-    default :color = 'warning';label = 'Unknown';icon = <QuestionMarkOutlinedIcon/>;
-  }
-  return (
-    <Chip size='small' icon={icon} label={label} color={color}/>
-  )
-}
+
 
 const rows = [
 {

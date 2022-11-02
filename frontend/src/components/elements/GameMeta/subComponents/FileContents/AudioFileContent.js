@@ -6,27 +6,35 @@ import Titles from '../../../../typography/Titles';
 import { Container } from '@mui/system';
 import Paragraphs from '../../../../typography/Paragraphs';
 import LoadingProgress from '../LoadingProgress';
+import FileContentLayout from './FileContentLayout'
 export default class AudioFileContent extends Component {
 
   constructor(props){
     super(props)
     this.state={
       loading:true,
-      audioname:props.audio.name??'',
-      url:props.audio.url??''
+      audioname:props.audio.content.info.title??'',
+      url:props.audio.url??'',
+      artist:props.audio.content.info.performer??'',
+      cover:`data:image/png;base64,${props.audio.content.coverimg}`??'none'
     }
   }
 
    static getDerivedStateFromProps(props,state){
-      if(props.audio.name!=state.audioname){
-        console.log(props.audio)
-        return{audioname:props.audio.name,url:props.audio.url,loading:true}
+      if(props.audio.content.info.title!=state.audioname){
+        // console.log(props)
+        return{audioname:props.audio.content.info.title,
+          url:props.audio.url,
+          artist:props.audio.content.info.performer,
+          loading:true,
+          cover:`data:image/png;base64,${props.audio.content.coverimg}`
+        }
       }
       return false
    } 
 
   render() {
-    console.log(this.state.audioname)
+    // console.log(this.state.audioname)
     let url = urlmapping.host+urlmapping.apibase.other+this.state.url
     let props = {
         theme: '#F57F17',
@@ -34,9 +42,9 @@ export default class AudioFileContent extends Component {
         audio: [
           {
             name: this.state.audioname,
-            // artist: 'Goose house',
+            artist: this.state.artist,
             url: url,
-            // cover: 'https://moeplayer.b0.upaiyun.com/aplayer/hikarunara.jpg',
+            cover: this.state.cover,
             // lrc: 'https://moeplayer.b0.upaiyun.com/aplayer/hikarunara.lrc',
             theme: '#ebd0c2'
           }
@@ -47,9 +55,7 @@ export default class AudioFileContent extends Component {
         this.ap?.list.add(props.audio[0])
       }
     return (
-        <Stack spacing={2} sx={{p:2,height:'100%'}} justifyContent="spcae-between" alignItems="center">
-            <Titles>音频文件</Titles>
-            
+        <FileContentLayout title={this.state.audioname}>
             <Container sx={{width:'100%',display:this.state.loading?'none':'inline', height:'150px'}}>
               <ReactAplayer onInit={(ap)=>{this.ap=ap;this.setState({loading:true})}} {...props} onSeeked={()=>{console.log('seeked')}} onSeeking={()=>console.log('seeking')}
                 onCanplay={()=>{console.log('ok');if(this.state.loading)this.setState({loading:false})}}/>
@@ -64,7 +70,7 @@ export default class AudioFileContent extends Component {
                 <Paragraphs sx={{overflowY:'scroll',maxHeight:'100%'}}>{}</Paragraphs>
               </Paper>
             </Box>
-        </Stack>
+        </FileContentLayout>
 
     )
   }

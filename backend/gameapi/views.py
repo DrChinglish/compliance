@@ -1,4 +1,5 @@
 # from curses import curs_set
+from base64 import decode
 from distutils.util import convert_path
 from os import walk, path
 from sqlite3 import Cursor
@@ -91,17 +92,33 @@ class ProjectModelViewSet(ModelViewSet):
         print(files)
         from .util import convert_size, convert_type
         for f in files:
+            # print(f.file.url,f.file.path)
+            # f.file.url: /media/files/game_projects/project_all%20here/20210116210455445.png
+            # f.file.path: D:\GIT\compliance\backend\media\files\game_projects\project_all here\20210116210455445.png
             type = convert_type(f.file.name)
             extname = os.path.split(f.file.name)[1]
             purename = os.path.splitext(extname)[0]
             extracontent={}
-            if type == 'video':
-                basepath = os.path.dirname(f.file.url)
-                coverpath = os.path.join(basepath,'videocovers','{}.jpg'.format(purename))
-                # It would be something like
-                # /media/files/game_projects/project_video%20test\\videocovers\\浙江大学文琴合唱团_-_浙大校歌.jpg
-                # But the requests worked fine in the tests so far...
-                extracontent['coverurl'] = coverpath
+            print(type,extname)
+            if type in ['video','audio']:
+                from pymediainfo import MediaInfo
+                from .util import filter_metainfo
+                track_info = MediaInfo.parse(f.file.path).to_data()
+                extracontent['info'] = filter_metainfo(track_info)
+                # extracontent['tracks'] = MediaInfo.parse(f.file.path).to_data()
+                if os.path.splitext(extname)[1] == '.mp3':
+                    from mutagen import File
+                    import base64
+                    audio = File(f.file.path)
+                    b64img = base64.b64encode(audio.tags['APIC:'].data)
+                    extracontent['coverimg'] = b64img
+                if type == 'video':
+                    basepath = os.path.dirname(f.file.url)
+                    coverpath = os.path.join(basepath,'videocovers','{}.jpg'.format(purename))
+                    # It would be something like
+                    # /media/files/game_projects/project_video%20test\\videocovers\\浙江大学文琴合唱团_-_浙大校歌.jpg
+                    # But the requests worked fine in the tests so far...
+                    extracontent['coverurl'] = coverpath
             file_info={
                 'id':f.id,
                 'name':extname,
@@ -187,7 +204,7 @@ class ProjectModelViewSet(ModelViewSet):
         image = Image.open(path).convert('RGB')
         context = img_base64(image)
 
-        return Response({'image':context}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'image':context}, status=status.HTTP_200_OK)
     
 
     '''获取一个文档'''
@@ -565,10 +582,6 @@ def img_base64(image):
     return context
 
 
-
-        
-
-
 # 5.处理图片数据
 class ImageProcess(object): 
     def __init__(self):
@@ -578,7 +591,6 @@ class ImageProcess(object):
         self.process_result = {}  # 敏感词
         self.keyword_box = {}  # 敏感词所在坐标
         
-
     def init_para(self, path):
         from paddleocr import PaddleOCR
         from PIL import Image

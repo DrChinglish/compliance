@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {ToggleButton, ToggleButtonGroup, Stack, Typography, Divider, Box, Backdrop, List, ListItem } from '@mui/material'
 import Titles from '../../../../typography/Titles'
+import FileContentLayout from './FileContentLayout'
 export default function ImageFileContent(props) {
     const [activeContent, setActiveContent] = useState('traditional_characters')
     const [open, setOpen] = useState(false)
@@ -27,14 +28,12 @@ export default function ImageFileContent(props) {
     image = <img alt='preview' src={imageSrc} onClick={handleClick}></img>
     let imageBig = <img alt='large' style={{maxWidth:'100vw',maxHeight:'100vh'}} src={imageSrc}></img>
   return (
-    <Stack spacing={2} sx={{px:2,height:'100%',py:2}} justifyContent="spcae-between" alignItems="center">
+    <FileContentLayout title={props.image.name}>
         <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={open}
         onClick={handleClose}>
             {imageBig}
         </Backdrop>
-        <Titles>{props.image.name}</Titles>
-        <Divider/>
         <List sx={{maxHeight:'70%',overflowY:'auto',maxWidth:'100%', cursor:'zoom-in'}}>
             <ListItem>
                 <Box>
@@ -48,6 +47,7 @@ export default function ImageFileContent(props) {
           <ToggleButton value="english_word">英文检测</ToggleButton>
           <ToggleButton value="skull">骷髅头检测</ToggleButton>
         </ToggleButtonGroup>
-      </Stack>
+    </FileContentLayout>
+        
   )
 }

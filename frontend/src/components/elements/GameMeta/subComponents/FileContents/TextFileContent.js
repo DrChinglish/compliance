@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import {ToggleButton, ToggleButtonGroup, Stack, Typography, Divider, Container, Paper, Box } from '@mui/material'
 import Titles from '../../../../typography/Titles'
 import Paragraphs from '../../../../typography/Paragraphs'
+import FileContentLayout from './FileContentLayout'
 export default function TextFileContent(props){
     const [activeContent, setActiveContent] = useState('traditional_characters')
     let color = 'red'
@@ -26,12 +27,9 @@ export default function TextFileContent(props){
     const handleChange = (e,value)=>{
       setActiveContent(value)
     }
-    console.log(text.length)
   
     return(
-      <Stack spacing={2} sx={{px:2,height:'100%',py:2}} justifyContent="spcae-between" alignItems="center">
-        <Titles>{props.file.name}</Titles>
-        <Divider flexItem/>
+      <FileContentLayout title={props.file.name}>
         {/* <List sx={{maxHeight:'70%',overflowY:'scroll',overflowX:'clip',maxWidth:'100%',borderRadius:'5px', border:"thin solid #a9a9a9"}}>
           <ListItem>
             <Box >
@@ -49,7 +47,6 @@ export default function TextFileContent(props){
           <ToggleButton value="senstive_characters">敏感词检测</ToggleButton>
           <ToggleButton value="english_word">英文检测</ToggleButton>
         </ToggleButtonGroup>
-      </Stack>
-      
+      </FileContentLayout>
     )
   }

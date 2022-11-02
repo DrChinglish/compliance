@@ -12,13 +12,31 @@ import { Box } from '@mui/system';
 interface ListItemFileIconProps{
   type : 'text'|'image'|'audio'|'video'|'other'| undefined,
   ext:string,
-  coverurl?:string
+  coverurl?:string, //image data in url
+  coverimg?:string //image data in base64
 }
+
+type ImageIconLayoutProps={
+  children?:React.ReactNode
+}
+
+function ImageIconLayout(props:ImageIconLayoutProps){
+  return <Box display='flex' alignItems='center' height='24px' maxWidth='32px'>
+    {props.children}
+    </Box>
+}
+
 
 export default function ListItemFileIcon(props:ListItemFileIconProps){
     let icon:undefined|React.ReactNode = undefined
     if(props.coverurl){
-      icon = <Box display='flex' alignItems='center' height='24px' maxWidth='32px'><img src={urlmapping.host+urlmapping.apibase.other+props.coverurl}/></Box>
+      icon = <ImageIconLayout>
+        <img src={urlmapping.host+urlmapping.apibase.other+props.coverurl}/>
+        </ImageIconLayout>
+    }else if(props.coverimg){
+      icon = <ImageIconLayout>
+      <img src={`data:image/png;base64,${props.coverimg}`}/>
+      </ImageIconLayout>
     }
     else
       switch(props.ext){

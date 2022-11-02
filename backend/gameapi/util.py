@@ -30,3 +30,12 @@ def convert_type(name):
         return 'video'
     return 'other'
 
+def filter_metainfo(track_info):
+    # 提取需要的信息
+    extract_attributes = ['title','performer']
+    general_track = track_info['tracks'][0]
+    print(general_track)
+    for track in track_info['tracks']:
+        if track['track_type'] == 'General':
+            general_track = track
+    return dict([(key,general_track[key]) for key in extract_attributes])
