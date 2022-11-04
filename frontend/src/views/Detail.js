@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { Stack, Card, CardHeader, Button, CardContent, IconButton, CssBaseline} from "@mui/material"
+import { Stack, Card, CardHeader, Button, CardContent, IconButton, CssBaseline, Menu, MenuItem, ListItem, ListItemIcon, ListItemText} from "@mui/material"
 import DataGridS from '../components/elements/DataGridS/DataGridS'
 import DataGridP from '../components/elements/DataGridP/DataGridP'
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
@@ -8,14 +8,14 @@ import { GridActionsCellItem} from '@mui/x-data-grid'
 import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 import withRouter from '../utils/WithRouter';
 import urlmapping from '../urlMapping.json'
-
+import UploadFileDialog from '../components/elements/Dialogs/UploadFileDialog'
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
 import { MoreVert } from '@mui/icons-material';
 import ResultS from '../components/elements/ResultS/ResultS';
 import GameMeta from '../components/elements/GameMeta/GameMeta'
-
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 
  class Detail extends Component {
 
@@ -29,7 +29,6 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
       return res.json()
     })
     .then((res)=>{
-
       console.log(res)
       this.setState({
         type:res.category,
@@ -38,6 +37,32 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
       })
     })
     
+  }
+
+  handleMenuItemClick=(value)=>(e)=>{
+    console.log(value)
+    if(this.state.type==='game'){
+      this.setState({
+        showDialog:true
+      })
+    }
+    this.setState({anchorElMenu:null})
+  }
+
+  handleDialogClose = (e,reason)=>{
+    this.setState({
+     showDialog:false
+    })
+  }
+
+  handleMenuIconClick = (e)=>{
+    this.setState({
+      anchorElMenu:e.currentTarget
+    })
+  }
+
+  handleMenuClose = (e)=>{
+    this.setState({anchorElMenu:null})
   }
 
   setSuggestions= (newSuggestions,title)=>{
@@ -78,8 +103,10 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
     this.state={
       type:'loading',
       fileList:[],
+      showDialog:false,
       suggestions:suggestions,
-      suggestionTitle:""
+      suggestionTitle:"",
+      anchorElMenu:null
     }
   }
 
@@ -92,7 +119,7 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
       case 'table':suggestionTitle='table'; content = <DataGridS columns={columns} rows={rows}/>;break;
       case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
       case 'image':suggestionTitle='image'; content = <DataGridP columns={columnsP} rows={rows}/>;break;
-      case 'loading':content = <h6> Loading... </h6>
+      case 'loading':content = <h6> Loading... </h6>;break;
       default: content = <h6> 404 </h6>
     }
     return (
@@ -105,11 +132,31 @@ import GameMeta from '../components/elements/GameMeta/GameMeta'
                 title='项目详情'
                 titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
                 action={
-                  <IconButton>
-                    <MoreVert/>
-                  </IconButton>
+                  <>
+                    <IconButton onClick={this.handleMenuIconClick}>
+                      <MoreVert/>
+                    </IconButton>
+                    <Menu id='menu-main'
+                    anchorEl={this.state.anchorElMenu} open={this.state.anchorElMenu?true:false} onClose={this.handleMenuClose}
+                    PaperProps={{
+                      maxheight:'400px'
+                    }}
+                    >
+                    {menuItems[this.state.type]?.map((item,index)=>{
+                      //console.log(item)
+                      return <MenuItem key={item.title} onClick={this.handleMenuItemClick(index)}>
+                        <ListItemIcon>{item.icon}</ListItemIcon>
+                        <ListItemText>{item.title}</ListItemText>
+                        </MenuItem>
+                      })}
+                    </Menu>
+                    <UploadFileDialog open={this.state.showDialog} onClose={this.handleDialogClose} pid={this.props.params.id}/>
+                  </>
+                  
                 }
               >
+                
+                
               </CardHeader>
               <CardContent sx={defaultsx}>
                 {/* pass real data here */}
@@ -227,6 +274,15 @@ const rows=[
       phone: "12345678901",
     },
   ]
+
+const menuItems={
+  game:[
+    {
+      title:'添加文件',
+      icon:<FileUploadIcon/>
+    }
+  ]
+}
 
 const CellRenderer=(props)=>{
   const { hasFocus, value } = props;

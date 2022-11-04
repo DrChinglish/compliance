@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from django.utils import timezone
 
@@ -63,4 +64,5 @@ def get_file_dir(instance, filename):
 class File(models.Model):
     project = models.ForeignKey(Project,on_delete=models.CASCADE, related_name='project_files' , verbose_name='所属项目')
     file = models.FileField(upload_to=get_file_dir, verbose_name='上传文件')
+    md5 = models.CharField(max_length=30,default='')
 

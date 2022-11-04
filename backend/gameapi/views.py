@@ -1,5 +1,7 @@
 # from curses import curs_set
+from asyncio import constants
 from base64 import decode
+from distutils.command.upload import upload
 from distutils.util import convert_path
 from os import walk, path
 from sqlite3 import Cursor
@@ -60,21 +62,10 @@ class ProjectModelViewSet(ModelViewSet):
             instance = File(file=f ,project=Project.objects.last())
             instance.save()
             print(f,'111',instance,'111',instance.file.path)
-            from .util import convert_type
+            from .util import convert_type,generate_video_cover
             if convert_type(instance.file.path) == 'video':
                 # Generate a video cover
-                videoname = os.path.splitext(instance.file.name)[0]
-                coverdir =  os.path.join(os.path.dirname(instance.file.path),'videocovers')
-                if not os.path.exists(coverdir):
-                    os.makedirs(coverdir)
-                coverpath = os.path.join (coverdir,'{}.jpg'.format(os.path.splitext(os.path.basename(videoname))[0]))
-                
-                print(coverpath)
-                ffmpeg_cmd = 'ffmpeg -i \"{}\" -ss 1 -f image2 -frames:v 1 \"{}\"'.format(instance.file.path,coverpath)
-                print(ffmpeg_cmd)
-                ffmpeg_pipe = subprocess.Popen(ffmpeg_cmd,shell=True)
-                ffmpeg_pipe.wait()
-
+                generate_video_cover(instance)
         return Response({'status':1}, status=status.HTTP_201_CREATED)
 
 
@@ -89,7 +80,7 @@ class ProjectModelViewSet(ModelViewSet):
         res={}
         files = instance.project_files.all()
         filelist = []
-        print(files)
+        # print(files)
         from .util import convert_size, convert_type
         for f in files:
             # print(f.file.url,f.file.path)
@@ -99,7 +90,7 @@ class ProjectModelViewSet(ModelViewSet):
             extname = os.path.split(f.file.name)[1]
             purename = os.path.splitext(extname)[0]
             extracontent={}
-            print(type,extname)
+            # print(type,extname)
             if type in ['video','audio']:
                 from pymediainfo import MediaInfo
                 from .util import filter_metainfo
@@ -191,8 +182,31 @@ class ProjectModelViewSet(ModelViewSet):
 
         return Response(data=text_file, status=status.HTTP_204_NO_CONTENT)
 
-
-
+    '''上传新的项目文件'''
+    @action(methods=['POST'], detail=True, url_path="upload") 
+    def upload_new_files(self,request,pk):
+        from .util import calculate_file_hash
+        uploaded = 0
+        filecount = len(request.FILES.getlist('files[]'))
+        project = Project.objects.get(id=pk)
+        current_files_md5=project.project_files.all().values_list('md5',flat=True)
+        print(current_files_md5)
+        for f in request.FILES.getlist('files[]'):
+            hashcode = calculate_file_hash(f)
+            if hashcode in current_files_md5:
+                print('found')
+                continue
+            # This looks not so right, could have cause some undesire behaviors....  
+            instance = File(file=f ,project=project,md5=hashcode)
+            instance.save()
+            # print(f,'111',instance,'111',instance.file.path)
+            from .util import convert_type,generate_video_cover
+            if convert_type(instance.file.path) == 'video':
+                # Generate a video cover
+                generate_video_cover(instance)
+            uploaded+=1
+        return Response({'status':1 if uploaded>0 else 0,'fileuploaded':uploaded,'text':'共上传了{0}个文件中的{1}个'.format(filecount,uploaded)}
+        ,status=status.HTTP_200_OK)
 
     '''获取一张图片'''
     # @action(methods=["get"], detail=True, url_path="process_img")

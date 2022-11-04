@@ -12,6 +12,6 @@ export default function fetchHandle(res){
     const errortext = res.statusText;
     const error = new Error(errortext);
     error.name = res.status;
-    error.response = res;
+    // error.response = res;
     throw error;
 }

@@ -67,7 +67,7 @@ export default class AudioFileContent extends Component {
             <Titles>识别结果</Titles>
             <Box sx={{height:'60%',width:'100%'}}>
               <Paper elevation={8} sx={{pl:2,py:2,height:'100%'}}>
-                <Paragraphs sx={{overflowY:'scroll',maxHeight:'100%'}}>{}</Paragraphs>
+                <Paragraphs sx={{overflowY:'auto',maxHeight:'100%'}}>{}</Paragraphs>
               </Paper>
             </Box>
         </FileContentLayout>

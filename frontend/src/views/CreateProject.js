@@ -153,6 +153,7 @@ class CreateProject extends Component {
             // const newFileList = fileList.slice();
             // newFileList.splice(index, 1);
             // this.setState({fileList:newFileList})
+            console.log(this.state.fileList)
             this.setState((state)=>{
                 let newFileList = state.fileList.slice()
                 newFileList.splice(state.fileList.indexOf(file),1)
@@ -161,7 +162,7 @@ class CreateProject extends Component {
             })
         },
         beforeUpload:(file)=>{
-            //console.log(file)
+            console.log(this.state.fileList)
             this.setState((state)=>{
                 return {fileList:[...state.fileList, file]}
             })
