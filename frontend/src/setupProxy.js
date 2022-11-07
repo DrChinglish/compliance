@@ -11,7 +11,7 @@ module.exports = function (app){
             changeOrigin:true,
             pathRewrite:function (path, req){
                 if(path.match(gameApiPattern))
-                    return path.replace(gameApiPattern,"")
+                    return path.replace(gameApiPattern,"/api")
                 else
                     return path.replace(otherApiPattern,"")
             }

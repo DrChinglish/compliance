@@ -6,7 +6,7 @@ import withRouter from '../utils/WithRouter'
 import { message, Upload} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
 import cookie from 'react-cookies'
-import SaveIcon from '@mui/icons-material/Save';
+import DoneIcon from '@mui/icons-material/Done';
 import fetchHandle from '../utils/FetchErrorhandle' 
 import urlMapping from '../urlMapping.json'
 const {Dragger} = Upload
@@ -70,6 +70,7 @@ class CreateProject extends Component {
          },//for backend verification only
          fileList:[],
          creating:false,
+         success:false,
       }
     }
 
@@ -110,7 +111,7 @@ class CreateProject extends Component {
             return res.json()
         })
         .then((msg)=>{
-            this.setState({creating:false})
+            this.setState({creating:false,success:msg.status===1})
             console.log(msg)
             if(msg.status!='1'){
                 // if something went wrong:
@@ -120,6 +121,7 @@ class CreateProject extends Component {
                 })
                 
             }else{//ok
+                
                 this.showSnackMessage('success','创建项目成功,正在跳转至项目列表页面')
                 setTimeout(()=>{
                     this.props.navigate(urlMapping.list+'/'+this.state.values.type)
@@ -151,12 +153,16 @@ class CreateProject extends Component {
             // const newFileList = fileList.slice();
             // newFileList.splice(index, 1);
             // this.setState({fileList:newFileList})
+            console.log(this.state.fileList)
             this.setState((state)=>{
-                return {fileList:state.fileList.splice(state.fileList.indexOf(file),1)}
+                let newFileList = state.fileList.slice()
+                newFileList.splice(state.fileList.indexOf(file),1)
+                console.log(newFileList)
+                return {fileList:newFileList}
             })
         },
         beforeUpload:(file)=>{
-            //console.log(file)
+            console.log(this.state.fileList)
             this.setState((state)=>{
                 return {fileList:[...state.fileList, file]}
             })
@@ -214,8 +220,10 @@ class CreateProject extends Component {
             titleTypographyProps={{variant:'h5',fontWeight:'bold'}}
         />
         <CardContent>
-            <Snackbar onClose={this.handleCloseSnackbar} anchorOrigin={{vertical:'top',horizontal:'center'}} open={this.state.snackmessage.show} autoHideDuration={3000}>
-                <Alert onClose={this.handleCloseSnackbar} severity={this.state.snackmessage.severity} sx={{width:'50ch'}}>
+            <Snackbar onClose={this.handleCloseSnackbar} anchorOrigin={{vertical:'top',horizontal:'center'}}
+                open={this.state.snackmessage.show} autoHideDuration={3000}>
+                <Alert onClose={this.handleCloseSnackbar} severity={this.state.snackmessage.severity} 
+                sx={{width:'50ch'}}>
                     {this.state.snackmessage.text}
                 </Alert>
             </Snackbar>
@@ -284,8 +292,9 @@ class CreateProject extends Component {
                     
                 </Stack>
                 <Stack justifyContent='center' alignItems='center'>
-                    <LoadingButton variant='contained' loading={this.state.creating} onClick={this.handleSubmit}>
-                        创建项目
+                    <LoadingButton startIcon={this.state.success?<DoneIcon/>:undefined} variant='contained' loading={this.state.creating} color={this.state.success?'success':'primary'}
+                    onClick={this.state.success?()=>{}:this.handleSubmit}>
+                        {this.state.success?"完成":"创建项目"}
                     </LoadingButton>
                 </Stack>
                 

@@ -156,7 +156,7 @@ render() {
           action={
             <Stack direction='row' spacing={2}>
                 <Button variant='contained' startIcon={<CheckBoxIcon/>} size='small' disabled={(this.state.selected.high.length+this.state.selected.medium.length+this.state.selected.low.length)<=0}>处理选中</Button>
-                <Button variant='contained' startIcon={<BuildIcon/>} size='small'>FIX ALL</Button>
+                <Button variant='contained' startIcon={<BuildIcon/>} size='small'>修复全部</Button>
                 <Button variant='contained' startIcon={<IosShareIcon/>} size='small'>导出报告</Button>
             </Stack>
           }

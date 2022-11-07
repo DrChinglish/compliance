@@ -1,6 +1,11 @@
 # from curses import curs_set
+from asyncio import constants
+from base64 import decode
+from distutils.command.upload import upload
+from distutils.util import convert_path
 from os import walk, path
 from sqlite3 import Cursor
+import subprocess
 from zipfile import ZipFile
 import os
 from rest_framework.response import Response
@@ -46,17 +51,21 @@ class ProjectModelViewSet(ModelViewSet):
     serializer_class = ProjectModelSerializer
 
 
-
     """添加一个项目"""
     def create(self, request):
-        print(request.FILES.getlist('files[]'))
+        # print(request.FILES.getlist('files[]'))
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        for f in request.FILES.getlist('files[]'):  
-                # This looks not so right, could have cause some undesire behaviors....  
-                instance = File(file=f ,project=Project.objects.last())
-                instance.save()
+        for f in request.FILES.getlist('files[]'):
+            # This looks not so right, could have cause some undesire behaviors....  
+            instance = File(file=f ,project=Project.objects.last())
+            instance.save()
+            print(f,'111',instance,'111',instance.file.path)
+            from .util import convert_type,generate_video_cover
+            if convert_type(instance.file.path) == 'video':
+                # Generate a video cover
+                generate_video_cover(instance)
         return Response({'status':1}, status=status.HTTP_201_CREATED)
 
 
@@ -71,14 +80,45 @@ class ProjectModelViewSet(ModelViewSet):
         res={}
         files = instance.project_files.all()
         filelist = []
-        print(files)
+        # print(files)
         from .util import convert_size, convert_type
         for f in files:
-            file_info={'id':f.id,
-            'name':os.path.split(f.file.name)[1],
-            'size':convert_size(f.file.size),
-            'type':convert_type(f.file.name),
-            'content':''}
+            # print(f.file.url,f.file.path)
+            # f.file.url: /media/files/game_projects/project_all%20here/20210116210455445.png
+            # f.file.path: D:\GIT\compliance\backend\media\files\game_projects\project_all here\20210116210455445.png
+            type = convert_type(f.file.name)
+            extname = os.path.split(f.file.name)[1]
+            purename = os.path.splitext(extname)[0]
+            extracontent={}
+            # print(type,extname)
+            if type in ['video','audio']:
+                from pymediainfo import MediaInfo
+                from .util import filter_metainfo
+                track_info = MediaInfo.parse(f.file.path).to_data()
+                extracontent['info'] = filter_metainfo(track_info)
+                # extracontent['tracks'] = MediaInfo.parse(f.file.path).to_data()
+                if os.path.splitext(extname)[1] == '.mp3':
+                    from mutagen import File
+                    import base64
+                    audio = File(f.file.path)
+                    b64img = base64.b64encode(audio.tags['APIC:'].data)
+                    extracontent['coverimg'] = b64img
+                if type == 'video':
+                    basepath = os.path.dirname(f.file.url)
+                    coverpath = os.path.join(basepath,'videocovers','{}.jpg'.format(purename))
+                    # It would be something like
+                    # /media/files/game_projects/project_video%20test\\videocovers\\浙江大学文琴合唱团_-_浙大校歌.jpg
+                    # But the requests worked fine in the tests so far...
+                    extracontent['coverurl'] = coverpath
+            file_info={
+                'id':f.id,
+                'name':extname,
+                'size':convert_size(f.file.size),
+                'type':type,
+                'ext':os.path.splitext(f.file.name)[1],
+                'url':f.file.url,
+                'content':extracontent
+            }
             filelist.append(file_info)
         res['fileList'] = filelist
         img_data_file = get_img(path)
@@ -91,7 +131,7 @@ class ProjectModelViewSet(ModelViewSet):
         serializer.data['res'] = res
         res.update(serializer.data)
 
-        return Response(res, status=status.HTTP_201_CREATED)
+        return Response(res, status=status.HTTP_200_OK)
 
 
 
@@ -107,7 +147,7 @@ class ProjectModelViewSet(ModelViewSet):
 
        # 删除项目
         self.get_object().delete()
-        return Response({'mes': '删除成功'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'mes': '删除成功'}, status=status.HTTP_200_OK)
         
 
 
@@ -142,8 +182,31 @@ class ProjectModelViewSet(ModelViewSet):
 
         return Response(data=text_file, status=status.HTTP_204_NO_CONTENT)
 
-
-
+    '''上传新的项目文件'''
+    @action(methods=['POST'], detail=True, url_path="upload") 
+    def upload_new_files(self,request,pk):
+        from .util import calculate_file_hash
+        uploaded = 0
+        filecount = len(request.FILES.getlist('files[]'))
+        project = Project.objects.get(id=pk)
+        current_files_md5=project.project_files.all().values_list('md5',flat=True)
+        print(current_files_md5)
+        for f in request.FILES.getlist('files[]'):
+            hashcode = calculate_file_hash(f)
+            if hashcode in current_files_md5:
+                print('found')
+                continue
+            # This looks not so right, could have cause some undesire behaviors....  
+            instance = File(file=f ,project=project,md5=hashcode)
+            instance.save()
+            # print(f,'111',instance,'111',instance.file.path)
+            from .util import convert_type,generate_video_cover
+            if convert_type(instance.file.path) == 'video':
+                # Generate a video cover
+                generate_video_cover(instance)
+            uploaded+=1
+        return Response({'status':1 if uploaded>0 else 0,'fileuploaded':uploaded,'text':'共上传了{0}个文件中的{1}个'.format(filecount,uploaded)}
+        ,status=status.HTTP_200_OK)
 
     '''获取一张图片'''
     # @action(methods=["get"], detail=True, url_path="process_img")
@@ -155,7 +218,7 @@ class ProjectModelViewSet(ModelViewSet):
         image = Image.open(path).convert('RGB')
         context = img_base64(image)
 
-        return Response({'image':context}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'image':context}, status=status.HTTP_200_OK)
     
 
     '''获取一个文档'''
@@ -200,7 +263,7 @@ class ProjectModelViewSet(ModelViewSet):
     
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
-        path = file.file
+        path = file.file.path
 
         # # 开始处理
         docfilter = DocProcess()
@@ -533,10 +596,6 @@ def img_base64(image):
     return context
 
 
-
-        
-
-
 # 5.处理图片数据
 class ImageProcess(object): 
     def __init__(self):
@@ -546,7 +605,6 @@ class ImageProcess(object):
         self.process_result = {}  # 敏感词
         self.keyword_box = {}  # 敏感词所在坐标
         
-
     def init_para(self, path):
         from paddleocr import PaddleOCR
         from PIL import Image
@@ -559,7 +617,17 @@ class ImageProcess(object):
         # self.image = self.image.resize((base_width, h_size), Image.ANTIALIAS)
         #调用模型处理图片
         ocr = PaddleOCR(use_angle_cls=True,det=True, lang="ch")  
-        result = ocr.ocr(np.array(self.image), cls=True) 
+        result = ocr.ocr(np.array(self.image), cls=True)
+        # It seems there is something strange right here:
+        # result= [[ 
+        # [ [[24.0, 8.0], [277.0, 8.0], [277.0, 38.0], [24.0, 38.0]], ('MTV开发模式', 0.8464175462722778) ],
+        # [ [[503.0, 103.0], [592.0, 103.0], [592.0, 121.0], [503.0, 121.0]], ('templates', 0.986018717288971) ],
+        #  ...
+        # [ [[118.0, 345.0], [162.0, 345.0], [162.0, 368.0], [118.0, 368.0]], ('接口', 0.9990861415863037) ],
+        # [ [[591.0, 352.0], [741.0, 352.0], [741.0, 365.0], [591.0, 365.0]], ('nttps://blog.csdn.net/v', 0.8825844526290894) ]
+        # ]]
+        # So I modified it.(Using paddle-gpu version)
+        result =result[0]
         self.boxes = [line[0] for line in result ]
         self.txts = [line[1][0] for line in result ]
         
@@ -690,9 +758,25 @@ class DocProcess(object):
         self.string = '' 
         self.process_result = {}  # 敏感词
  
-    def init_para(self, path):    
+    def init_para(self, path):
+        docpath = path
+        print(path)
+        if os.path.splitext(path)[1] == '.doc' :
+            # Preprocess doc. If corresponding .docx file does not exsit, create one
+            if not os.path.exists(path+'x'):
+                from win32com import client as wc
+                import pythoncom
+                pythoncom.CoInitialize()
+                word = wc.Dispatch("Word.Application")
+                doc = word.Documents.Open(path)
+                doc.SaveAs(path+'x',12, False, "", True, "", False, False, False, False) 
+                doc.Close()
+                word.Quit()
+                pythoncom.CoUninitialize()
+            docpath = path+'x'                
+
         import docx
-        file = docx.Document(path)
+        file = docx.Document(docpath)
         for para in file.paragraphs:
             self.txts.append(str(para.text))
             self.string += str(para.text)
@@ -836,7 +920,6 @@ class TrantitionalCharacterFilter(object):
     def __init__(self):
         self.ret = []  # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"简体字"}, {'flag': 2 ,'text':"繁体字"}]的形式返回
 
-
     def filter(self,text):
         for i in text:
             if self.recongnize_traditional(i):
@@ -876,19 +959,44 @@ def english(string):
                 [a-zA-Z]+
                     )''', re.VERBOSE)
     res = adressRegex.findall(string) 
-    for i in ['PC','3D','2D','H5','VR','AR','HD','Q','K']:
+    whitelist =  ['PC','3D','2D','H5','VR','AR','HD','Q','K']
+    for i in whitelist:
             if i in res:
                 res.pop(res.index(i))
 
-    ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
-    for idenx,item in enumerate(re.split("[ ,.，。]",string)):
-        if item in res:
-            ret.append({'flag':3 ,'text':item})
+    # ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
+    # for idenx,item in enumerate(re.split("[ ,.，。]",string)):
+    #     if item in res:
+    #         ret.append({'flag':3 ,'text':item})
+    #     else:
+    #         ret.append({'flag':0 ,'text':item})
+    import string as s
+    eng_word=''
+    word=''
+    lasttype = 0 #标识上一次检测到的字符类型 0：初始，1：其他文本，-1：英文
+    wordlist=[]
+    for ch in string:
+        if ch not in s.ascii_lowercase + s.ascii_uppercase:
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                if eng_word in whitelist:
+                    wordlist.append({'flag':0 ,'text':eng_word})
+                else:
+                    wordlist.append({'flag':3 ,'text':eng_word})
+                eng_word = ''
+            # Not english
+            word+=ch
+            lasttype=1
         else:
-            ret.append({'flag':0 ,'text':item})
-
-    
-    return res, ret
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                wordlist.append({'flag':0 ,'text':word})
+                word = ''
+            eng_word+=ch
+            lasttype = -1
+            
+        
+    return res, wordlist
 
 
 

@@ -1,130 +1,24 @@
-import { Box, Card, Tab, Tabs, Stack } from '@mui/material'
+import { Box, Tab, Tabs, Stack, IconButton } from '@mui/material'
 import React, { Component } from 'react'
 import DataGridS from '../DataGridS/DataGridS';
 import GameFileList from './GameFileList';
 import GameInfo from './GameInfo';
 import TabPanel from './TabPanel';
 import BuildIcon from '@mui/icons-material/Build';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import urlmapping from "../../../urlMapping.json"
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
-import { GridActionsCellItem} from '@mui/x-data-grid'
+import {GridActionsCellItem} from '@mui/x-data-grid'
 import LoadingProgress from './subComponents/LoadingProgress';
+import ProjectCheckList from './ProjectCheckList';
+import fetchHandle from '../../../utils/FetchErrorhandle'
+import ErrorHint from '../ErrorHint';
 function a11yProps(index) {
     return {
       id: `game-meta-tab-${index}`,
       'aria-controls': `game-meta-tabpanel-${index}`,
     };
   }
-
-export default class GameMeta extends Component {
-
-    getFileCount=()=>{
-        let count = 0
-        count += this.state.fileList.text.length
-        count += this.state.fileList.image.length
-        count += this.state.fileList.other.length
-        return count
-    }
-
-    static getDerivedStateFromProps(props,state){
-        let fileList={
-            text:[],
-            image:[],
-            other:[]
-        }
-        for(let index in props.fileList){
-            let file = props.fileList[index]
-            let target 
-            switch(file.type){
-                case 'text': target = fileList.text;break;
-                case 'image':target = fileList.image;break;
-                default : target = fileList.other;break;
-            }
-            target.push(file)
-        }
-        //console.log(fileList)
-        return {fileList:fileList}
-    }
-
-    constructor(props){
-        
-        //console.log(props)
-        super(props)
-        
-        //console.log(fileList)
-        this.state={
-            value:0, //currently selected tab index
-            tableLoading:false,
-            rows:[]
-        }
-    }
-
-    handleChange=(e,value)=>{
-        this.props.setSuggestions([],'null')
-        if(value === 3){
-            this.setState({
-                tableLoading:true
-            })
-            let fetchurl = urlmapping.apibase.game + urlmapping.apis.dbscan
-            const formdata = new FormData()
-            formdata.append('user','root')
-            formdata.append('pwd',123456)
-            formdata.append('dbname','testdb')
-            formdata.append('tablename','data')
-            fetch(fetchurl,{
-                mode:'cors',
-                method:'POST',
-                body:formdata
-            }).then((res)=>{
-                return res.json()
-            })
-            .then((res)=>{
-                this.setState({
-                    rows:res.data.table,
-                    tableLoading:false
-                })
-                this.props.setSuggestions(res.data.suggestion,'databasescan')
-            })
-        }
-        
-        this.setState({
-            value: value
-        })
-    }
-
-  render() {
-    console.log(this.state.fileList)
-    let {value} = this.state
-    return (
-        <Box sx={{height:'75vh',width:'55vw'}}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={value} onChange={this.handleChange} 
-                aria-label="basic tabs example">
-                    <Tab label="游戏信息" {...a11yProps(0)} />
-                    <Tab label="文本合规" {...a11yProps(1)} />
-                    <Tab label="图片合规" {...a11yProps(2)} />
-                    <Tab label="数据库检测" {...a11yProps(3)} />
-                </Tabs>
-            </Box>
-            <TabPanel value={value} index={0}>
-                <GameInfo info={{...this.props.info,['filecount']:this.getFileCount()}}/>
-            </TabPanel>
-            <TabPanel value={value} index={1}>
-                <GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} fileList={this.state.fileList.text} 
-                variant='text'/>
-            </TabPanel>
-            <TabPanel value={value} index={2}>
-                <GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} fileList={this.state.fileList.image} 
-                variant='image'/>
-            </TabPanel>
-            <TabPanel value={value} index={3}>
-                {this.state.tableLoading?
-                <LoadingProgress/>:<DataGridS columns={columns}  rows={this.state.rows}/>}
-            </TabPanel>
-        </Box>
-    )
-  }
-}
 const columns = [
         
     //other columns...
@@ -147,3 +41,189 @@ const columns = [
       </Stack>
     ]},
 ]
+export default class GameMeta extends Component {
+    constructor(props){
+        
+        //console.log(props)
+        super(props)
+        
+        //console.log(fileList)
+        this.state={
+            value:0, //currently selected tab index
+            tableLoading:false,
+            loaderror:false,
+            rows:[],
+            errmsg:'未知错误',
+            fileList:{
+                text:[],
+                image:[],
+                audio:[],
+                video:[],
+                other:[]
+            }
+        }
+    }
+
+    getFileCount=()=>{
+        let counts={
+            total:0,
+            image:0,
+            text:0,
+            audio:0,
+            video:0,
+            other:0
+        }
+        //console.log(this)
+        Object.entries(this.state.fileList).forEach((value)=>{
+            counts[value[0]]+=value[1].length
+            counts.total+=value[1].length
+        })
+        return counts
+    }
+
+    
+
+    static getDerivedStateFromProps(props,state){
+        let fileList={
+            text:[],
+            image:[],
+            audio:[],
+            video:[],
+            other:[]
+        }
+        //console.log(props.fileList)
+        for(let file of props.fileList){
+            let target 
+            switch(file.type){
+                case 'text': target = fileList.text;break;
+                case 'image':target = fileList.image;break;
+                case 'audio':target = fileList.audio;break;
+                case 'video':target = fileList.video;break;
+                default : target = fileList.other;break;
+            }
+            target.push(file)
+        }
+        //console.log(fileList)
+        return {fileList:fileList}
+    }
+
+    loadDBScan=()=>{
+        this.setState({
+            tableLoading:true,
+            loaderror:false
+        })
+        let fetchurl = urlmapping.apibase.game + urlmapping.apis.dbscan
+        const formdata = new FormData()
+        formdata.append('user','root')
+        formdata.append('pwd',123456)
+        formdata.append('dbname','testdb')
+        formdata.append('tablename','data')
+        fetch(fetchurl,{
+            mode:'cors',
+            method:'POST',
+            body:formdata
+        })
+        .then(fetchHandle)
+        .then((res)=>{
+            //console.log(res)
+            return res.json()
+        })
+        .then((res)=>{
+            //console.log(res)
+            this.setState({
+                rows:res.data.table,
+                tableLoading:false
+            })
+            this.props.setSuggestions(res.data.suggestion,'databasescan')
+        })
+        .catch((reason)=>{
+            this.setState({
+                loaderror:true,
+                errmsg:`发生了一个错误：${reason.name} ${reason.message}`
+            })
+            console.log(reason.message)
+        })
+    }
+
+    handleChange=(dbindex)=>(e,value)=>{
+        this.props.setSuggestions([],'null')
+        if(value === dbindex){
+            this.loadDBScan()
+        }
+        
+        this.setState({
+            value: value
+        })
+    }
+    
+  render() {
+    //console.log(this.state.fileList)
+    // Define the panels here
+    
+    let panels=[
+        {
+            label:'审核概览',
+            variant:'summary',
+            content:<ProjectCheckList info={{fileCount:this.getFileCount()}}/>,
+        },
+        {
+            label:'游戏信息',
+            variant:'game',
+            content:<GameInfo info={{...this.props.info,['filecount']:this.getFileCount()}}/>,
+        },
+        {
+            label:'文本合规',
+            variant:'text',
+            content:<GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} 
+            fileList={this.state.fileList.text} variant='text'/>,
+        },
+        {
+            label:'图片合规',
+            variant:'image',
+            content:<GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} 
+            fileList={this.state.fileList.image} variant='image'/>,
+        },
+        {
+            label:'数据库检测',
+            variant:'dbscan',
+            content:this.state.loaderror?<ErrorHint text={this.state.errmsg} 
+            extra={<IconButton onClick={()=>{this.loadDBScan()}}><RefreshIcon/></IconButton>}/>:(this.state.tableLoading?
+                <LoadingProgress/>:<DataGridS columns={columns} sx={{pb:5}} rows={this.state.rows}/>),
+        },
+        {
+            label:'音频检测',
+            variant:'audio',
+            content:<GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} 
+            fileList={this.state.fileList.audio} variant='audio'/>,
+        },
+        {
+            label:'视频检测',
+            variant:'video',
+            content:<GameFileList setSuggestions={this.props.setSuggestions} pid={this.props.info.id} 
+            fileList={this.state.fileList.video} variant='video'/>,
+        },
+    ]
+
+    let dbindex = panels.findIndex((value)=>{return value.label==='数据库检测'})
+    let {value} = this.state
+    return (
+        <Box sx={{height:'75vh',width:'55vw'}}>
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                <Tabs value={value} onChange={this.handleChange(dbindex)} 
+                aria-label="basic tabs example">
+                    {panels.map((panel,index)=>(
+                        <Tab label={panel.label} {...a11yProps(index)}/>
+                    ))}
+                </Tabs>
+            </Box>
+            {
+                panels.map((panel,index)=>(
+                    <TabPanel value={value} index={index}>
+                        {panel.content}
+                    </TabPanel>
+                ))
+            }
+        </Box>
+    )
+  }
+}

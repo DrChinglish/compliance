@@ -14,7 +14,7 @@ export default class DataGridS extends Component {
 
   render() {
     return (
-      <Box sx={{height:'75vh',width:'100%'}}>
+      <Box sx={{height:'75vh',width:'100%',...this.props.sx}}>
         {/* <CssBaseline/> */}
         <DataGrid columns={this.props.columns} rows={this.props.rows} 
         localeText={zhCN.components.MuiDataGrid.defaultProps.localeText}
