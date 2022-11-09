@@ -1,16 +1,8 @@
 import React, { Component } from 'react'
 import ReactPlayer from 'react-player/lazy'
 import { getStaticResources } from '../../../../../utils/APIs'
+import { FileMeta } from '../../../../../Interfaces'
 
-interface FileMeta{
-  content: object,
-  ext: string,
-  id: number,
-  name: string,
-  size:string,
-  type:'text'|'image'|'audio'|'video'|'other'| undefined,
-  url:string
-}
 
 type Props = {
   video: FileMeta

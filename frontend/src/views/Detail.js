@@ -117,7 +117,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
     let {suggestionTitle} = this.state
     switch(this.state.type){
       case 'table':suggestionTitle='table'; content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0};break;
+      case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0,pb:'0px !important'};break;
       case 'image':suggestionTitle='image'; content = <DataGridP columns={columnsP} rows={rows}/>;break;
       case 'loading':content = <h6> Loading... </h6>;break;
       default: content = <h6> 404 </h6>

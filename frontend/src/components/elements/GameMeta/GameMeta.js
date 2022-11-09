@@ -150,7 +150,6 @@ export default class GameMeta extends Component {
         if(value === dbindex){
             this.loadDBScan()
         }
-        
         this.setState({
             value: value
         })
@@ -207,8 +206,8 @@ export default class GameMeta extends Component {
     let dbindex = panels.findIndex((value)=>{return value.label==='数据库检测'})
     let {value} = this.state
     return (
-        <Box sx={{height:'75vh',width:'55vw'}}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Stack sx={{height:'75vh',width:'55vw'}} >
+            <Box sx={{ borderBottom: 1, borderColor: 'divider' }} width='100%'>
                 <Tabs value={value} onChange={this.handleChange(dbindex)} 
                 aria-label="basic tabs example">
                     {panels.map((panel,index)=>(
@@ -216,14 +215,17 @@ export default class GameMeta extends Component {
                     ))}
                 </Tabs>
             </Box>
-            {
-                panels.map((panel,index)=>(
-                    <TabPanel value={value} index={index}>
-                        {panel.content}
-                    </TabPanel>
-                ))
-            }
-        </Box>
+            <Box sx={{maxHeight:'calc(100% - 49px)',height:'fill-available'}} width='100%'>
+                {
+                    panels.map((panel,index)=>(
+                        <TabPanel value={value} index={index}>
+                            {panel.content}
+                        </TabPanel>
+                    ))
+                }
+            </Box>
+            
+        </Stack>
     )
   }
 }

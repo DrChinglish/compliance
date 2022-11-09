@@ -1,4 +1,4 @@
-import { List, Grid, Divider, IconButton} from '@mui/material'
+import { List, Grid, Divider, IconButton, FormControlLabel, Switch, Box} from '@mui/material'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 // import {FixedSizeList} from 'react-window'
@@ -15,6 +15,10 @@ import AudioFileContent from './subComponents/FileContents/AudioFileContent'
 import VideoFileContent from './subComponents/FileContents/VideoFileContent'
 import fetchHandle from '../../../utils/FetchErrorhandle';
 import ErrorHint from '../ErrorHint';
+import { Stack } from '@mui/system';
+import { Checkbox, Button } from '@mui/material'
+import Titles from '../../typography/Titles';
+import DeleteFileDialog from '../Dialogs/DeleteFileDialog'
 
 export default class GameFileList extends Component {
   constructor(props) {
@@ -29,7 +33,10 @@ export default class GameFileList extends Component {
         index:-1,
         text:'未知错误'
        },
-
+       multiSelect:false,
+       checked:[],
+       showDeleteDialog:false,
+       deleteFileList:[]
     }
   }
 
@@ -50,6 +57,45 @@ export default class GameFileList extends Component {
     }
     let des = `共发现${items.length}个违规项，包括${display}等。`
     return {title:title,description:des,seriousness:'high'}
+  }
+
+  deleteFile=(deletedfid)=>{
+    let newFileList=[...this.state.fileList]
+    for(let file of this.state.fileList){
+      if(deletedfid.indexOf(file.id) !== -1){
+        newFileList.splice(newFileList.indexOf(file),1)
+      }
+    }
+    this.setState({fileList:newFileList,checked:[]})
+  }
+
+  handleToggle=(e)=>{
+    this.setState({multiSelect:e.target.checked})
+  }
+
+  handleDeleteDialogClose=()=>{
+    this.setState({showDeleteDialog:false})
+  }
+
+  handleCheck = (value)=>()=>{
+    const currentIndex = this.state.checked.indexOf(value)
+    const newChecked = [...this.state.checked]
+    if(currentIndex===-1){
+      newChecked.push(value)
+    }else{
+      newChecked.splice(currentIndex,1)
+    }
+    this.setState({
+      checked : newChecked
+    })
+  }
+
+  handleDelete = ()=>{
+    let deleteFiles = []
+    this.state.checked.forEach((value)=>{
+      deleteFiles.push(this.state.fileList[value])
+    })
+    this.setState({showDeleteDialog:true,deleteFileList:deleteFiles})
   }
 
   handleClick=(e,value)=>{
@@ -147,16 +193,46 @@ export default class GameFileList extends Component {
     return (
       
         <Grid container sx={{height:'100%',maxWidth:'100%'}}>
-          <Grid item xs={4} sx={{height:'100%'}}>
-            {fileList.length>0?
-            <List dense>
-            {fileList?.map((file,index)=>{
-              let thumbnailUrl = this.props.variant === 'image'?file.url:
-              (this.props.variant==='video'?file.content.coverurl:undefined)
-              return <ListItemFile index={index} selected={this.state.selected} file={file} 
-              thumbnailUrl={thumbnailUrl} onClick={this.handleClick}/>
-            })}
-            </List>
+          <Grid item xs={4} sx={{height:'fill-available'}}>
+            <DeleteFileDialog fileList={this.state.deleteFileList} open={this.state.showDeleteDialog} 
+            onClose={this.handleDeleteDialogClose} pid={this.props.pid} updateFileList={this.deleteFile}/>
+            {fileList.length>0?(
+            <Stack height='100%' justifyContent='space-between'>
+              <Stack direction='row' justifyContent='space-between' p={2}>
+                <Titles variant='medium'>{`总计${fileList.length}个文件`}</Titles>
+                <FormControlLabel label='多选'
+                control={<Switch checked={this.state.multiSelect} onChange={this.handleToggle}/>}/>
+              </Stack>
+              <Divider flexItem/>
+              <Box sx={{height:'fill-available'}}>
+              <List dense sx={{overflowY:'auto'}}>
+              {fileList?.map((file,index)=>{
+                let thumbnailUrl = this.props.variant === 'image'?file.url:
+                (this.props.variant==='video'?file.content.coverurl:undefined)
+                return <ListItemFile index={index} selected={this.state.selected} file={file} 
+                thumbnailUrl={thumbnailUrl} onClick={this.handleClick} secondaryAction={
+                  this.state.multiSelect?
+                  <Checkbox 
+                    onChange={this.handleCheck(index)}
+                    edge='end'
+                    checked={this.state.checked.indexOf(index) !== -1}
+                  />:null
+                }/>
+              })}
+              </List>
+              </Box>
+              {
+              this.state.multiSelect?
+              <>
+                <Divider flexItem/>
+                <Stack direction='row' justifyContent='center' spacing={2} py={2}>
+                  <Button variant='contained' color='error' onClick={this.handleDelete}>删除</Button>
+                </Stack>
+              </>
+              :null
+              }
+            </Stack>
+            )
             :<EmptyHint text='暂无文件'/>}
           </Grid>
           <Divider orientation='vertical' flexItem sx={{height:'100%'}}/>

@@ -182,6 +182,22 @@ class ProjectModelViewSet(ModelViewSet):
 
         return Response(data=text_file, status=status.HTTP_204_NO_CONTENT)
 
+    '''删除项目文件'''
+    @action(methods=['delete'],detail=True, url_path="delete_files")
+    def delete_project_files(self,request,pk):
+        project = Project.objects.get(id=pk)
+        project_files = project.project_files.all().values_list('id',flat=True)
+        deletedfid=[]
+        for fid in dict(eval(request.body))['delete']:
+            if fid in project_files:
+                # The file belongs to the project
+                file = File.objects.get(id = fid)
+                file.delete()
+                deletedfid.append(fid)
+        print(deletedfid)
+        return Response({'deletedfid':deletedfid,'status':0 if len(deletedfid)==0 else 1},status=status.HTTP_200_OK)
+
+
     '''上传新的项目文件'''
     @action(methods=['POST'], detail=True, url_path="upload") 
     def upload_new_files(self,request,pk):
@@ -190,13 +206,14 @@ class ProjectModelViewSet(ModelViewSet):
         filecount = len(request.FILES.getlist('files[]'))
         project = Project.objects.get(id=pk)
         current_files_md5=project.project_files.all().values_list('md5',flat=True)
-        print(current_files_md5)
+        # print(current_files_md5)
+        file_rejected=[]
         for f in request.FILES.getlist('files[]'):
             hashcode = calculate_file_hash(f)
             if hashcode in current_files_md5:
                 print('found')
+                file_rejected.append(f.name)
                 continue
-            # This looks not so right, could have cause some undesire behaviors....  
             instance = File(file=f ,project=project,md5=hashcode)
             instance.save()
             # print(f,'111',instance,'111',instance.file.path)
@@ -205,7 +222,8 @@ class ProjectModelViewSet(ModelViewSet):
                 # Generate a video cover
                 generate_video_cover(instance)
             uploaded+=1
-        return Response({'status':1 if uploaded>0 else 0,'fileuploaded':uploaded,'text':'共上传了{0}个文件中的{1}个'.format(filecount,uploaded)}
+        return Response({'status':1 if uploaded>0 else 0,'file_rejected':file_rejected,
+        'fileuploaded':uploaded,'text':'共上传了{0}个文件中的{1}个'.format(filecount,uploaded)}
         ,status=status.HTTP_200_OK)
 
     '''获取一张图片'''

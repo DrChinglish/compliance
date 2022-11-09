@@ -1,39 +1,57 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PopupDialog from './PopupDialog'
-import {Upload,UploadFile} from 'antd'
+import { Upload,UploadFile} from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
-import { Stack, Snackbar, Alert, AlertColor } from '@mui/material'
+import { Avatar, Stack, Snackbar, Alert, AlertColor, ListItem, ListItemText, List, ListItemAvatar, Button} from '@mui/material'
 import LoadingButton from '@mui/lab/LoadingButton'
 import  {uploadNewFile} from '../../../utils/APIs'
+import Titles from '../../typography/Titles'
+import { SnackbarStatus } from '../../../Interfaces'
+import SnackBar from '../SnackBar'
+import FolderIcon from '@mui/icons-material/Folder';
 const {Dragger} = Upload
 type Props = {
     open:boolean,
     onClose:(event: object, reason: string)=>void,
     pid:number
 }
-type SnackbarStatus={
-    show:boolean,
-    text:string,
-    severity:'success'|'warning'
-}
+
 export default function UploadFileDialog(props: Props) {
 
     const [fileList,setFileList] = useState<UploadFile[]>([])
     const [uploading,setUploading] = useState<boolean>(false)
     const [snackbarStatus,setSnackbarStatus] = useState<SnackbarStatus>({show:false,text:'',severity:'success'})
+    const [failedFiles,setFailedFile] = useState<string[]>([])
+    const [showResult,setShowResult] = useState<boolean>(false)
     const handleUpload=()=>{
         setUploading(true)
         uploadNewFile(props.pid,fileList)
         .then(res=>{
             console.log(res)
+            setFailedFile(res.file_rejected)
             setUploading(false)
             setSnackbarStatus({show:true,text:res.text,severity:res.status===0?'warning':'success'})
+            if(res.file_rejected.length>0){
+                setShowResult(true)
+            }else{
             setTimeout(() => {
-                props.onClose({},'upload action over')
+                handleClose()
             }, 3000);
+            }
         })
         console.log(fileList)
     }
+
+    useEffect(()=>{
+        setFileList([])
+        setFailedFile([])
+        setShowResult(false)
+        setSnackbarStatus({show:false,text:'',severity:'success'})
+    },[props.open])
+
+    const handleClose =()=>{
+        props.onClose({},'upload action over')
+    } 
 
     let uploadProps = {
         multiple: true,
@@ -53,14 +71,32 @@ export default function UploadFileDialog(props: Props) {
             return false
         }
     }
+    let content =
+    <>
+        <Titles>上传失败的文件</Titles>
+        <List dense>
+            {failedFiles.map((file,index)=>(
+                <ListItem>
+                    <ListItemAvatar><Avatar><FolderIcon/></Avatar></ListItemAvatar>
+                    <ListItemText>
+                        {file}
+                    </ListItemText>
+                </ListItem>
+            ))}
+        </List>
+    </>
+    
   return (
     <PopupDialog title='上传文件' open={props.open} onClose={props.onClose}
         actions={
-            <LoadingButton loading={uploading} variant='contained' onClick={uploading?()=>{}:handleUpload}>上传</LoadingButton>
+            showResult?<Button variant='contained' onClick={handleClose}>关闭</Button>:
+            <LoadingButton loading={uploading} variant='contained' disabled={fileList.length===0}
+            onClick={uploading?()=>{}:handleUpload}>上传</LoadingButton>
         }
     >
         <Stack>
-            
+            {
+            showResult?content:
             <Dragger {...uploadProps} listType='picture-card' fileList={fileList} style={{marginBottom:'24px',maxHeight:'200px',width:'100%'}}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
@@ -70,13 +106,8 @@ export default function UploadFileDialog(props: Props) {
                 支持批量上传
                 </p>
             </Dragger>
-            <Snackbar anchorOrigin={{vertical:'top',horizontal:'center'}}
-                open={snackbarStatus.show} autoHideDuration={3000}>
-                <Alert severity={snackbarStatus.severity as AlertColor} 
-                sx={{width:'50ch'}}>
-                    {snackbarStatus.text}
-                </Alert>
-            </Snackbar>
+            }
+            <SnackBar status={snackbarStatus}/>
         </Stack>
 
     </PopupDialog>
