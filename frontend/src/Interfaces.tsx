@@ -13,3 +13,9 @@ export interface FileMeta{
     text:string,
     severity:'success'|'warning'|'error'
 }
+
+export interface VideoFrameMeta{
+  src:string,
+  timestamp:string|number,
+  label:string,
+}

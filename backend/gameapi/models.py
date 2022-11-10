@@ -62,7 +62,25 @@ def get_file_dir(instance, filename):
     return 'files/game_projects/project_{0}/{1}'.format(instance.project.title,filename)
 
 class File(models.Model):
+    STATUS_CHOICES_FILE=(
+        ('uploaded','Uploaded'),
+        ('processing','Processing'),
+        ('error','Error'),
+        ('done','Done')
+    )
     project = models.ForeignKey(Project,on_delete=models.CASCADE, related_name='project_files' , verbose_name='所属项目')
     file = models.FileField(upload_to=get_file_dir, verbose_name='上传文件')
     md5 = models.CharField(max_length=30,default='')
+    status = models.CharField(max_length=20,choices=STATUS_CHOICES_FILE,default='uploaded')
 
+'''任务表'''
+class Tasks(models.Model):
+    STATUS_CHOICES_TASK=(
+        ('created','Created'),
+        ('running','Running'),
+        ('success','Success'),
+        ('failed','Failed')
+    )
+    project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_tasks', verbose_name='处理任务')
+    files = models.CharField(max_length=1024,default='')
+    status = models.CharField(max_length=20,choices=STATUS_CHOICES_TASK,default='created')

@@ -117,6 +117,7 @@ class ProjectModelViewSet(ModelViewSet):
                 'type':type,
                 'ext':os.path.splitext(f.file.name)[1],
                 'url':f.file.url,
+                'status':f.status,
                 'content':extracontent
             }
             filelist.append(file_info)
@@ -192,6 +193,9 @@ class ProjectModelViewSet(ModelViewSet):
             if fid in project_files:
                 # The file belongs to the project
                 file = File.objects.get(id = fid)
+                if os.path.exists(file.file.path):
+                    import shutil
+                    os.remove(file.file.path)
                 file.delete()
                 deletedfid.append(fid)
         print(deletedfid)
