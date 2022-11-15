@@ -15,6 +15,18 @@ export function getProcessedFile(pid:number,fid:number,variant:'image'|'text'){
     return `${urlmapping.apibase.game}/projects/${pid}/${p1}/${fid}/${p2}`
 }
 
+async function fetchRequest(url:string,init?:RequestInit,catchCallback?:(e:any)=>void) {
+    return fetch(
+        url,
+        init
+    )
+    .then(fetchHandle)
+    .then(res=>res.json())
+    .catch(catchCallback?catchCallback:(reason)=>{
+        console.log(reason)
+    })
+}
+
 export async function uploadNewFile(pid:number,fileList:UploadFile[],catchCallback?:(e:any)=>void){
     let url = `${urlmapping.apibase.game}/projects/${pid}/upload/`
     // let method = 'POST'
@@ -22,22 +34,15 @@ export async function uploadNewFile(pid:number,fileList:UploadFile[],catchCallba
     for(let file of fileList){
         formdata.append('files[]',file as RcFile)
     }
-    return fetch(
-        url,{
-            method:'POST',
-            body:formdata,
-            mode:'cors',
-            credentials:'include',
-            headers:{
-                'X-CSRFToken':cookie.load('csrftoken')
-            }
+    return fetchRequest(url,{
+        method:'POST',
+        body:formdata,
+        mode:'cors',
+        credentials:'include',
+        headers:{
+            'X-CSRFToken':cookie.load('csrftoken')
         }
-    )
-    .then(fetchHandle)
-    .then(res=>res.json())
-    .catch(catchCallback?catchCallback:(reason)=>{
-        console.log(reason)
-    })
+    },catchCallback)
 }
 
 export async function deleteFile(pid:number, fileList:FileMeta[], catchCallback?:(e:any)=>void) {
@@ -47,7 +52,7 @@ export async function deleteFile(pid:number, fileList:FileMeta[], catchCallback?
         console.log(value)
         deletefid.push(value.id)
     })
-    return fetch(
+    return fetchRequest(
         url,
         {
             body:JSON.stringify({delete:deletefid}),
@@ -57,11 +62,22 @@ export async function deleteFile(pid:number, fileList:FileMeta[], catchCallback?
             headers:{
                 'X-CSRFToken':cookie.load('csrftoken')
             }
-        }
+        },catchCallback
     )
-    .then(fetchHandle)
-    .then(res=>res.json())
-    .catch(catchCallback?catchCallback:(reason)=>{
-        console.log(reason)
-    })
+}
+
+export async function processAudio(pid:number,fid:number,catchCallback?:(e:any)=>void) {
+    let url=`${urlmapping.apibase.game}/projects/${pid}/audios/${fid}/process_audio`
+    return fetchRequest(
+        url,
+        {
+            method:'GET',
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        }
+        ,catchCallback
+    )
 }

@@ -31,5 +31,5 @@ class ProjectModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         # fields = "__all__"
-        fields = ["id", "title", "description", "category", "project_files", "advice_files"]
+        fields = ["id", "title", "description", "category", "project_files", "advice_files","created","updated","status"]
 

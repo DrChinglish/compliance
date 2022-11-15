@@ -19,3 +19,8 @@ export interface VideoFrameMeta{
   timestamp:string|number,
   label:string,
 }
+
+export interface TextItemCensored{
+  flag:number,
+  text:string
+}

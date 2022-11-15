@@ -1,4 +1,7 @@
-from rest_framework.routers import DefaultRouter, SimpleRouter
+from rest_framework.routers import DefaultRouter,SimpleRouter
+from django.urls import path,re_path
+from django.views.static import serve
+from django.conf import settings
 from django.urls import path
 from . import views
 
@@ -13,7 +16,7 @@ urlpatterns = [
     path("projects/<int:pk>/texts/<int:file_id>/process_doc", views.ProjectModelViewSet.as_view({"get":"process_doc"})),
     path("projects/<int:pk>/audios/<int:file_id>/process_audio", views.ProjectModelViewSet.as_view({"get": "process_audio"})),
     path("projects/<int:pk>/vedios/<int:file_id>/key_frames", views.ProjectModelViewSet.as_view({"get": "key_frames"})),
-   
+    re_path("media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
 
 

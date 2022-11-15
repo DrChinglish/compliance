@@ -2,6 +2,9 @@
 venv_back/
 backend-venv/
 media/
+
+# Some log files
+exp/
 # data files
 *.csv
 *.docx

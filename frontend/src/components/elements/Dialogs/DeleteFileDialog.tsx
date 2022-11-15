@@ -7,6 +7,7 @@ import FolderIcon from '@mui/icons-material/Folder';
 import { deleteFile } from '../../../utils/APIs'
 import SnackBar from '../SnackBar'
 import LoadingProgress from '../GameMeta/subComponents/LoadingProgress'
+import SuccessHint from '../../Hints/SuccessHint'
 
 type Props = {
     fileList: FileMeta[],
@@ -19,6 +20,7 @@ type Props = {
 export default function DeleteFileDialog(props: Props) {
     const [loading,setLoading] = useState(false)
     const [snackbarStatus,setSnackbarStatus] = useState<SnackbarStatus>({show:false,text:'',severity:'success'})
+    const [done,setDone] = useState(false)
     const handleCancel=()=>{
         props.onClose({},'user close')
     }
@@ -29,6 +31,7 @@ export default function DeleteFileDialog(props: Props) {
         .then(res=>{
             console.log(res)
             setLoading(false)
+            setDone(true)
             if(res.status === 0){
                 setSnackbarStatus({show:true,text:'删除失败。',severity:'error'})
             }else if(res.deletedfid.length === props.fileList.length){
@@ -43,17 +46,18 @@ export default function DeleteFileDialog(props: Props) {
         })
     }
   return (
-    <PopupDialog open={props.open} onClose={props.onClose} title={`是否删除以下${props.fileList.length}个文件？`}
+    <PopupDialog open={props.open} onClose={props.onClose} title={done?'操作完成':`是否删除以下${props.fileList.length}个文件？`}
     actions={
-        <>
-            <LoadingButton loading={loading} variant='contained' color='error' onClick={loading?()=>{}:handleDelete}>删除</LoadingButton>
-            <LoadingButton loading={loading} variant='contained' color='secondary' onClick={handleCancel}>取消</LoadingButton>
-        </>
+            !done &&
+            <>
+                <LoadingButton loading={loading} variant='contained' color='error' onClick={loading?()=>{}:handleDelete}>删除</LoadingButton>
+                <LoadingButton loading={loading} variant='contained' color='secondary' onClick={handleCancel}>取消</LoadingButton>
+            </>
     }
     >
         <SnackBar status={snackbarStatus}/>
         {
-        loading?<LoadingProgress/>:<List dense>
+        loading?<LoadingProgress/>:(done?<SuccessHint label='操作完成'/>:<List dense>
             {props.fileList.map((file,index)=>(
                 <ListItem>
                     <ListItemAvatar><Avatar><FolderIcon/></Avatar></ListItemAvatar>
@@ -62,7 +66,7 @@ export default function DeleteFileDialog(props: Props) {
                     </ListItemText>
                 </ListItem>
             ))}
-        </List>
+        </List>)
         }
         
     </PopupDialog>

@@ -27,8 +27,18 @@ class ImageProcess(object):
         # h_size = int(float(self.image.size[1]) * float(w_percent))
         # self.image = self.image.resize((base_width, h_size), Image.ANTIALIAS)
         # 调用模型处理图片
-        ocr = PaddleOCR(use_angle_cls=True,det=True, lang="ch")  
-        result = ocr.ocr(np.array(self.image), cls=True) 
+        ocr = PaddleOCR(use_angle_cls=True,det=True, lang="ch")
+        result = ocr.ocr(np.array(self.image), cls=True)
+        # It seems there is something strange right here:
+        # result= [[ 
+        # [ [[24.0, 8.0], [277.0, 8.0], [277.0, 38.0], [24.0, 38.0]], ('MTV开发模式', 0.8464175462722778) ],
+        # [ [[503.0, 103.0], [592.0, 103.0], [592.0, 121.0], [503.0, 121.0]], ('templates', 0.986018717288971) ],
+        #  ...
+        # [ [[118.0, 345.0], [162.0, 345.0], [162.0, 368.0], [118.0, 368.0]], ('接口', 0.9990861415863037) ],
+        # [ [[591.0, 352.0], [741.0, 352.0], [741.0, 365.0], [591.0, 365.0]], ('nttps://blog.csdn.net/v', 0.8825844526290894) ]
+        # ]]
+        # So I modified it.(Using paddle-gpu version)-Zhu Yiding
+        result =result[0]  
         self.boxes = [line[0] for line in result ]
         self.txts = [line[1][0] for line in result ]
         
@@ -114,9 +124,9 @@ class ImageProcess(object):
         
         from yolo.yolo import YOLO
         yolo = YOLO()     
-        r_image, num= yolo.detect_image(self.image, crop = False, count=True)
+        r_image= yolo.detect_image(self.image, crop = False, count=True)
 
-        self.process_result['skull'] = {'count':num,'image':self.get_img_base64(r_image)}
+        self.process_result['skull'] = {'image':self.get_img_base64(r_image)}
 
 
     # 健康游戏忠告
@@ -186,9 +196,22 @@ class DocProcess(object):
         self.string = '' 
         self.process_result = {}  # 敏感词
  
-    def init_para(self, path):    
+    def init_para(self, path):
+        import os
+        docpath = path
+        print(path)
+        if os.path.splitext(path)[1] == '.doc' :
+            # Preprocess doc 
+            if not os.path.exists(path+'x'):
+                from win32com import client as wc
+                word = wc.Dispatch("Word.Application")
+                doc = word.Documents.Open(path)
+                doc.SaveAs(path+'x',12, False, "", True, "", False, False, False, False) 
+                doc.Close()
+                word.Quit()
+            docpath = path+'x'    
         import docx
-        file = docx.Document(path)
+        file = docx.Document(docpath)
         for para in file.paragraphs:
             self.txts.append(str(para.text))
             self.string += str(para.text)
@@ -390,7 +413,7 @@ class DFAFilter(object):
                     if self.delimit not in level[char] or message[start:start+step_ins] in self.whitelist: 
                         level = level[char]
                     else:
-                        if message.index(char) != len(message)-1 and message[message.index(char)+1] in level[char]:
+                        if start+step_ins < len(message) and (message[step_ins+start+1] in level[char]):
                             level = level[char]
                         else:
                             self.ret.append({'flag':1,'text':message[start:start+step_ins]})
@@ -399,7 +422,8 @@ class DFAFilter(object):
                 else:
                     self.ret.append({'flag':0,'text':message[start]})
                     break
-
+            else:
+                self.ret.append({'flag':0,'text':message[start]})
             start += 1
         return self.ret
 
@@ -457,19 +481,50 @@ def english(string):
                 [a-zA-Z]+
                     )''', re.VERBOSE)
     res = adressRegex.findall(string) 
-    for i in ['PC','3D','2D','H5','VR','AR','HD','Q','K']:
+    whitelist =  ['PC','3D','2D','H5','VR','AR','HD','Q','K']
+    for i in whitelist:
             if i in res:
                 res.pop(res.index(i))
 
-    ret = [] # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
-    for idenx,item in enumerate(re.split("[ ,.？！，。?!]",string)):
-        if item in res:
-            ret.append({'flag':3 ,'text':item})
+     # ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
+    # for idenx,item in enumerate(re.split("[ ,.，。]",string)):
+    #     if item in res:
+    #         ret.append({'flag':3 ,'text':item})
+    #     else:
+    #         ret.append({'flag':0 ,'text':item})
+    import string as s
+    eng_word=''
+    word=''
+    lasttype = 0 #标识上一次检测到的字符类型 0：初始，1：其他文本，-1：英文
+    wordlist=[]
+    # print(string)
+    for ch in string:
+        if ch not in s.ascii_lowercase + s.ascii_uppercase:
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                if eng_word in whitelist:
+                    wordlist.append({'flag':0 ,'text':eng_word})
+                else:
+                    wordlist.append({'flag':3 ,'text':eng_word})
+                eng_word = ''
+            # Not english
+            word+=ch
+            lasttype=1
         else:
-            ret.append({'flag':0 ,'text':item})
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                wordlist.append({'flag':0 ,'text':word})
+                word = ''
+            eng_word+=ch
+            lasttype = -1
+    if lasttype == 1:
+        if len(word)>0:
+            wordlist.append({'flag':0 ,'text':word})
+    elif lasttype == -1:
+        if len(eng_word)>0:
+            wordlist.append({'flag':3 ,'text':eng_word})
+    return res, wordlist
 
-    
-    return res, ret
 
 
 

@@ -12,7 +12,7 @@ import {GridActionsCellItem} from '@mui/x-data-grid'
 import LoadingProgress from './subComponents/LoadingProgress';
 import ProjectCheckList from './ProjectCheckList';
 import fetchHandle from '../../../utils/FetchErrorhandle'
-import ErrorHint from '../ErrorHint';
+import ErrorHint from '../../Hints/ErrorHint';
 function a11yProps(index) {
     return {
       id: `game-meta-tab-${index}`,

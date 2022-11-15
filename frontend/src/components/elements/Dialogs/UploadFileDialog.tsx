@@ -9,6 +9,7 @@ import Titles from '../../typography/Titles'
 import { SnackbarStatus } from '../../../Interfaces'
 import SnackBar from '../SnackBar'
 import FolderIcon from '@mui/icons-material/Folder';
+import SuccessHint from '../../Hints/SuccessHint'
 const {Dragger} = Upload
 type Props = {
     open:boolean,
@@ -23,6 +24,7 @@ export default function UploadFileDialog(props: Props) {
     const [snackbarStatus,setSnackbarStatus] = useState<SnackbarStatus>({show:false,text:'',severity:'success'})
     const [failedFiles,setFailedFile] = useState<string[]>([])
     const [showResult,setShowResult] = useState<boolean>(false)
+    const [done,setDone] = useState<boolean>(false)
     const handleUpload=()=>{
         setUploading(true)
         uploadNewFile(props.pid,fileList)
@@ -34,6 +36,7 @@ export default function UploadFileDialog(props: Props) {
             if(res.file_rejected.length>0){
                 setShowResult(true)
             }else{
+                setDone(true)
             setTimeout(() => {
                 handleClose()
             }, 3000);
@@ -67,7 +70,7 @@ export default function UploadFileDialog(props: Props) {
         },
         beforeUpload:(file: UploadFile)=>{
             //console.log(file)
-            setFileList([...fileList,file])
+            setFileList((prev)=>{return [...prev,file]})
             return false
         }
     }
@@ -96,7 +99,7 @@ export default function UploadFileDialog(props: Props) {
     >
         <Stack>
             {
-            showResult?content:
+            showResult?content:(done?<SuccessHint label='上传成功'/>:
             <Dragger {...uploadProps} listType='picture-card' fileList={fileList} style={{marginBottom:'24px',maxHeight:'200px',width:'100%'}}>
                 <p className="ant-upload-drag-icon">
                     <InboxOutlined />
@@ -106,6 +109,7 @@ export default function UploadFileDialog(props: Props) {
                 支持批量上传
                 </p>
             </Dragger>
+            )
             }
             <SnackBar status={snackbarStatus}/>
         </Stack>

@@ -80,13 +80,22 @@ class ProjectModelViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        for f in request.FILES.getlist('files[]'):
+            # This looks not so right, could have cause some undesire behaviors....  
+            instance = File(file=f ,project=Project.objects.last())
+            instance.save()
+            print(f,'111',instance,'111',instance.file.path)
+            from .util import convert_type,generate_video_cover
+            if convert_type(instance.file.path) == 'video':
+                # Generate a video cover
+                generate_video_cover(instance)
+        return Response({'status':1}, status=status.HTTP_201_CREATED)
 
 
 
     """获取一个项目"""
     def retrieve(self, request, pk):
+        from . import class_method
         instance = self.get_object()
         serializer = self.get_serializer(instance=instance)
 
@@ -98,54 +107,19 @@ class ProjectModelViewSet(ModelViewSet):
         # print(files)
         from .util import convert_size, convert_type
         for f in files:
-            # print(f.file.url,f.file.path)
-            # f.file.url: /media/files/game_projects/project_all%20here/20210116210455445.png
-            # f.file.path: D:\GIT\compliance\backend\media\files\game_projects\project_all here\20210116210455445.png
-            type = convert_type(f.file.name)
-            extname = os.path.split(f.file.name)[1]
-            purename = os.path.splitext(extname)[0]
-            extracontent={}
-            # print(type,extname)
-            if type in ['video','audio']:
-                from pymediainfo import MediaInfo
-                from .util import filter_metainfo
-                track_info = MediaInfo.parse(f.file.path).to_data()
-                extracontent['info'] = filter_metainfo(track_info)
-                # extracontent['tracks'] = MediaInfo.parse(f.file.path).to_data()
-                if os.path.splitext(extname)[1] == '.mp3':
-                    from mutagen import File
-                    import base64
-                    audio = File(f.file.path)
-                    b64img = base64.b64encode(audio.tags['APIC:'].data)
-                    extracontent['coverimg'] = b64img
-                if type == 'video':
-                    basepath = os.path.dirname(f.file.url)
-                    coverpath = os.path.join(basepath,'videocovers','{}.jpg'.format(purename))
-                    # It would be something like
-                    # /media/files/game_projects/project_video%20test\\videocovers\\浙江大学文琴合唱团_-_浙大校歌.jpg
-                    # But the requests worked fine in the tests so far...
-                    extracontent['coverurl'] = coverpath
-            file_info={
-                'id':f.id,
-                'name':extname,
-                'size':convert_size(f.file.size),
-                'type':type,
-                'ext':os.path.splitext(f.file.name)[1],
-                'url':f.file.url,
-                'status':f.status,
-                'content':extracontent
-            }
-            filelist.append(file_info)
+            from .util import get_file_info
+            filelist.append(get_file_info(f))
         res['fileList'] = filelist
-        img_data_file = get_img(path)
-        doc_data_file = get_doc(path)
-        res['file_num'] = len(img_data_file)+len(doc_data_file)
-        res['img_num'] = len(img_data_file)
-        res['doc_num'] = len(doc_data_file)
-        res['audio_num'] = len(audio_data_file)
-        res['img_data_file'] = img_data_file
-        res['doc_data_file'] = doc_data_file
-        res['audio_data_file'] = audio_data_file
+        # Does not needed...
+        # img_data_file = get_img(path)
+        # doc_data_file = get_doc(path)
+        # res['file_num'] = len(img_data_file)+len(doc_data_file)
+        # res['img_num'] = len(img_data_file)
+        # res['doc_num'] = len(doc_data_file)
+        # res['audio_num'] = len(audio_data_file)
+        # res['img_data_file'] = img_data_file
+        # res['doc_data_file'] = doc_data_file
+        # res['audio_data_file'] = audio_data_file
         serializer.data['res'] = res
         res.update(serializer.data)
 
@@ -165,7 +139,7 @@ class ProjectModelViewSet(ModelViewSet):
 
        # 删除项目
         self.get_object().delete()
-        return Response({'mes': '删除成功'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'mes': '删除成功'}, status=status.HTTP_200_OK)
 
 
 
@@ -182,9 +156,9 @@ class ProjectModelViewSet(ModelViewSet):
 
 
         if len(image_file) == 0:
-            return Response({'res': "项目没有图片文件"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'res': "项目没有图片文件"}, status=status.HTTP_200_OK)
 
-        return Response(data=image_file, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=image_file, status=status.HTTP_200_OK)
 
     '''获取项目游戏建议图片文件'''
     @action(methods=["get"], detail=True, url_path="advice_images")
@@ -200,9 +174,9 @@ class ProjectModelViewSet(ModelViewSet):
                                   for file in instance_advice_file if convert_type(os.path.basename(file['file'])) == 'image']
 
         if len(advice_image) == 0:
-            return Response({'res': "项目没有图片文件"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'res': "项目没有图片文件"}, status=status.HTTP_200_OK)
 
-        return Response(data=advice_image, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=advice_image, status=status.HTTP_200_OK)
 
 
 
@@ -217,9 +191,9 @@ class ProjectModelViewSet(ModelViewSet):
                                   for file in instance_file if convert_type(os.path.basename(file['file'])) == 'text']
 
         if len(text_file) == 0:
-            return Response({'res': "项目没有文本文件"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'res': "项目没有文本文件"}, status=status.HTTP_200_OK)
 
-        return Response(data=text_file, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=text_file, status=status.HTTP_200_OK)
 
     '''删除项目文件'''
     @action(methods=['delete'],detail=True, url_path="delete_files")
@@ -271,7 +245,7 @@ class ProjectModelViewSet(ModelViewSet):
 
     '''获取项目所有音频文件'''
     @action(methods=["get"], detail=True, url_path="audios")
-    def get_text_files(self, request, pk):
+    def get_audio_files(self, request, pk):
         from .util import convert_type
         instance = Project.objects.get(id=pk)
         serializer = ProjectModelSerializer(instance=instance)
@@ -280,14 +254,14 @@ class ProjectModelViewSet(ModelViewSet):
                                   for file in instance_file if convert_type(os.path.basename(file['file'])) == 'audio']
 
         if len(audio_file) == 0:
-            return Response({'res': "项目没有音频文件"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'res': "项目没有音频文件"}, status=status.HTTP_200_OK)
 
-        return Response(data=audio_file, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=audio_file, status=status.HTTP_200_OK)
 
 
     '''获取项目所有视频文件'''
     @action(methods=["get"], detail=True, url_path="vedios")
-    def get_text_files(self, request, pk):
+    def get_video_files(self, request, pk):
         from .util import convert_type
         instance = Project.objects.get(id=pk)
         serializer = ProjectModelSerializer(instance=instance)
@@ -296,9 +270,9 @@ class ProjectModelViewSet(ModelViewSet):
                                   for file in instance_file if convert_type(os.path.basename(file['file'])) == 'video']
 
         if len(video_file) == 0:
-            return Response({'res': "项目没有视频文件"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'res': "项目没有视频文件"}, status=status.HTTP_200_OK)
 
-        return Response(data=video_file, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=video_file, status=status.HTTP_200_OK)
 
 
 
@@ -314,7 +288,7 @@ class ProjectModelViewSet(ModelViewSet):
         image = Image.open(path).convert('RGB')
         context = img_base64(image)
 
-        return Response({'image': context}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'image': context}, status=status.HTTP_200_OK)
 
     '''获取一张游戏建议图片'''
     # @action(methods=["get"], detail=True, url_path="process_img")
@@ -328,7 +302,7 @@ class ProjectModelViewSet(ModelViewSet):
         image = Image.open(path).convert('RGB')
         context = img_base64(image)
 
-        return Response({'image': context}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'image': context}, status=status.HTTP_200_OK)
 
 
 
@@ -345,7 +319,7 @@ class ProjectModelViewSet(ModelViewSet):
         for para in file.paragraphs:
             content_str += str(para.text)
 
-        return Response({'text': content_str}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'text': content_str}, status=status.HTTP_200_OK)
 
 
     '''获取一个音频'''
@@ -355,7 +329,7 @@ class ProjectModelViewSet(ModelViewSet):
         audiofile = File.objects.get(id=file_id)
         file_path = audiofile.file
         
-        return Response({'audio': str(file_path)}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'audio': str(file_path)}, status=status.HTTP_200_OK)
 
 
     '''获取一个视频'''
@@ -366,7 +340,7 @@ class ProjectModelViewSet(ModelViewSet):
         file_path = vediofile.file
         KeyFrame.objects.all().delete()
         
-        return Response({'vedio': str(file_path)}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'vedio': str(file_path)}, status=status.HTTP_200_OK)
 
 
 
@@ -389,14 +363,13 @@ class ProjectModelViewSet(ModelViewSet):
         # imgfilter.get_img_base64()
         res = imgfilter.process_result
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
 
 
     '''处理一张图片(健康游戏忠告)'''
     # @action(methods=["get"], detail=True, url_path="game_advice")
     def game_advice(self, request, pk, file_id):
-
         instance = Project.objects.get(id=pk)
         file = GameAdvice.objects.get(id=file_id)
         path = file.file
@@ -406,9 +379,9 @@ class ProjectModelViewSet(ModelViewSet):
         imgfilter.init_para(path)
         is_game_advice = imgfilter.game_advice()
         if is_game_advice==True:
-            return Response(data='图片含有游戏健康忠告内容', status=status.HTTP_204_NO_CONTENT)
+            return Response(data='图片含有游戏健康忠告内容', status=status.HTTP_200_OK)
         if is_game_advice==False:
-            return Response(data='图片不含有游戏健康忠告内容', status=status.HTTP_204_NO_CONTENT)
+            return Response(data='图片不含有游戏健康忠告内容', status=status.HTTP_200_OK)
 
         
 
@@ -421,7 +394,7 @@ class ProjectModelViewSet(ModelViewSet):
 
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
-        path = file.file
+        path = file.file.path
 
         # # 开始处理
         docfilter = DocProcess()
@@ -432,7 +405,7 @@ class ProjectModelViewSet(ModelViewSet):
 
         res = docfilter.process_result
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
 
     '''处理一个音频'''
@@ -450,7 +423,7 @@ class ProjectModelViewSet(ModelViewSet):
 
         res = speechfilter.process_result
   
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
 
     '''处理一个视频'''
@@ -477,7 +450,7 @@ class ProjectModelViewSet(ModelViewSet):
         all_key = KeyFrame.objects.filter(file=file.id)
         res = [{'id': file.id, 'description': '此关键帧可能含有血液','time':file.time , 'file':file.path, } for file in all_key ]
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
 
 

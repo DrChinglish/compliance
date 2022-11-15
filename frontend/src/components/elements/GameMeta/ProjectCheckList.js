@@ -6,7 +6,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import GppGoodIcon from '@mui/icons-material/GppGood';
-import EmptyHint from './subComponents/EmptyHint';
+import EmptyHint from '../../Hints/EmptyHint';
 import HealthyReminder from './subComponents/CheckListContents/HealthyReminder';
 import TextSummary from './subComponents/CheckListContents/TextSummary';
 

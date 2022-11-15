@@ -133,7 +133,7 @@ class YOLO(object):
         #   添加上batch_size维度
         #---------------------------------------------------------#
         image_data  = np.expand_dims(np.transpose(preprocess_input(np.array(image_data, dtype='float32')), (2, 0, 1)), 0)
-
+        classes_nums    = np.zeros([self.num_classes])
         with torch.no_grad():
             images = torch.from_numpy(image_data)
             if self.cuda and torch.cuda.is_available():
@@ -165,7 +165,7 @@ class YOLO(object):
         #---------------------------------------------------------#
         if count:
             print("top_label:", top_label)
-            classes_nums    = np.zeros([self.num_classes])
+            
             for i in range(self.num_classes):
                 num = np.sum(top_label == i)
                 if num > 0:
@@ -220,8 +220,10 @@ class YOLO(object):
             draw.rectangle([tuple(text_origin), tuple(text_origin + label_size)], fill=self.colors[c])
             draw.text(text_origin, str(label,'UTF-8'), fill=(0, 0, 0), font=font)
             del draw
-
-        return image
+        if count:
+            return image, classes_nums
+        else:
+            return image
         
     def get_FPS(self, image, test_interval):
         image_shape = np.array(np.shape(image)[0:2])

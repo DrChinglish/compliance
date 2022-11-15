@@ -5,7 +5,7 @@ import PropTypes from 'prop-types'
 import urlmapping from "../../../urlMapping.json"
 import RefreshIcon from '@mui/icons-material/Refresh';
 import {getProcessedFile} from '../../../utils/APIs'
-import EmptyHint from './subComponents/EmptyHint';
+import EmptyHint from '../../Hints/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
 import TextFileContent from './subComponents/FileContents/TextFileContent';
 import './GameFileList.css'
@@ -14,7 +14,7 @@ import ImageFileContent from './subComponents/FileContents/ImageFileContent'
 import AudioFileContent from './subComponents/FileContents/AudioFileContent'
 import VideoFileContent from './subComponents/FileContents/VideoFileContent'
 import fetchHandle from '../../../utils/FetchErrorhandle';
-import ErrorHint from '../ErrorHint';
+import ErrorHint from '../../Hints/ErrorHint';
 import { Stack } from '@mui/system';
 import { Checkbox, Button } from '@mui/material'
 import Titles from '../../typography/Titles';
@@ -186,7 +186,7 @@ export default class GameFileList extends Component {
       else if(this.props.variant==='image')
         content = <ImageFileContent image={fileList[this.state.selected]}/>
       else if(this.props.variant ==='audio')
-        content = <AudioFileContent audio={fileList[this.state.selected]}/>
+        content = <AudioFileContent audio={fileList[this.state.selected]} pid={this.props.pid}/>
       else
         content = <VideoFileContent video={fileList[this.state.selected]}/>
     }
