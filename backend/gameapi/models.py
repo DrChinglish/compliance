@@ -16,13 +16,7 @@ class Project(models.Model):
         ('speech','Speech'),
         ('image','Image'),
     )
-    STATUS_CHOICES=(
-        ('open','Open'),
-        ('closed','Closed'),
-        ('aborted','Aborted'),
-        ('pending','Pending'),
-        ('other',"Other")
-    )
+
     title = models.CharField(max_length=300, verbose_name='项目名称')
     description = models.TextField(verbose_name='项目描述')
     # upload = models.FileField(upload_to='files/game_projects',verbose_name='上传文件')
@@ -56,6 +50,7 @@ class Project(models.Model):
 def get_file_dir(instance, filename):
     print(instance)
     return 'files/game_projects/project_{0}/{1}'.format(instance.project.title,filename)
+
 
 class File(models.Model):
     STATUS_CHOICES_FILE=(

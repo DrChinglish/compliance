@@ -1,5 +1,5 @@
 import os
-from django.core.files.uploadedfile import UploadedFile
+
 
 def convert_size(text):
     units = ["B", "KB", "MB", "GB", "TB", "PB"]
