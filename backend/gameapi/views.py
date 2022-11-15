@@ -93,6 +93,7 @@ class ProjectModelViewSet(ModelViewSet):
 
 
 
+
     """获取一个项目"""
     def retrieve(self, request, pk):
         from . import class_method
@@ -338,10 +339,20 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         vediofile = File.objects.get(id=file_id)
         file_path = vediofile.file
-        KeyFrame.objects.all().delete()
+        # KeyFrame.objects.all().delete()
         
         return Response({'vedio': str(file_path)}, status=status.HTTP_200_OK)
 
+
+    '''获取一个关键帧'''
+    def get_one_frame(self, request, pk, file_id, frame_id):
+        instance = Project.objects.get(id=pk)
+        vediofile = File.objects.get(id=file_id)
+        keyframe = KeyFrame.objects.get(id=frame_id)
+        frame_path = keyframe.path
+        
+        
+        return Response({'frame': str(frame_path)}, status=status.HTTP_200_OK)
 
 
 
@@ -360,7 +371,8 @@ class ProjectModelViewSet(ModelViewSet):
         imgfilter.process_sensitive_word()
         imgfilter.process_english_word()
         imgfilter.process_skull()
-        # imgfilter.get_img_base64()
+        imgfilter.process_blood(path)
+        # imgfilter.image.show()
         res = imgfilter.process_result
 
         return Response(data=res, status=status.HTTP_200_OK)
@@ -452,6 +464,22 @@ class ProjectModelViewSet(ModelViewSet):
 
         return Response(data=res, status=status.HTTP_200_OK)
 
+        
+    '''处理一个关键帧'''
+    def process_frame(self, request, pk, file_id, frame_id):
+        instance = Project.objects.get(id=pk)
+        vediofile = File.objects.get(id=file_id)
+        keyframe = KeyFrame.objects.get(id=frame_id)
+        frame_path = keyframe.path
+
+        #  开始处理关键帧
+        imgfilter = ImageProcess()
+        imgfilter.init_para(frame_path)
+        imgfilter.process_blood(frame_path)
+        res = imgfilter.process_result
+
+
+        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
 
 
 

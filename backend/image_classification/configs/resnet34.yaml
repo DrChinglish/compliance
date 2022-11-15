@@ -1,0 +1,68 @@
+albu:
+  RandomSizedBBoxSafeCrop:
+    height: 720
+    width: 720
+device: cuda
+dataset:
+  name: Bloody
+  dataset_dir: ./datasets/bloody
+  image_size: 360
+  n_channels: 3
+  n_classes: 2
+model:
+  type: imagenet
+  name: resnet
+  init_mode: kaiming_fan_out
+  resnet:
+    initial_channels: 64
+    block_type: basic
+    n_blocks: [3, 4, 6, 3]
+train:
+  resume: True
+  seed: 0
+  precision: O0
+  batch_size: 16
+  subdivision: 1
+  optimizer: sgd
+  base_lr: 0.1
+  momentum: 0.9
+  nesterov: True
+  weight_decay: 1e-4
+  output_dir: experiments/imagenet/resnet34/exp01
+  log_period: 10
+  checkpoint_period: 5
+  use_tensorboard: True
+  distributed: False
+  dataloader:
+    num_workers: 4
+    drop_last: True
+    pin_memory: True
+validation:
+  batch_size: 16
+  dataloader:
+    num_workers: 0
+    drop_last: False
+    pin_memory: True
+scheduler:
+  epochs: 120
+  type: multistep
+  milestones: [25, 50, 75, 100]
+  lr_decay: 0.5
+augmentation:
+  use_random_crop: True
+  use_random_horizontal_flip: True
+  use_cutout: False
+  use_random_erasing: False
+  use_dual_cutout: False
+  use_mixup: False
+  use_ricap: False
+  use_cutmix: False
+  use_label_smoothing: False
+tta:
+  use_resize: True
+  use_center_crop: True
+  resize: 256
+tensorboard:
+  train_images: True
+  val_images: True
+  model_params: False
