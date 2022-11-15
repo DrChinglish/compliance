@@ -8,11 +8,13 @@ urlpatterns = [
     path("projects/<int:pk>/texts/<int:file_id>/", views.ProjectModelViewSet.as_view({"get":"get_one_doc"})),
     path("projects/<int:pk>/audios/<int:file_id>/", views.ProjectModelViewSet.as_view({"get":"get_one_audio"})),
     path("projects/<int:pk>/vedios/<int:file_id>/", views.ProjectModelViewSet.as_view({"get":"get_one_vedio"})),
+    path("projects/<int:pk>/vedios/<int:file_id>/key_frames/<int:frame_id>", views.ProjectModelViewSet.as_view({"get":"get_one_frame"})),
     path("projects/<int:pk>/images/<int:file_id>/result", views.ProjectModelViewSet.as_view({"get":"process_img"})),
     path("projects/<int:pk>/advice_images/<int:file_id>/result", views.ProjectModelViewSet.as_view({"get":"game_advice"})),
     path("projects/<int:pk>/texts/<int:file_id>/result", views.ProjectModelViewSet.as_view({"get":"process_doc"})),
     path("projects/<int:pk>/audios/<int:file_id>/result", views.ProjectModelViewSet.as_view({"get": "process_audio"})),
     path("projects/<int:pk>/vedios/<int:file_id>/key_frames", views.ProjectModelViewSet.as_view({"get": "key_frames"})),
+    path("projects/<int:pk>/vedios/<int:file_id>/key_frames/<int:frame_id>/result", views.ProjectModelViewSet.as_view({"get": "process_frame"})),
 
 ]
 

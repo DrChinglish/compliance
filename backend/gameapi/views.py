@@ -266,9 +266,20 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         vediofile = File.objects.get(id=file_id)
         file_path = vediofile.file
-        KeyFrame.objects.all().delete()
+        # KeyFrame.objects.all().delete()
         
         return Response({'vedio': str(file_path)}, status=status.HTTP_204_NO_CONTENT)
+
+
+    '''获取一个关键帧'''
+    def get_one_frame(self, request, pk, file_id, frame_id):
+        instance = Project.objects.get(id=pk)
+        vediofile = File.objects.get(id=file_id)
+        keyframe = KeyFrame.objects.get(id=frame_id)
+        frame_path = keyframe.path
+        
+        
+        return Response({'frame': str(frame_path)}, status=status.HTTP_204_NO_CONTENT)
 
 
 
@@ -378,6 +389,23 @@ class ProjectModelViewSet(ModelViewSet):
         all_key = KeyFrame.objects.filter(file=file.id)
         res = [{'id': file.id, 'description': '此关键帧可能含有血液','time':file.time , 'file':file.path, } for file in all_key ]
 
+        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+
+
+    '''处理一个关键帧'''
+    def process_frame(self, request, pk, file_id, frame_id):
+        instance = Project.objects.get(id=pk)
+        vediofile = File.objects.get(id=file_id)
+        keyframe = KeyFrame.objects.get(id=frame_id)
+        frame_path = keyframe.path
+
+        #  开始处理关键帧
+        imgfilter = ImageProcess()
+        imgfilter.init_para(frame_path)
+        imgfilter.process_blood(frame_path)
+        res = imgfilter.process_result
+        
+        
         return Response(data=res, status=status.HTTP_204_NO_CONTENT)
 
 
