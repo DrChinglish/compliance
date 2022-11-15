@@ -272,7 +272,6 @@ class ProjectModelViewSet(ModelViewSet):
 
 
 
-
     '''处理一张图片'''
     # @action(methods=["get"], detail=True, url_path="process_img")
     def process_img(self, request, pk, file_id):
@@ -288,7 +287,8 @@ class ProjectModelViewSet(ModelViewSet):
         imgfilter.process_sensitive_word()
         imgfilter.process_english_word()
         imgfilter.process_skull()
-        # imgfilter.get_img_base64()
+        imgfilter.process_blood(path)
+        # imgfilter.image.show()
         res = imgfilter.process_result
 
         return Response(data=res, status=status.HTTP_204_NO_CONTENT)

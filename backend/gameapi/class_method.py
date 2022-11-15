@@ -4,6 +4,8 @@
 from os import walk, path
 from zipfile import ZipFile
 from .key_frame import Extractor
+from PIL import Image
+import numpy as np
 
 
 # 处理图片数据
@@ -12,7 +14,7 @@ class ImageProcess(object):
         self.txts = []  # 图片中文字
         self.boxes = []  # 图片中文字对应坐标
         self.image = None
-        self.process_result = {}  # 敏感词
+        self.process_result = {}  # 处理结果
         self.keyword_box = {}  # 敏感词所在坐标
         
 
@@ -61,8 +63,7 @@ class ImageProcess(object):
     # 处理图片上的敏感词
     def process_sensitive_word(self):
         from paddleocr import draw_ocr
-        from PIL import Image
-        import numpy as np
+        
         
         count = 0    #敏感词数量
         senstive_item = []   #敏感词
@@ -112,10 +113,27 @@ class ImageProcess(object):
         sys.path.append("yolo/model_data")
         
         from yolo.yolo import YOLO
-        yolo = YOLO()     
-        r_image, num= yolo.detect_image(self.image, crop = False, count=True)
+        yolo = YOLO()    
+        r_image, num= yolo.detect_image(self.image, crop = False, count = True)
 
         self.process_result['skull'] = {'count':num,'image':self.get_img_base64(r_image)}
+
+
+    # 检测血液
+    def process_blood(self,path):
+        import sys
+        sys.path.append("image_classification")
+        sys.path.append("image_classification/pytorch_image_classification")
+        sys.path.append("image_classification/configs")
+        
+        from image_classification.predict import Predictor
+        predictor =Predictor()   
+        score = predictor.blood_predict(path)
+        if score > 0.8:
+            self.process_result['is_blood'] =  '检测到图片中含有血液'
+        else:
+            self.process_result['is_blood'] =  '检测到图片中不含有血液'
+
 
 
     # 健康游戏忠告
