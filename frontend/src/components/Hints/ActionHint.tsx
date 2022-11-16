@@ -12,7 +12,7 @@ export default function ActionHint(props: Props) {
       <Empty
         description={
           <React.Fragment>
-            <Typography component='div' color="#a9a9a9" align='center' lineHeight='100%'>{props.text}</Typography>
+            <Typography gutterBottom component='div' color="#a9a9a9" align='center' lineHeight='100%'>{props.text}</Typography>
             {props.extra}
           </React.Fragment>
         }

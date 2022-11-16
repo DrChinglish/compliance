@@ -1,5 +1,5 @@
 import os
-
+from django.core.files.uploadedfile import UploadedFile
 
 def convert_size(text):
     units = ["B", "KB", "MB", "GB", "TB", "PB"]
@@ -17,7 +17,7 @@ def convert_type(name):
     audio = ['.mp3','.wav','.aac','.wma','m4a']
     video = ['.mp4','.m4v','.avi']
 
-    ext = os.path.splitext(name)[1]
+    ext =  os.path.splitext(name)[1].lower()
     # print(ext)
     if ext in text:
         return 'text'

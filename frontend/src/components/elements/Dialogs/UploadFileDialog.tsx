@@ -14,7 +14,8 @@ const {Dragger} = Upload
 type Props = {
     open:boolean,
     onClose:(event: object, reason: string)=>void,
-    pid:number
+    pid:number,
+    uploadTo:(pid:number,fileList:UploadFile[],catchCallback?:(e:any)=>void)=>Promise<any>
 }
 
 export default function UploadFileDialog(props: Props) {
@@ -27,18 +28,19 @@ export default function UploadFileDialog(props: Props) {
     const [done,setDone] = useState<boolean>(false)
     const handleUpload=()=>{
         setUploading(true)
-        uploadNewFile(props.pid,fileList)
+        props.uploadTo(props.pid,fileList)
         .then(res=>{
             console.log(res)
-            setFailedFile(res.file_rejected)
+            res.file_rejected&&setFailedFile(res.file_rejected)
             setUploading(false)
-            setSnackbarStatus({show:true,text:res.text,severity:res.status===0?'warning':'success'})
-            if(res.file_rejected.length>0){
+            setSnackbarStatus({show:true,text:res.text??'操作完成',severity:res.status===0?'warning':'success'})
+            if(res.file_rejected?.length>0){
                 setShowResult(true)
             }else{
                 setDone(true)
             setTimeout(() => {
-                handleClose()
+                console.log('close')
+                handleClose('upload success')
             }, 3000);
             }
         })
@@ -49,11 +51,13 @@ export default function UploadFileDialog(props: Props) {
         setFileList([])
         setFailedFile([])
         setShowResult(false)
+        setDone(false)
         setSnackbarStatus({show:false,text:'',severity:'success'})
     },[props.open])
 
-    const handleClose =()=>{
-        props.onClose({},'upload action over')
+    const handleClose =(reason:string)=>{
+        console.log('onclose')
+        props.onClose({},reason)
     } 
 
     let uploadProps = {
@@ -92,7 +96,7 @@ export default function UploadFileDialog(props: Props) {
   return (
     <PopupDialog title='上传文件' open={props.open} onClose={props.onClose}
         actions={
-            showResult?<Button variant='contained' onClick={handleClose}>关闭</Button>:
+            showResult?<Button variant='contained' onClick={()=>handleClose('user interrupt')}>关闭</Button>:
             <LoadingButton loading={uploading} variant='contained' disabled={fileList.length===0}
             onClick={uploading?()=>{}:handleUpload}>上传</LoadingButton>
         }

@@ -36,7 +36,7 @@ export default class ProjectCheckList extends Component {
     }
 
 render() {
-    let {fileCount} = this.props.info
+    let {fileCount,healthyReminder,pid} = this.props.info
 
     let steps = [
         {
@@ -59,7 +59,7 @@ render() {
         {
             label:'游戏健康忠告',
             description:'Some description here',
-            content:<HealthyReminder />
+            content:<HealthyReminder file={healthyReminder} pid={pid}/>
         },
     ]
      

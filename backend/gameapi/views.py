@@ -105,12 +105,17 @@ class ProjectModelViewSet(ModelViewSet):
         res={}
         files = instance.project_files.all()
         filelist = []
+        advicelist = []
         # print(files)
         from .util import convert_size, convert_type
         for f in files:
             from .util import get_file_info
             filelist.append(get_file_info(f))
+        advices = instance.advice_files.all()
+        for advf in advices:
+            advicelist.append({'id':advf.id,'url':advf.file.url})
         res['fileList'] = filelist
+        res['healthyReminder'] = advicelist
         # Does not needed...
         # img_data_file = get_img(path)
         # doc_data_file = get_doc(path)
@@ -168,18 +173,34 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         serializer = ProjectModelSerializer(instance=instance)
         instance_advice_file = serializer.data['advice_files']
-
-
-
-        advice_image = [{'id': file['id'], 'file':os.path.basename(file['file']), 'project':file['project']}
+        for file in instance_advice_file:
+            print (file['file'])
+        advice_image = [{'url':file['file'],'id': file['id'], 'file':os.path.basename(file['file']), 'project':file['project']}
                                   for file in instance_advice_file if convert_type(os.path.basename(file['file'])) == 'image']
 
         if len(advice_image) == 0:
-            return Response({'res': "项目没有图片文件"}, status=status.HTTP_200_OK)
+            return Response({'status':0,'res': "项目没有图片文件"}, status=status.HTTP_200_OK)
 
-        return Response(data=advice_image, status=status.HTTP_200_OK)
+        return Response(data={'data':advice_image,'status':1}, status=status.HTTP_200_OK)
 
-
+    '''删除项目游戏健康忠告图片'''
+    @action(methods=["delete"], detail=True, url_path="delete_advice_images")
+    def delete_advice_img_file(self, request, pk):
+        project_advices_ids=Project.objects.get(id=pk).advice_files.all().values_list('id',flat=True)
+        # {
+        #  "delete":[1] 
+        # }
+        deletedfid=[]
+        fid = dict(eval(request.body))['delete'][0]
+        if fid in project_advices_ids:
+            instance = GameAdvice.objects.get(id=fid)
+            if os.path.exists(instance.file.path):
+                os.remove(instance.file.path)
+            instance.delete()
+            deletedfid.append(fid)
+            return Response(data={'status':1,'deletedfid':deletedfid}, status=status.HTTP_200_OK)
+        else:
+            return Response(data={'status':0,'deletedfid':deletedfid}, status=status.HTTP_200_OK)
 
     '''获取项目所有文本文件'''
     @action(methods=["get"], detail=True, url_path="texts")
@@ -261,7 +282,7 @@ class ProjectModelViewSet(ModelViewSet):
 
 
     '''获取项目所有视频文件'''
-    @action(methods=["get"], detail=True, url_path="vedios")
+    @action(methods=["get"], detail=True, url_path="videos")
     def get_video_files(self, request, pk):
         from .util import convert_type
         instance = Project.objects.get(id=pk)
@@ -335,19 +356,19 @@ class ProjectModelViewSet(ModelViewSet):
 
     '''获取一个视频'''
     # @action(methods=["get"], detail=True, url_path="process_audio")
-    def get_one_vedio(self, request, pk, file_id):
+    def get_one_video(self, request, pk, file_id):
         instance = Project.objects.get(id=pk)
-        vediofile = File.objects.get(id=file_id)
-        file_path = vediofile.file
+        videofile = File.objects.get(id=file_id)
+        file_path = videofile.file
         # KeyFrame.objects.all().delete()
         
-        return Response({'vedio': str(file_path)}, status=status.HTTP_200_OK)
+        return Response({'video': str(file_path)}, status=status.HTTP_200_OK)
 
 
     '''获取一个关键帧'''
     def get_one_frame(self, request, pk, file_id, frame_id):
         instance = Project.objects.get(id=pk)
-        vediofile = File.objects.get(id=file_id)
+        videofile = File.objects.get(id=file_id)
         keyframe = KeyFrame.objects.get(id=frame_id)
         frame_path = keyframe.path
         
@@ -447,10 +468,10 @@ class ProjectModelViewSet(ModelViewSet):
         print(f'这里是文件id{file.id}')
         path = './media/' + str(file.file)
         #开始抽取关键帧
-        vediofilter = VedioProcess()
-        vediofilter.extract_frame(path)
+        videofilter = VideoProcess()
+        videofilter.extract_frame(path)
 
-        key_frame = dict(zip(vediofilter.frame_time, vediofilter.frame_path))
+        key_frame = dict(zip(videofilter.frame_time, videofilter.frame_path))
         #保存关键帧到数据库
         for key,value in key_frame.items():
             new_keyframe = KeyFrame.objects.create()
@@ -460,7 +481,7 @@ class ProjectModelViewSet(ModelViewSet):
             new_keyframe.save()
 
         all_key = KeyFrame.objects.filter(file=file.id)
-        res = [{'id': file.id, 'description': '此关键帧可能含有血液','time':file.time , 'file':file.path, } for file in all_key ]
+        res = [{'id': file.id, 'description': '此关键帧可能含有血液','timestamp':file.time , 'src':file.path, } for file in all_key ]
 
         return Response(data=res, status=status.HTTP_200_OK)
 
@@ -468,7 +489,7 @@ class ProjectModelViewSet(ModelViewSet):
     '''处理一个关键帧'''
     def process_frame(self, request, pk, file_id, frame_id):
         instance = Project.objects.get(id=pk)
-        vediofile = File.objects.get(id=file_id)
+        videofile = File.objects.get(id=file_id)
         keyframe = KeyFrame.objects.get(id=frame_id)
         frame_path = keyframe.path
 

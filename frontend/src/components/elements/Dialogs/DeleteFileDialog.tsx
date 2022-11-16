@@ -1,6 +1,6 @@
 import LoadingButton from '@mui/lab/LoadingButton'
-import React, { useState } from 'react'
-import { FileMeta, SnackbarStatus } from '../../../Interfaces'
+import React, { useEffect, useState } from 'react'
+import { FileInfoBasic, FileMeta, SnackbarStatus } from '../../../Interfaces'
 import PopupDialog from './PopupDialog'
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText} from '@mui/material'
 import FolderIcon from '@mui/icons-material/Folder';
@@ -10,11 +10,12 @@ import LoadingProgress from '../GameMeta/subComponents/LoadingProgress'
 import SuccessHint from '../../Hints/SuccessHint'
 
 type Props = {
-    fileList: FileMeta[],
+    fileList: FileInfoBasic[]|FileMeta[],
     open:boolean,
     pid:number,
     onClose:(event: object, reason: string)=>void,
-    updateFileList:(deletedfid:number[])=>void
+    updateFileList?:(deletedfid:number[])=>void,
+    from?:'default'|'advice'
 }
 
 export default function DeleteFileDialog(props: Props) {
@@ -24,10 +25,14 @@ export default function DeleteFileDialog(props: Props) {
     const handleCancel=()=>{
         props.onClose({},'user close')
     }
-
+    useEffect(()=>{
+        setLoading(false)
+        setDone(false)
+        setSnackbarStatus({show:false,text:'',severity:'success'})
+    },[props.open])
     const handleDelete=()=>{
         setLoading(true)
-        deleteFile(props.pid,props.fileList)
+        deleteFile(props.pid,props.fileList,props.from??'default')
         .then(res=>{
             console.log(res)
             setLoading(false)
@@ -36,13 +41,14 @@ export default function DeleteFileDialog(props: Props) {
                 setSnackbarStatus({show:true,text:'删除失败。',severity:'error'})
             }else if(res.deletedfid.length === props.fileList.length){
                 setSnackbarStatus({show:true,text:`成功删除了${props.fileList.length}个文件。`,severity:'success'})
-            }else{
-                setSnackbarStatus({show:true,text:`成功删除了${props.fileList.length}个文件中的${res.deletedfid.length}个。`,severity:'warning'})
                 setTimeout(() => {
                     props.onClose({},'delete ends')
                 }, 3000);
+            }else{
+                setSnackbarStatus({show:true,text:`成功删除了${props.fileList.length}个文件中的${res.deletedfid.length}个。`,severity:'warning'})
+                
             }
-            props.updateFileList(res.deletedfid)
+            props.updateFileList && props.updateFileList(res.deletedfid)
         })
     }
   return (
@@ -62,7 +68,7 @@ export default function DeleteFileDialog(props: Props) {
                 <ListItem>
                     <ListItemAvatar><Avatar><FolderIcon/></Avatar></ListItemAvatar>
                     <ListItemText>
-                        {file.name}
+                        {file.name??`游戏健康忠告图片 id:${file.id}`}
                     </ListItemText>
                 </ListItem>
             ))}

@@ -49,6 +49,7 @@ export default class GameMeta extends Component {
         
         //console.log(fileList)
         this.state={
+            healthyReminder:{},
             value:0, //currently selected tab index
             tableLoading:false,
             loaderror:false,
@@ -104,7 +105,7 @@ export default class GameMeta extends Component {
             target.push(file)
         }
         //console.log(fileList)
-        return {fileList:fileList}
+        return {fileList:fileList,healthyReminder:props.healthyReminder}
     }
 
     loadDBScan=()=>{
@@ -163,7 +164,8 @@ export default class GameMeta extends Component {
         {
             label:'审核概览',
             variant:'summary',
-            content:<ProjectCheckList info={{fileCount:this.getFileCount()}}/>,
+            content:<ProjectCheckList info={{pid:this.props.info.id,fileCount:this.getFileCount(),
+                healthyReminder:this.state.healthyReminder}}/>,
         },
         {
             label:'游戏信息',

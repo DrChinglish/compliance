@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 // import {FixedSizeList} from 'react-window'
 import urlmapping from "../../../urlMapping.json"
 import RefreshIcon from '@mui/icons-material/Refresh';
-import {getProcessedFile} from '../../../utils/APIs'
+import {getProcessedFile, processVideo} from '../../../utils/APIs'
 import EmptyHint from '../../Hints/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
 import TextFileContent from './subComponents/FileContents/TextFileContent';
@@ -36,7 +36,8 @@ export default class GameFileList extends Component {
        multiSelect:false,
        checked:[],
        showDeleteDialog:false,
-       deleteFileList:[]
+       deleteFileList:[],
+       keyframes:[]
     }
   }
 
@@ -74,6 +75,7 @@ export default class GameFileList extends Component {
   }
 
   handleDeleteDialogClose=()=>{
+    console.log('close')
     this.setState({showDeleteDialog:false})
   }
 
@@ -98,9 +100,33 @@ export default class GameFileList extends Component {
     this.setState({showDeleteDialog:true,deleteFileList:deleteFiles})
   }
 
+  prepareVideo=(value)=>{
+    this.setState({
+      selected: value,
+      loading:true,
+      loaderr:{status:false,index:-1,text:'未知错误'}
+    })
+    processVideo(this.props.pid,this.state.fileList[value].id,(reason)=>{
+      this.setState({
+        loading:false,
+        loaderr:{
+          index:value,
+          status:true,
+          text:`发生了一个错误：${reason.name} ${reason.message}`
+        }
+      })
+    })
+    .then(res=>{
+      this.setState({
+        keyframes:res,
+        loading:false
+      })
+    })
+  }
+
   handleClick=(e,value)=>{
     /*---DEV ONLY---*/
-    if(['audio','video'].indexOf(this.props.variant)!==-1){
+    if(['audio'].indexOf(this.props.variant)!==-1){
       this.setState({
         selected: value,
         loaderr:{status:false,index:-1,text:'未知错误'}
@@ -108,6 +134,11 @@ export default class GameFileList extends Component {
       return  
     }
     /*---DEV ONLY---*/
+
+    if(this.props.variant==='video'){
+      this.prepareVideo(value)
+      return
+    }
 
     //TODO: add backend interaction here
     this.setState({
@@ -188,7 +219,7 @@ export default class GameFileList extends Component {
       else if(this.props.variant ==='audio')
         content = <AudioFileContent audio={fileList[this.state.selected]} pid={this.props.pid}/>
       else
-        content = <VideoFileContent video={fileList[this.state.selected]}/>
+        content = <VideoFileContent video={fileList[this.state.selected]} keyframes={this.state.keyframes}/>
     }
     return (
       
@@ -209,7 +240,7 @@ export default class GameFileList extends Component {
               {fileList?.map((file,index)=>{
                 let thumbnailUrl = this.props.variant === 'image'?file.url:
                 (this.props.variant==='video'?file.content.coverurl:undefined)
-                return <ListItemFile index={index} selected={this.state.selected} file={file} 
+                return <ListItemFile key={index} index={index} selected={this.state.selected} file={file} 
                 thumbnailUrl={thumbnailUrl} onClick={this.handleClick} secondaryAction={
                   this.state.multiSelect?
                   <Checkbox 

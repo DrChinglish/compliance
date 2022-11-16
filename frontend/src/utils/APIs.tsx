@@ -3,10 +3,10 @@ import { UploadFile } from "antd"
 import { RcFile } from "antd/lib/upload"
 import cookie from 'react-cookies'
 import fetchHandle from './FetchErrorhandle'
-import { FileMeta } from "../Interfaces"
+import { FileInfoBasic, FileMeta } from "../Interfaces"
 export function getStaticResources(url:string){
     //Retreive static resources from django backend
-    return urlmapping.host+'/api'+url
+    return urlmapping.host+(url.at(0)==='/'?'/api':'/api/')+url
 }
 
 export function getProcessedFile(pid:number,fid:number,variant:'image'|'text'){
@@ -45,8 +45,8 @@ export async function uploadNewFile(pid:number,fileList:UploadFile[],catchCallba
     },catchCallback)
 }
 
-export async function deleteFile(pid:number, fileList:FileMeta[], catchCallback?:(e:any)=>void) {
-    let url = `${urlmapping.apibase.game}/projects/${pid}/delete_files/`
+export async function deleteFile(pid:number, fileList:FileInfoBasic[],from:'default'|'advice', catchCallback?:(e:any)=>void) {
+    let url = `${urlmapping.apibase.game}/projects/${pid}/${from==='default'?'delete_files':'delete_advice_images'}/`
     let deletefid:number[] = []
     fileList.forEach((value)=>{
         console.log(value)
@@ -67,7 +67,7 @@ export async function deleteFile(pid:number, fileList:FileMeta[], catchCallback?
 }
 
 export async function processAudio(pid:number,fid:number,catchCallback?:(e:any)=>void) {
-    let url=`${urlmapping.apibase.game}/projects/${pid}/audios/${fid}/process_audio`
+    let url=`${urlmapping.apibase.game}/projects/${pid}/audios/${fid}/result`
     return fetchRequest(
         url,
         {
@@ -79,5 +79,66 @@ export async function processAudio(pid:number,fid:number,catchCallback?:(e:any)=
             }
         }
         ,catchCallback
+    )
+}
+
+export async function uploadHealthyReminder(pid:number,fileList:UploadFile[],catchCallback?:(e:any)=>void) {
+    let url = `${urlmapping.apibase.game}/advices/`
+    let formdata = new FormData()
+    if(fileList.length>0)
+        formdata.append('file',fileList[0] as RcFile)
+    formdata.append('project',pid.toString() )
+    return fetchRequest(url,
+        {
+            method:'POST',
+            body:formdata,
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        },catchCallback
+    )
+}
+
+export async function getHealthyReminder(pid:number,catchCallback?:(e:any)=>void) {
+    let url = `${urlmapping.apibase.game}/projects/${pid}/advice_images/`
+    return fetchRequest(url,
+        {
+            method:'GET',
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        },catchCallback
+    )
+}
+
+export async function processHealthyReminder(pid:number,fid:number,catchCallback?:(e:any)=>void) {
+    let url = `${urlmapping.apibase.game}/projects/${pid}/advice_images/${fid}/result`
+    return fetchRequest(url,
+        {
+            method:'GET',
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        },catchCallback
+    )
+}
+
+export async function processVideo(pid:number,fid:number,catchCallback?:(e:any)=>void) {
+    let url = `${urlmapping.apibase.game}/projects/${pid}/videos/${fid}/key_frames`
+    return fetchRequest(url,
+        {
+            method:'GET',
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        },catchCallback
     )
 }

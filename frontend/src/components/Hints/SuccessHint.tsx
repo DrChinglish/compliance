@@ -12,7 +12,7 @@ export default function SuccessHint(props: Props) {
         <Stack spacing={1}>
           <DoneIcon sx={{fontSize:'120px'}}/>
           {props.label && 
-          <Titles variant='medium'>{props.label}</Titles>}
+          <Titles variant='medium' center>{props.label}</Titles>}
         </Stack>
         
     </Box>

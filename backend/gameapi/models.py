@@ -16,7 +16,13 @@ class Project(models.Model):
         ('speech','Speech'),
         ('image','Image'),
     )
-
+    STATUS_CHOICES=(
+        ('open','Open'),
+        ('closed','Closed'),
+        ('aborted','Aborted'),
+        ('pending','Pending'),
+        ('other',"Other")
+    )
     title = models.CharField(max_length=300, verbose_name='项目名称')
     description = models.TextField(verbose_name='项目描述')
     # upload = models.FileField(upload_to='files/game_projects',verbose_name='上传文件')
@@ -80,7 +86,7 @@ def get_file_type(instance, filename):
 
 
 class GameAdvice(models.Model):
-    CATEGORY_CHOICES = (
+    STATUS_CHOICES_ADVICE = (
         ('uploaded', 'Uploaded'),
         ('processing', 'Processing'),
         ('error', 'Error'),
@@ -88,7 +94,7 @@ class GameAdvice(models.Model):
     )
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='advice_files', verbose_name='所属项目')
     file = models.FileField(upload_to=get_file_dir, verbose_name='上传文件')
-    status = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='', verbose_name='状态')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES_ADVICE, default='uploaded', verbose_name='状态')
 
 
 

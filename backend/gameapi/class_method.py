@@ -129,6 +129,21 @@ class ImageProcess(object):
         self.process_result['skull'] = {'image':self.get_img_base64(r_image)}
 
 
+    # 检测血液
+    def process_blood(self,path):
+        import sys
+        sys.path.append("image_classification")
+        sys.path.append("image_classification/pytorch_image_classification")
+        sys.path.append("image_classification/configs")
+
+        from image_classification.predict import Predictor
+        predictor =Predictor()   
+        score = predictor.blood_predict(path)
+        if score > 0.8:
+            self.process_result['is_blood'] =  '检测到图片中含有血液'
+        else:
+            self.process_result['is_blood'] =  '检测到图片中不含有血液'
+
     # 健康游戏忠告
     def game_advice(self):
         from zhon.hanzi import punctuation
@@ -349,7 +364,7 @@ class SpeechProcess(object):
 
 
 # 处理视频数据
-class VedioProcess(object): 
+class VideoProcess(object): 
     def __init__(self):
         self.frame_path = []            # 关键帧保存路径
         self.frame_time = []            # 关键帧时间
@@ -571,7 +586,7 @@ def get_file(rootdir, type):
     img_data = []
     doc_data = []
     audio_data = []
-    vedio_data = []
+    video_data = []
     for root, dirs, files in walk(rootdir, topdown=True):
         for name in files:
             pre, ending = path.splitext(name)
@@ -582,7 +597,7 @@ def get_file(rootdir, type):
             if ending == ".wav" or ending == ".mp3" or ending == ".wma":
                 audio_data.append(name)
             if ending == ".mp4" or ending == ".m4v" or ending == ".avi":
-                vedio_data.append(name)
+                video_data.append(name)
             else:  
                 continue
         break
@@ -592,8 +607,8 @@ def get_file(rootdir, type):
         return doc_data
     if type == "audio":
         return audio_data
-    if type == "vedio":
-        return vedio_data
+    if type == "video":
+        return video_data
 
 
 

@@ -2,7 +2,8 @@
 venv_back/
 backend-venv/
 media/
-
+# Model weight
+image_classification/weights
 # Some log files
 exp/
 # data files

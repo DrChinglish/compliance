@@ -4,6 +4,7 @@ import { Typography } from '@mui/material'
 interface TypographyTitleProps{
   variant?:'left'|'large'|'iconlabel'|'medium'|string,
   children?:React.ReactNode,
+  center?:boolean
 }
 
 export default function Titles(props:TypographyTitleProps,...rest: any[]) {
@@ -16,6 +17,6 @@ export default function Titles(props:TypographyTitleProps,...rest: any[]) {
         default:prop={variant:'h5',align:'center', fontWeight:'bold'}
     }
   return (
-    <Typography {...rest} {...prop}>{props.children}</Typography>
+    <Typography textAlign={props.center?'center':undefined} {...rest} {...prop}>{props.children}</Typography>
   )
 }

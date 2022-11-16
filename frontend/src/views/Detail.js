@@ -9,6 +9,7 @@ import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 import withRouter from '../utils/WithRouter';
 import urlmapping from '../urlMapping.json'
 import UploadFileDialog from '../components/elements/Dialogs/UploadFileDialog'
+import MenuSimple from '../components/elements/MenuSimple'
 
 // icons
 import BuildIcon from '@mui/icons-material/Build';
@@ -16,6 +17,7 @@ import { MoreVert } from '@mui/icons-material';
 import ResultS from '../components/elements/ResultS/ResultS';
 import GameMeta from '../components/elements/GameMeta/GameMeta'
 import FileUploadIcon from '@mui/icons-material/FileUpload';
+import { uploadNewFile } from '../utils/APIs'
 
  class Detail extends Component {
 
@@ -33,6 +35,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
       this.setState({
         type:res.category,
         info:res,
+        healthyReminder:res.healthyReminder.length > 0?res.healthyReminder[0]:{},
         fileList:res.fileList
       })
     })
@@ -50,6 +53,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
   }
 
   handleDialogClose = (e,reason)=>{
+    console.log('handle close')
     this.setState({
      showDialog:false
     })
@@ -106,7 +110,8 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
       showDialog:false,
       suggestions:suggestions,
       suggestionTitle:"",
-      anchorElMenu:null
+      anchorElMenu:null,
+      healthyReminder:{}
     }
   }
 
@@ -117,7 +122,9 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
     let {suggestionTitle} = this.state
     switch(this.state.type){
       case 'table':suggestionTitle='table'; content = <DataGridS columns={columns} rows={rows}/>;break;
-      case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList} info={this.state.info}/> ;defaultsx={px:0,pb:'0px !important'};break;
+      case 'game': content = <GameMeta setSuggestions={this.setSuggestions} fileList={this.state.fileList}
+       info={this.state.info} healthyReminder={this.state.healthyReminder}/> ;
+       defaultsx={px:0,pb:'0px !important'};break;
       case 'image':suggestionTitle='image'; content = <DataGridP columns={columnsP} rows={rows}/>;break;
       case 'loading':content = <h6> Loading... </h6>;break;
       default: content = <h6> 404 </h6>
@@ -136,21 +143,10 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
                     <IconButton onClick={this.handleMenuIconClick}>
                       <MoreVert/>
                     </IconButton>
-                    <Menu id='menu-main'
-                    anchorEl={this.state.anchorElMenu} open={this.state.anchorElMenu?true:false} onClose={this.handleMenuClose}
-                    PaperProps={{
-                      maxheight:'400px'
-                    }}
-                    >
-                    {menuItems[this.state.type]?.map((item,index)=>{
-                      //console.log(item)
-                      return <MenuItem key={item.title} onClick={this.handleMenuItemClick(index)}>
-                        <ListItemIcon>{item.icon}</ListItemIcon>
-                        <ListItemText>{item.title}</ListItemText>
-                        </MenuItem>
-                      })}
-                    </Menu>
-                    <UploadFileDialog open={this.state.showDialog} onClose={this.handleDialogClose} pid={this.props.params.id}/>
+                    <MenuSimple menuItems={menuItems[this.state.type]} anchorEl={this.state.anchorElMenu}
+                    onItemClickIndex={this.handleMenuItemClick} onclose={this.handleMenuClose}/>
+                    <UploadFileDialog open={this.state.showDialog} onClose={this.handleDialogClose} 
+                    pid={this.props.params.id} uploadTo={uploadNewFile}/>
                   </>
                   
                 }
