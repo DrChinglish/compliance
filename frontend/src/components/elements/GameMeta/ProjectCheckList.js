@@ -6,7 +6,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import GppGoodIcon from '@mui/icons-material/GppGood';
-import EmptyHint from './subComponents/EmptyHint';
+import EmptyHint from '../../Hints/EmptyHint';
 import HealthyReminder from './subComponents/CheckListContents/HealthyReminder';
 import TextSummary from './subComponents/CheckListContents/TextSummary';
 
@@ -36,7 +36,7 @@ export default class ProjectCheckList extends Component {
     }
 
 render() {
-    let {fileCount} = this.props.info
+    let {fileCount,healthyReminder,pid} = this.props.info
 
     let steps = [
         {
@@ -59,7 +59,7 @@ render() {
         {
             label:'游戏健康忠告',
             description:'Some description here',
-            content:<HealthyReminder />
+            content:<HealthyReminder file={healthyReminder} pid={pid}/>
         },
     ]
      

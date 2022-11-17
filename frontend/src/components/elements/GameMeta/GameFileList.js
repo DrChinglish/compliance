@@ -1,11 +1,11 @@
-import { List, Grid, Divider, IconButton} from '@mui/material'
+import { List, Grid, Divider, IconButton, FormControlLabel, Switch, Box} from '@mui/material'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 // import {FixedSizeList} from 'react-window'
 import urlmapping from "../../../urlMapping.json"
 import RefreshIcon from '@mui/icons-material/Refresh';
-import {getProcessedFile} from '../../../utils/APIs'
-import EmptyHint from './subComponents/EmptyHint';
+import {getProcessedFile, processVideo} from '../../../utils/APIs'
+import EmptyHint from '../../Hints/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
 import TextFileContent from './subComponents/FileContents/TextFileContent';
 import './GameFileList.css'
@@ -14,7 +14,11 @@ import ImageFileContent from './subComponents/FileContents/ImageFileContent'
 import AudioFileContent from './subComponents/FileContents/AudioFileContent'
 import VideoFileContent from './subComponents/FileContents/VideoFileContent'
 import fetchHandle from '../../../utils/FetchErrorhandle';
-import ErrorHint from '../ErrorHint';
+import ErrorHint from '../../Hints/ErrorHint';
+import { Stack } from '@mui/system';
+import { Checkbox, Button } from '@mui/material'
+import Titles from '../../typography/Titles';
+import DeleteFileDialog from '../Dialogs/DeleteFileDialog'
 
 export default class GameFileList extends Component {
   constructor(props) {
@@ -29,7 +33,11 @@ export default class GameFileList extends Component {
         index:-1,
         text:'未知错误'
        },
-
+       multiSelect:false,
+       checked:[],
+       showDeleteDialog:false,
+       deleteFileList:[],
+       keyframes:[]
     }
   }
 
@@ -52,9 +60,73 @@ export default class GameFileList extends Component {
     return {title:title,description:des,seriousness:'high'}
   }
 
+  deleteFile=(deletedfid)=>{
+    let newFileList=[...this.state.fileList]
+    for(let file of this.state.fileList){
+      if(deletedfid.indexOf(file.id) !== -1){
+        newFileList.splice(newFileList.indexOf(file),1)
+      }
+    }
+    this.setState({fileList:newFileList,checked:[]})
+  }
+
+  handleToggle=(e)=>{
+    this.setState({multiSelect:e.target.checked})
+  }
+
+  handleDeleteDialogClose=()=>{
+    console.log('close')
+    this.setState({showDeleteDialog:false})
+  }
+
+  handleCheck = (value)=>()=>{
+    const currentIndex = this.state.checked.indexOf(value)
+    const newChecked = [...this.state.checked]
+    if(currentIndex===-1){
+      newChecked.push(value)
+    }else{
+      newChecked.splice(currentIndex,1)
+    }
+    this.setState({
+      checked : newChecked
+    })
+  }
+
+  handleDelete = ()=>{
+    let deleteFiles = []
+    this.state.checked.forEach((value)=>{
+      deleteFiles.push(this.state.fileList[value])
+    })
+    this.setState({showDeleteDialog:true,deleteFileList:deleteFiles})
+  }
+
+  prepareVideo=(value)=>{
+    this.setState({
+      selected: value,
+      loading:true,
+      loaderr:{status:false,index:-1,text:'未知错误'}
+    })
+    processVideo(this.props.pid,this.state.fileList[value].id,(reason)=>{
+      this.setState({
+        loading:false,
+        loaderr:{
+          index:value,
+          status:true,
+          text:`发生了一个错误：${reason.name} ${reason.message}`
+        }
+      })
+    })
+    .then(res=>{
+      this.setState({
+        keyframes:res,
+        loading:false
+      })
+    })
+  }
+
   handleClick=(e,value)=>{
     /*---DEV ONLY---*/
-    if(['audio','video'].indexOf(this.props.variant)!==-1){
+    if(['audio'].indexOf(this.props.variant)!==-1){
       this.setState({
         selected: value,
         loaderr:{status:false,index:-1,text:'未知错误'}
@@ -62,6 +134,11 @@ export default class GameFileList extends Component {
       return  
     }
     /*---DEV ONLY---*/
+
+    if(this.props.variant==='video'){
+      this.prepareVideo(value)
+      return
+    }
 
     //TODO: add backend interaction here
     this.setState({
@@ -140,23 +217,53 @@ export default class GameFileList extends Component {
       else if(this.props.variant==='image')
         content = <ImageFileContent image={fileList[this.state.selected]}/>
       else if(this.props.variant ==='audio')
-        content = <AudioFileContent audio={fileList[this.state.selected]}/>
+        content = <AudioFileContent audio={fileList[this.state.selected]} pid={this.props.pid}/>
       else
-        content = <VideoFileContent video={fileList[this.state.selected]}/>
+        content = <VideoFileContent video={fileList[this.state.selected]} keyframes={this.state.keyframes}/>
     }
     return (
       
         <Grid container sx={{height:'100%',maxWidth:'100%'}}>
-          <Grid item xs={4} sx={{height:'100%'}}>
-            {fileList.length>0?
-            <List dense>
-            {fileList?.map((file,index)=>{
-              let thumbnailUrl = this.props.variant === 'image'?file.url:
-              (this.props.variant==='video'?file.content.coverurl:undefined)
-              return <ListItemFile index={index} selected={this.state.selected} file={file} 
-              thumbnailUrl={thumbnailUrl} onClick={this.handleClick}/>
-            })}
-            </List>
+          <Grid item xs={4} sx={{height:'fill-available'}}>
+            <DeleteFileDialog fileList={this.state.deleteFileList} open={this.state.showDeleteDialog} 
+            onClose={this.handleDeleteDialogClose} pid={this.props.pid} updateFileList={this.deleteFile}/>
+            {fileList.length>0?(
+            <Stack height='100%' justifyContent='space-between'>
+              <Stack direction='row' justifyContent='space-between' p={2}>
+                <Titles variant='medium'>{`总计${fileList.length}个文件`}</Titles>
+                <FormControlLabel label='多选'
+                control={<Switch checked={this.state.multiSelect} onChange={this.handleToggle}/>}/>
+              </Stack>
+              <Divider flexItem/>
+              <Box sx={{height:'fill-available'}}>
+              <List dense sx={{overflowY:'auto'}}>
+              {fileList?.map((file,index)=>{
+                let thumbnailUrl = this.props.variant === 'image'?file.url:
+                (this.props.variant==='video'?file.content.coverurl:undefined)
+                return <ListItemFile key={index} index={index} selected={this.state.selected} file={file} 
+                thumbnailUrl={thumbnailUrl} onClick={this.handleClick} secondaryAction={
+                  this.state.multiSelect?
+                  <Checkbox 
+                    onChange={this.handleCheck(index)}
+                    edge='end'
+                    checked={this.state.checked.indexOf(index) !== -1}
+                  />:null
+                }/>
+              })}
+              </List>
+              </Box>
+              {
+              this.state.multiSelect?
+              <>
+                <Divider flexItem/>
+                <Stack direction='row' justifyContent='center' spacing={2} py={2}>
+                  <Button variant='contained' color='error' onClick={this.handleDelete}>删除</Button>
+                </Stack>
+              </>
+              :null
+              }
+            </Stack>
+            )
             :<EmptyHint text='暂无文件'/>}
           </Grid>
           <Divider orientation='vertical' flexItem sx={{height:'100%'}}/>

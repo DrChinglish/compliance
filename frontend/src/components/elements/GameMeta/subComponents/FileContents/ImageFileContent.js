@@ -18,13 +18,7 @@ export default function ImageFileContent(props) {
     console.log(props)
     let res = props.image.contentlist
     let image
-    let imageSrc
-    if(activeContent === 'skull'){
-        imageSrc = "data:image/png;base64,"+res[activeContent]
-       
-    }else{
-        imageSrc = "data:image/png;base64,"+res[activeContent].image
-    }
+    let imageSrc = "data:image/png;base64,"+res[activeContent].image
     image = <img alt='preview' src={imageSrc} onClick={handleClick}></img>
     let imageBig = <img alt='large' style={{maxWidth:'100vw',maxHeight:'100vh'}} src={imageSrc}></img>
   return (

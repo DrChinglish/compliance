@@ -4,8 +4,6 @@
 from os import walk, path
 from zipfile import ZipFile
 from .key_frame import Extractor
-from PIL import Image
-import numpy as np
 
 
 # 处理图片数据
@@ -14,7 +12,7 @@ class ImageProcess(object):
         self.txts = []  # 图片中文字
         self.boxes = []  # 图片中文字对应坐标
         self.image = None
-        self.process_result = {}  # 处理结果
+        self.process_result = {}  # 敏感词
         self.keyword_box = {}  # 敏感词所在坐标
         
 
@@ -30,7 +28,17 @@ class ImageProcess(object):
         # self.image = self.image.resize((base_width, h_size), Image.ANTIALIAS)
         # 调用模型处理图片
         ocr = PaddleOCR(use_angle_cls=True,det=True, lang="ch")
-        result = ocr.ocr(np.array(self.image), cls=True)[0]
+        result = ocr.ocr(np.array(self.image), cls=True)
+        # It seems there is something strange right here:
+        # result= [[ 
+        # [ [[24.0, 8.0], [277.0, 8.0], [277.0, 38.0], [24.0, 38.0]], ('MTV开发模式', 0.8464175462722778) ],
+        # [ [[503.0, 103.0], [592.0, 103.0], [592.0, 121.0], [503.0, 121.0]], ('templates', 0.986018717288971) ],
+        #  ...
+        # [ [[118.0, 345.0], [162.0, 345.0], [162.0, 368.0], [118.0, 368.0]], ('接口', 0.9990861415863037) ],
+        # [ [[591.0, 352.0], [741.0, 352.0], [741.0, 365.0], [591.0, 365.0]], ('nttps://blog.csdn.net/v', 0.8825844526290894) ]
+        # ]]
+        # So I modified it.(Using paddle-gpu version)-Zhu Yiding
+        result =result[0]  
         self.boxes = [line[0] for line in result ]
         self.txts = [line[1][0] for line in result ]
         
@@ -63,7 +71,8 @@ class ImageProcess(object):
     # 处理图片上的敏感词
     def process_sensitive_word(self):
         from paddleocr import draw_ocr
-        
+        from PIL import Image
+        import numpy as np
         
         count = 0    #敏感词数量
         senstive_item = []   #敏感词
@@ -74,7 +83,8 @@ class ImageProcess(object):
         img = np.asarray(img_ocr)
         image_sensitive = Image.fromarray(np.uint8(img))
       
-        for line in senstive_characters:           
+        for line in senstive_characters:
+            
             if len(self.recongnize_sensitive(line)):
                 senstive_item += self.recongnize_sensitive(line)
                 count += 1
@@ -113,10 +123,10 @@ class ImageProcess(object):
         sys.path.append("yolo/model_data")
         
         from yolo.yolo import YOLO
-        yolo = YOLO()    
-        r_image, num= yolo.detect_image(self.image, crop = False, count = True)
+        yolo = YOLO()     
+        r_image= yolo.detect_image(self.image, crop = False, count=True)
 
-        self.process_result['skull'] = {'count':num,'image':self.get_img_base64(r_image)}
+        self.process_result['skull'] = {'image':self.get_img_base64(r_image)}
 
 
     # 检测血液
@@ -125,7 +135,7 @@ class ImageProcess(object):
         sys.path.append("image_classification")
         sys.path.append("image_classification/pytorch_image_classification")
         sys.path.append("image_classification/configs")
-        
+
         from image_classification.predict import Predictor
         predictor =Predictor()   
         score = predictor.blood_predict(path)
@@ -133,8 +143,6 @@ class ImageProcess(object):
             self.process_result['is_blood'] =  '检测到图片中含有血液'
         else:
             self.process_result['is_blood'] =  '检测到图片中不含有血液'
-
-
 
     # 健康游戏忠告
     def game_advice(self):
@@ -160,6 +168,8 @@ class ImageProcess(object):
         return is_game_advice
         
 
+        
+        
 
 
     # PIL映像从 Django REST 框架后端获取到前端
@@ -201,9 +211,22 @@ class DocProcess(object):
         self.string = '' 
         self.process_result = {}  # 敏感词
  
-    def init_para(self, path):    
+    def init_para(self, path):
+        import os
+        docpath = path
+        print(path)
+        if os.path.splitext(path)[1] == '.doc' :
+            # Preprocess doc 
+            if not os.path.exists(path+'x'):
+                from win32com import client as wc
+                word = wc.Dispatch("Word.Application")
+                doc = word.Documents.Open(path)
+                doc.SaveAs(path+'x',12, False, "", True, "", False, False, False, False) 
+                doc.Close()
+                word.Quit()
+            docpath = path+'x'    
         import docx
-        file = docx.Document(path)
+        file = docx.Document(docpath)
         for para in file.paragraphs:
             self.txts.append(str(para.text))
             self.string += str(para.text)
@@ -341,7 +364,7 @@ class SpeechProcess(object):
 
 
 # 处理视频数据
-class VedioProcess(object): 
+class VideoProcess(object): 
     def __init__(self):
         self.frame_path = []            # 关键帧保存路径
         self.frame_time = []            # 关键帧时间
@@ -405,7 +428,7 @@ class DFAFilter(object):
                     if self.delimit not in level[char] or message[start:start+step_ins] in self.whitelist: 
                         level = level[char]
                     else:
-                        if message.index(char) != len(message)-1 and message[message.index(char)+1] in level[char]:
+                        if start+step_ins < len(message) and (message[step_ins+start+1] in level[char]):
                             level = level[char]
                         else:
                             self.ret.append({'flag':1,'text':message[start:start+step_ins]})
@@ -414,7 +437,8 @@ class DFAFilter(object):
                 else:
                     self.ret.append({'flag':0,'text':message[start]})
                     break
-
+            else:
+                self.ret.append({'flag':0,'text':message[start]})
             start += 1
         return self.ret
 
@@ -472,19 +496,50 @@ def english(string):
                 [a-zA-Z]+
                     )''', re.VERBOSE)
     res = adressRegex.findall(string) 
-    for i in ['PC','3D','2D','H5','VR','AR','HD','Q','K']:
+    whitelist =  ['PC','3D','2D','H5','VR','AR','HD','Q','K']
+    for i in whitelist:
             if i in res:
                 res.pop(res.index(i))
 
-    ret = [] # 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
-    for idenx,item in enumerate(re.split("[ ,.？！，。?!]",string)):
-        if item in res:
-            ret.append({'flag':3 ,'text':item})
+     # ret = []# 返回字符串列表，为了便于前端显示，采取形如[{'flag':0, 'text':"非英文"}, {'flag':3 ,'text':"english"}]的形式返回
+    # for idenx,item in enumerate(re.split("[ ,.，。]",string)):
+    #     if item in res:
+    #         ret.append({'flag':3 ,'text':item})
+    #     else:
+    #         ret.append({'flag':0 ,'text':item})
+    import string as s
+    eng_word=''
+    word=''
+    lasttype = 0 #标识上一次检测到的字符类型 0：初始，1：其他文本，-1：英文
+    wordlist=[]
+    # print(string)
+    for ch in string:
+        if ch not in s.ascii_lowercase + s.ascii_uppercase:
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                if eng_word in whitelist:
+                    wordlist.append({'flag':0 ,'text':eng_word})
+                else:
+                    wordlist.append({'flag':3 ,'text':eng_word})
+                eng_word = ''
+            # Not english
+            word+=ch
+            lasttype=1
         else:
-            ret.append({'flag':0 ,'text':item})
+            if lasttype * 1 == -1:
+                # 检测到了新的类型
+                wordlist.append({'flag':0 ,'text':word})
+                word = ''
+            eng_word+=ch
+            lasttype = -1
+    if lasttype == 1:
+        if len(word)>0:
+            wordlist.append({'flag':0 ,'text':word})
+    elif lasttype == -1:
+        if len(eng_word)>0:
+            wordlist.append({'flag':3 ,'text':eng_word})
+    return res, wordlist
 
-    
-    return res, ret
 
 
 
@@ -531,7 +586,7 @@ def get_file(rootdir, type):
     img_data = []
     doc_data = []
     audio_data = []
-    vedio_data = []
+    video_data = []
     for root, dirs, files in walk(rootdir, topdown=True):
         for name in files:
             pre, ending = path.splitext(name)
@@ -542,7 +597,7 @@ def get_file(rootdir, type):
             if ending == ".wav" or ending == ".mp3" or ending == ".wma":
                 audio_data.append(name)
             if ending == ".mp4" or ending == ".m4v" or ending == ".avi":
-                vedio_data.append(name)
+                video_data.append(name)
             else:  
                 continue
         break
@@ -552,8 +607,8 @@ def get_file(rootdir, type):
         return doc_data
     if type == "audio":
         return audio_data
-    if type == "vedio":
-        return vedio_data
+    if type == "video":
+        return video_data
 
 
 

@@ -39,9 +39,9 @@ ul, ol {
 	margin-top: 0;
 	padding-left: $spacing--shared-h;
 
-	&:not(:last-child) {
-		margin-bottom: $spacing--shared-v;
-	}
+	// &:not(:last-child) {
+	// 	margin-bottom: $spacing--shared-v;
+	// }
 }
 
 ul {

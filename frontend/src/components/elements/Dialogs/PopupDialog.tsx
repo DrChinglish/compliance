@@ -1,6 +1,6 @@
-import React from 'react'
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material'
-
+import React, { MouseEventHandler } from 'react'
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close';
 interface DialogAction{
   label:string,action:()=>void
 }
@@ -20,6 +20,20 @@ export default function PopupDialog(props: Props) {
     <Dialog open={props.open} onClose={props.onClose} fullWidth>
       <DialogTitle>
         {props.title}
+        {props.onClose?(
+        <IconButton
+          aria-label="close"
+          onClick={props.onClose as MouseEventHandler}
+          sx={{
+            position: 'absolute',
+            right: 8,
+            top: 8,
+            color: (theme) => theme.palette.grey[500],
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        ):null}
       </DialogTitle>
       <DialogContent>
         {props.children}
