@@ -219,7 +219,7 @@ export default class GameFileList extends Component {
       else if(this.props.variant ==='audio')
         content = <AudioFileContent audio={fileList[this.state.selected]} pid={this.props.pid}/>
       else
-        content = <VideoFileContent video={fileList[this.state.selected]} keyframes={this.state.keyframes}/>
+        content = <VideoFileContent video={fileList[this.state.selected]} pid={this.props.pid} keyframes={this.state.keyframes}/>
     }
     return (
       

@@ -4,9 +4,19 @@ import { RcFile } from "antd/lib/upload"
 import cookie from 'react-cookies'
 import fetchHandle from './FetchErrorhandle'
 import { FileInfoBasic, FileMeta } from "../Interfaces"
+
+export function getMediaResources(pid:number,fid:number){
+    return urlmapping.host+`/api/projects/${pid}/media_file/?fid=${fid}`
+}
+
 export function getStaticResources(url:string){
     //Retreive static resources from django backend
-    return urlmapping.host+(url.at(0)==='/'?'/api':'/api/')+url
+    if(url){
+        return urlmapping.host+(url.at(0)==='/'?'/api':'/api/')+url
+    }else{
+        return undefined
+    }
+   
 }
 
 export function getProcessedFile(pid:number,fid:number,variant:'image'|'text'){

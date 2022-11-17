@@ -1,23 +1,26 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { Stack, Card, CardHeader, Button, CardContent, IconButton, CssBaseline, Menu, MenuItem, ListItem, ListItemIcon, ListItemText} from "@mui/material"
+import { Stack, Card, CardHeader, Button, CardContent, IconButton, CssBaseline} from "@mui/material"
 import DataGridS from '../components/elements/DataGridS/DataGridS'
 import DataGridP from '../components/elements/DataGridP/DataGridP'
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { GridActionsCellItem} from '@mui/x-data-grid'
 import RadarChart from '../components/elements/ScoreRadarChart/ScoreRadarChart';
 import withRouter from '../utils/WithRouter';
 import urlmapping from '../urlMapping.json'
 import UploadFileDialog from '../components/elements/Dialogs/UploadFileDialog'
+import CreateTaskDialog from '../components/elements/Dialogs/CreateTaskDialog'
 import MenuSimple from '../components/elements/MenuSimple'
-
-// icons
-import BuildIcon from '@mui/icons-material/Build';
-import { MoreVert } from '@mui/icons-material';
 import ResultS from '../components/elements/ResultS/ResultS';
 import GameMeta from '../components/elements/GameMeta/GameMeta'
-import FileUploadIcon from '@mui/icons-material/FileUpload';
 import { uploadNewFile } from '../utils/APIs'
+import { classifyFiles } from '../utils/util'
+// icons
+import BuildIcon from '@mui/icons-material/Build';
+import AddTaskIcon from '@mui/icons-material/AddTask';
+import { MoreVert } from '@mui/icons-material';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
+
 
  class Detail extends Component {
 
@@ -36,7 +39,7 @@ import { uploadNewFile } from '../utils/APIs'
         type:res.category,
         info:res,
         healthyReminder:res.healthyReminder.length > 0?res.healthyReminder[0]:{},
-        fileList:res.fileList
+        fileList:res.fileList,
       })
     })
     
@@ -55,8 +58,13 @@ import { uploadNewFile } from '../utils/APIs'
   handleDialogClose = (e,reason)=>{
     console.log('handle close')
     this.setState({
-     showDialog:false
+     showDialog:false,
+     showDialogAddTask:false
     })
+  }
+
+  handleAddTaskClick = ()=>{
+    this.setState({showDialogAddTask:true})
   }
 
   handleMenuIconClick = (e)=>{
@@ -111,7 +119,8 @@ import { uploadNewFile } from '../utils/APIs'
       suggestions:suggestions,
       suggestionTitle:"",
       anchorElMenu:null,
-      healthyReminder:{}
+      healthyReminder:{},
+      showDialogAddTask:false
     }
   }
 
@@ -140,25 +149,27 @@ import { uploadNewFile } from '../utils/APIs'
                 titleTypographyProps={{variant:'h6',fontWeight:'bold'}}
                 action={
                   <>
+                    <IconButton onClick={this.handleAddTaskClick}>
+                      <AddTaskIcon/>
+                    </IconButton>
                     <IconButton onClick={this.handleMenuIconClick}>
                       <MoreVert/>
                     </IconButton>
+                    
                     <MenuSimple menuItems={menuItems[this.state.type]} anchorEl={this.state.anchorElMenu}
                     onItemClickIndex={this.handleMenuItemClick} onclose={this.handleMenuClose}/>
+                    <CreateTaskDialog open={this.state.showDialogAddTask} onClose={this.handleDialogClose}
+                     projectFiles={{...classifyFiles(this.state.fileList),['healthyReminder']:[this.state.healthyReminder]}}/>
                     <UploadFileDialog open={this.state.showDialog} onClose={this.handleDialogClose} 
                     pid={this.props.params.id} uploadTo={uploadNewFile}/>
                   </>
                   
                 }
               >
-                
-                
               </CardHeader>
               <CardContent sx={defaultsx}>
                 {/* pass real data here */}
-                
                 {content}
-
               </CardContent>
             </Card>
             

@@ -34,3 +34,7 @@ export interface MenuItemMeta{
   icon?:React.ReactNode,
   onItemClick?:()=>void
 }
+
+export interface ClassifiedFileList{
+  [key:string]:FileMeta[]
+}

@@ -12,7 +12,7 @@ from .models import Project, File, KeyFrame, GameAdvice
 from .serializers import ProjectModelSerializer, FileModelSerializer, GameAdviceModelSerializer, KeyFrameModelSerializer
 from rest_framework.decorators import action
 from .class_method import *
-
+from django.http import FileResponse
 
 
 
@@ -147,7 +147,17 @@ class ProjectModelViewSet(ModelViewSet):
         self.get_object().delete()
         return Response({'mes': '删除成功'}, status=status.HTTP_200_OK)
 
-
+    '''获取媒体文件（视频）'''
+    @action(methods=['get'],detail=True, url_path='media_file')
+    def get_media_files(self,request,pk):
+        fid = request.GET.get('fid')
+        file_path = File.objects.get(id=fid).file.path
+        open_file = open(file_path,'rb')
+        response = FileResponse(open_file)
+        file_size = os.path.getsize(file_path)
+        response['Content-Range'] = f'bytes 0-{str(file_size)}/{str(file_size)}'
+        response['Accept-Ranges'] = 'bytes'
+        return response
 
     '''获取项目所有图片文件'''
     @action(methods=["get"], detail=True, url_path="images")
