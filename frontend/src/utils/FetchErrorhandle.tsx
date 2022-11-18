@@ -6,6 +6,7 @@
 // }
 
 export default function fetchHandle(res){
+    console.log(res)
     if(res.status>=200&&res.status<300){
         return res
     }

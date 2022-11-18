@@ -1,5 +1,6 @@
 import React, { MouseEventHandler } from 'react'
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material'
+import type { DialogProps } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 interface DialogAction{
   label:string,action:()=>void
@@ -10,14 +11,15 @@ type Props = {
     open:boolean,
     title?:React.ReactNode,
     onClose?:(event: object, reason: string)=>void,
-    actions?:React.ReactNode
+    actions?:React.ReactNode,
+    maxWidth?:DialogProps['maxWidth']
 }
 
 export default function PopupDialog(props: Props) {
   let actions = Array.isArray(props.actions)?props.actions:(props.actions?[props.actions]:undefined)
   
   return (
-    <Dialog open={props.open} onClose={props.onClose} fullWidth>
+    <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth={props.maxWidth} >
       <DialogTitle>
         {props.title}
         {props.onClose?(
@@ -35,7 +37,7 @@ export default function PopupDialog(props: Props) {
         </IconButton>
         ):null}
       </DialogTitle>
-      <DialogContent>
+      <DialogContent >
         {props.children}
       </DialogContent>
       {actions&&

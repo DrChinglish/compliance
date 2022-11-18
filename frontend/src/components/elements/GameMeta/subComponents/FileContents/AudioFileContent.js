@@ -12,6 +12,7 @@ import ActionHint from '../../../../Hints/ActionHint'
 import HightlightedText from '../../../../typography/HightlightedText'
 import { processAudio } from '../../../../../utils/APIs';
 import EmptyHint from '../../../../Hints/EmptyHint';
+import ErrorHint from '../../../../Hints/ErrorHint';
 export default class AudioFileContent extends Component {
 
   constructor(props){
@@ -24,13 +25,17 @@ export default class AudioFileContent extends Component {
       cover:`data:image/png;base64,${props.audio.content.coverimg}`??'none',
       resultState:'null',
       textlists:{senstive_characters:[],english_word:[]},
-      activeContent:'senstive_characters'
+      activeContent:'senstive_characters',
+      errorText:''
     }
   }
   
   handleClickLoadResult=()=>{
     this.setState({resultState:'loading'})
-    processAudio(this.props.pid,this.props.audio.id)
+    processAudio(this.props.pid,this.props.audio.id,(e)=>{
+      this.setState({errorText:`发生了一个错误：${e.name} ${e.message}`,
+      resultState:'error'})
+    })
     .then(res=>{
       this.setState({
         textlists:{
@@ -57,6 +62,7 @@ export default class AudioFileContent extends Component {
    } 
 
    handleActiveContentChange=(e,value)=>{
+    if(value)
     this.setState({
       activeContent:value
     })
@@ -93,6 +99,9 @@ export default class AudioFileContent extends Component {
           <HightlightedText textlist={this.state.textlists[this.state.activeContent]}/>
           </Paragraphs>
         ;break;
+        case 'error':content = <ErrorHint text={this.state.errorText} extra={
+          <IconButton onClick={()=>{this.handleClickLoadResult()}}><RefreshIcon/></IconButton>
+        }/>;break;
         default: content = <EmptyHint text='没有内容可以显示'/>
       }
     return (
