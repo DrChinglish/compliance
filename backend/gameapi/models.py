@@ -35,6 +35,7 @@ class Project(models.Model):
     def to_dict(self):
         """重写model_to_dict()方法转字典"""
         from datetime import datetime
+        
 
         opts = self._meta
         data = {}
@@ -81,6 +82,8 @@ class Tasks(models.Model):
     project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_tasks', verbose_name='处理任务')
     files = models.CharField(max_length=1024,default='')
     status = models.CharField(max_length=20,choices=STATUS_CHOICES_TASK,default='created')
+
+
 def get_file_type(instance, filename):
     return convert_type(filename)
 
@@ -103,4 +106,5 @@ class KeyFrame(models.Model):
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='vedio_keyframes', verbose_name='所属文件', null=True)
     path = models.CharField(max_length=40,)
     time = models.CharField(max_length=20, default='')
+    frame = models.IntegerField(null=True)
   

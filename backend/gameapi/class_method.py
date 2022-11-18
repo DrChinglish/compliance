@@ -4,10 +4,15 @@
 from os import walk, path
 from zipfile import ZipFile
 from .key_frame import Extractor
+from paddleocr import PaddleOCR, draw_ocr
+from PIL import Image
+import numpy as np
+
 
 
 # 处理图片数据
 class ImageProcess(object): 
+    
     def __init__(self):
         self.txts = []  # 图片中文字
         self.boxes = []  # 图片中文字对应坐标
@@ -17,9 +22,7 @@ class ImageProcess(object):
         
 
     def init_para(self, path):
-        from paddleocr import PaddleOCR
-        from PIL import Image
-        import numpy as np
+        
         self.image = Image.open(path).convert('RGB')
         # 调整图片为统一大小，保持比例不变
         # base_width = 3360
@@ -45,9 +48,6 @@ class ImageProcess(object):
 
     # 处理图片上的繁体字
     def process_traditional_characters(self):
-        from paddleocr import draw_ocr
-        from PIL import Image
-        import numpy as np
         count = 0    #繁体字数量
         traditional_item = []   #繁体字
         traditional_characters = [line for line in self.txts if len(self.recongnize_traditional(line))]
@@ -95,9 +95,7 @@ class ImageProcess(object):
 
     # 处理图片上的英文
     def process_english_word(self):
-        from paddleocr import draw_ocr
-        from PIL import Image
-        import numpy as np
+        
         count = 0    #敏感词数量
         english_item = []   #敏感词
         senstive_characters = [line for line in self.txts if len(self.recongnize_english(line))]
@@ -151,6 +149,8 @@ class ImageProcess(object):
         path = './media/filter/game_advice.docx'
         content=[]
         file = docx.Document(path)
+        advice_boxes = []
+        game_advice = 0
         
         for para in file.paragraphs:
             content.append(str(para.text))
@@ -159,13 +159,30 @@ class ImageProcess(object):
         for i in punctuation:
             image_text = image_text.replace(i,'')
 
-        is_game_advice = True
-
         for i in content:
-            if i not in image_text:
-                is_game_advice = False
-            continue
-        return is_game_advice
+            if i in image_text:
+                game_advice += 1
+                for txt in self.txts:
+                    if i in txt:
+                        advice_boxes.append(self.boxes[self.txts.index(txt)])
+
+        img_ocr = draw_ocr(self.image, advice_boxes)
+        coverage_rate = format(game_advice/len(content), '.2%')
+        img_result = Image.fromarray(img_ocr)
+        # img_result.show()
+        context = img_base64(img_result)
+        description = ''
+        if coverage_rate==0:
+            description = '图片不含有游戏健康忠告内容'
+        elif coverage_rate==1:
+            description = '图片含有游戏健康忠告内容'
+        else:
+            description = '图片含有部分游戏健康忠告内容'
+
+
+        self.process_result['game_advice'] = {'description':description,'coverage_rate':coverage_rate,'image':context}
+        
+
         
 
         
@@ -368,11 +385,13 @@ class VideoProcess(object):
     def __init__(self):
         self.frame_path = []            # 关键帧保存路径
         self.frame_time = []            # 关键帧时间
+        self.frame = []
     
     def extract_frame(self, path):
         extractor=Extractor(path)
         self.frame_path = [frame.frame_path for frame in extractor.frames]
-        self.frame_time = [f'{frame.hour}:{frame.minute}:{frame.second}' for frame in extractor.frames]
+        self.frame_time = [f'{frame.hour}:{frame.minute}:{frame.second}:{frame.millisecond}' for frame in extractor.frames]
+        self.frame = [frame.id for frame in extractor.frames]
 
 
 
