@@ -183,6 +183,7 @@ class ProjectModelViewSet(ModelViewSet):
 
         return Response(data={'data':advice_image,'status':1}, status=status.HTTP_200_OK)
 
+
     '''删除项目游戏健康忠告图片'''
     @action(methods=["delete"], detail=True, url_path="delete_advice_images")
     def delete_advice_img_file(self, request, pk):
@@ -360,7 +361,7 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         videofile = File.objects.get(id=file_id)
         file_path = videofile.file
-        # KeyFrame.objects.all().delete()
+        KeyFrame.objects.all().delete()
         
         return Response({'video': str(file_path)}, status=status.HTTP_200_OK)
 
@@ -410,11 +411,11 @@ class ProjectModelViewSet(ModelViewSet):
         # # 开始处理图片
         imgfilter = ImageProcess()
         imgfilter.init_para(path)
-        is_game_advice = imgfilter.game_advice()
-        if is_game_advice==True:
-            return Response(data='图片含有游戏健康忠告内容', status=status.HTTP_200_OK)
-        if is_game_advice==False:
-            return Response(data='图片不含有游戏健康忠告内容', status=status.HTTP_200_OK)
+        imgfilter.game_advice()
+        res = imgfilter.process_result
+        
+        return Response(data=res, status=status.HTTP_200_OK)
+       
 
         
 
@@ -462,28 +463,26 @@ class ProjectModelViewSet(ModelViewSet):
     '''处理一个视频'''
     # @action(methods=["get"], detail=True, url_path="process_audio")
     def key_frames(self, request, pk, file_id):
-        from .key_frame import Extractor
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
-        print(f'这里是文件id{file.id}')
         path = './media/' + str(file.file)
         #开始抽取关键帧
-        videofilter = VideoProcess()
-        videofilter.extract_frame(path)
-
-        key_frame = dict(zip(videofilter.frame_time, videofilter.frame_path))
+        vediofilter = VideoProcess()
+        vediofilter.extract_frame(path)
+        key_frame = zip(vediofilter.frame,vediofilter.frame_time, vediofilter.frame_path)
         #保存关键帧到数据库
-        for key,value in key_frame.items():
+        for i,j,k in key_frame:
             new_keyframe = KeyFrame.objects.create()
             new_keyframe.file = file
-            new_keyframe.path = value
-            new_keyframe.time = key
+            new_keyframe.path = k
+            new_keyframe.time = j
+            new_keyframe.frame = i
             new_keyframe.save()
 
         all_key = KeyFrame.objects.filter(file=file.id)
-        res = [{'id': file.id, 'description': '此关键帧可能含有血液','timestamp':file.time , 'src':file.path, } for file in all_key ]
+        res = [{'id': file.id, 'description': '视频关键帧，用于后续的各项检测','frame':file.frame ,'time':file.time , 'file':file.path, } for file in all_key ]
 
-        return Response(data=res, status=status.HTTP_200_OK)
+        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
 
         
     '''处理一个关键帧'''

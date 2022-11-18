@@ -68,7 +68,7 @@ def smooth(x, window_len=13, window='hanning'):
 
 class Frame:
     """class to hold information about each frame 用于保存有关每个帧的信息"""
-    def __init__(self, id, hours=-1, minutes=-1, seconds=-1, milliseconds=-1, frame_path=None, diff=None):
+    def __init__(self, id, hours='', minutes='', seconds='', milliseconds='', frame_path=None, diff=None):
         self.id = id
         self.frame_path=frame_path
         self.diff = diff
@@ -193,7 +193,19 @@ class Extractor:
                 seconds = seconds % 60
                 hours = minutes//60
                 minutes = minutes % 60
-                self.frames.append(Frame(idx, int(hours), int(minutes), int(seconds), milliseconds, frame_path))
+                if int(hours)<10:
+                    hours_str = '0'+str(int(hours))
+                else:
+                    hours_str = str(int(hours))
+                if int(minutes)<10:
+                    minutes_str = '0'+str(int(minutes))
+                else:
+                    minutes_str = str(int(minutes))
+                if int(seconds)<10:
+                    seconds_str = '0'+str(int(seconds))
+                else:
+                    seconds_str = str(int(seconds))
+                self.frames.append(Frame(idx, hours_str, minutes_str, seconds_str, str(int(milliseconds)), frame_path))
             idx = idx + 1
         cap.release()
 
