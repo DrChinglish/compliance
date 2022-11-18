@@ -96,6 +96,7 @@ class ImageProcess(object):
     # 处理图片上的英文
     def process_english_word(self):
         
+        
         count = 0    #敏感词数量
         english_item = []   #敏感词
         senstive_characters = [line for line in self.txts if len(self.recongnize_english(line))]
@@ -149,6 +150,8 @@ class ImageProcess(object):
         path = './media/filter/game_advice.docx'
         content=[]
         file = docx.Document(path)
+        advice_boxes = []
+        game_advice = 0
         advice_boxes = []
         game_advice = 0
         
