@@ -36,7 +36,9 @@ export default class VideoFileContent extends Component<Props, State> {
   }
 
   seekVideo=(timestamp:string|number)=>{
+    //console.log(timestamp)
     let time = formatTime(timestamp)
+    //console.log(time)
     this.videoref.current!.currentTime=time
   }
 

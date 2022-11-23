@@ -38,3 +38,5 @@ export interface MenuItemMeta{
 export interface ClassifiedFileList{
   [key:string]:FileMeta[]
 }
+
+export type LoadingStatus = 'initial'|'loading'|'error'|'success'|string

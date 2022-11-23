@@ -8,15 +8,17 @@ export function getTextColorFromFlag(flag:number){
     }
 }
 
-// Only handles hh:mm:ss
+// Only handles hh:mm:ss:ms or hh:mm:ss
 export function formatTime(time:string|number){
+    let itemcount = 0
     if(typeof(time)==='number')
         return time
     let times = time.split(':')
-    if(times.length!=3){
+    itemcount = times.length
+    if(itemcount!==3&&itemcount!==4){
         return -1
     }
-    return parseInt(times[0])*60*60+parseInt(times[1])*60+parseInt(times[2])
+    return parseFloat(times[0])*60*60+parseFloat(times[1])*60+parseFloat(times[2])+(itemcount===4?parseFloat(times[3])/1000:0.0)
 }
 
 export function classifyFiles(fileList:FileMeta[]){
@@ -33,4 +35,8 @@ export function classifyFiles(fileList:FileMeta[]){
     }
     //console.log(fileList)
    return classifiedList
+}
+
+export function convertBase64Image(b64:string){
+    return `data:image/png;base64,${b64}`
 }

@@ -1,13 +1,12 @@
 import LoadingButton from '@mui/lab/LoadingButton'
 import React, { useEffect, useState } from 'react'
-import { FileInfoBasic, FileMeta, SnackbarStatus } from '../../../Interfaces'
+import { FileInfoBasic, FileMeta, LoadingStatus, SnackbarStatus } from '../../../Interfaces'
 import PopupDialog from './PopupDialog'
 import { List, ListItem, ListItemAvatar, Avatar, ListItemText} from '@mui/material'
 import FolderIcon from '@mui/icons-material/Folder';
 import { deleteFile } from '../../../utils/APIs'
 import SnackBar from '../SnackBar'
-import LoadingProgress from '../GameMeta/subComponents/LoadingProgress'
-import SuccessHint from '../../Hints/SuccessHint'
+import StatusContainer from '../StatusContainer'
 
 type Props = {
     fileList: FileInfoBasic[]|FileMeta[],
@@ -19,24 +18,24 @@ type Props = {
 }
 
 export default function DeleteFileDialog(props: Props) {
-    const [loading,setLoading] = useState(false)
     const [snackbarStatus,setSnackbarStatus] = useState<SnackbarStatus>({show:false,text:'',severity:'success'})
-    const [done,setDone] = useState(false)
+    const [status,setStatus] = useState<LoadingStatus>('initial')
     const handleCancel=()=>{
         props.onClose({},'user close')
     }
     useEffect(()=>{
-        setLoading(false)
-        setDone(false)
+        setStatus('initial')
         setSnackbarStatus({show:false,text:'',severity:'success'})
     },[props.open])
     const handleDelete=()=>{
-        setLoading(true)
-        deleteFile(props.pid,props.fileList,props.from??'default')
-        .then(res=>{
+        setStatus('loading')
+        deleteFile(props.pid,props.fileList,props.from??'default',(reason)=>{
+            setSnackbarStatus({show:true,text:`暂时无法执行该操作:${reason.name} ${reason.message}`,
+            severity:'error'})
+            setStatus('error')
+        },res=>{
             console.log(res)
-            setLoading(false)
-            setDone(true)
+            setStatus('success')
             if(res.status === 0){
                 setSnackbarStatus({show:true,text:'删除失败。',severity:'error'})
             }else if(res.deletedfid.length === props.fileList.length){
@@ -52,27 +51,32 @@ export default function DeleteFileDialog(props: Props) {
         })
     }
   return (
-    <PopupDialog open={props.open} onClose={props.onClose} title={done?'操作完成':`是否删除以下${props.fileList.length}个文件？`}
+    <PopupDialog open={props.open} onClose={props.onClose} title={status==='success'?'操作完成':
+    `是否删除以下${props.fileList.length}个文件？`}
     actions={
-            !done &&
+            status!=='success' &&
             <>
-                <LoadingButton loading={loading} variant='contained' color='error' onClick={loading?()=>{}:handleDelete}>删除</LoadingButton>
-                <LoadingButton loading={loading} variant='contained' color='secondary' onClick={handleCancel}>取消</LoadingButton>
+                <LoadingButton loading={status==='loading'} variant='contained' color='error' 
+                onClick={status==='loading'?()=>{}:handleDelete}>删除</LoadingButton>
+                <LoadingButton loading={status==='loading'} variant='contained' color='secondary' 
+                onClick={handleCancel}>取消</LoadingButton>
             </>
     }
     >
         <SnackBar status={snackbarStatus}/>
         {
-        loading?<LoadingProgress/>:(done?<SuccessHint label='操作完成'/>:<List dense>
-            {props.fileList.map((file,index)=>(
-                <ListItem>
-                    <ListItemAvatar><Avatar><FolderIcon/></Avatar></ListItemAvatar>
-                    <ListItemText>
-                        {file.name??`游戏健康忠告图片 id:${file.id}`}
-                    </ListItemText>
-                </ListItem>
-            ))}
-        </List>)
+            <StatusContainer status={status} variant='decision' successText='操作完成'>
+                <List dense>
+                    {props.fileList.map((file,index)=>(
+                        <ListItem>
+                            <ListItemAvatar><Avatar><FolderIcon/></Avatar></ListItemAvatar>
+                            <ListItemText>
+                                {file.name??`游戏健康忠告图片 id:${file.id}`}
+                            </ListItemText>
+                        </ListItem>
+                    ))}
+                </List>
+            </StatusContainer>
         }
         
     </PopupDialog>

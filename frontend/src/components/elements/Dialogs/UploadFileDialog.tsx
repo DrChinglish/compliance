@@ -15,7 +15,7 @@ type Props = {
     open:boolean,
     onClose:(event: object, reason: string)=>void,
     pid:number,
-    uploadTo:(pid:number,fileList:UploadFile[],catchCallback?:(e:any)=>void)=>Promise<any>
+    uploadTo:(pid:number,fileList:UploadFile[],handler?:(res:any)=>void,catchCallback?:(e:any)=>void)=>Promise<any>
 }
 
 export default function UploadFileDialog(props: Props) {
@@ -28,8 +28,7 @@ export default function UploadFileDialog(props: Props) {
     const [done,setDone] = useState<boolean>(false)
     const handleUpload=()=>{
         setUploading(true)
-        props.uploadTo(props.pid,fileList)
-        .then(res=>{
+        props.uploadTo(props.pid,fileList,res=>{
             console.log(res)
             res.file_rejected&&setFailedFile(res.file_rejected)
             setUploading(false)

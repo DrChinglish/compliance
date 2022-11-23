@@ -35,8 +35,7 @@ export default class AudioFileContent extends Component {
     processAudio(this.props.pid,this.props.audio.id,(e)=>{
       this.setState({errorText:`发生了一个错误：${e.name} ${e.message}`,
       resultState:'error'})
-    })
-    .then(res=>{
+    },res=>{
       this.setState({
         textlists:{
           senstive_characters:res.senstive_characters.fulltext,

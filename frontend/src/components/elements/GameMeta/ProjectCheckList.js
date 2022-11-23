@@ -58,7 +58,7 @@ render() {
         },
         {
             label:'游戏健康忠告',
-            description:'Some description here',
+            description:'检测游戏启动过程中是否含有游戏健康忠告信息',
             content:<HealthyReminder file={healthyReminder} pid={pid}/>
         },
     ]

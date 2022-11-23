@@ -1,9 +1,12 @@
 import React from 'react'
 import { Empty } from 'antd'
 import { Typography } from '@mui/material'
-export default function EmptyHint({
-  text:text
-}) {
+
+type Props={
+  text:string
+}
+
+export default function EmptyHint({text}:Props) {
   return (
     <div style={{height:'100%',width:'fill-available',display:'flex',alignItems:"center",justifyContent:'center'}}>
       <Empty

@@ -81,8 +81,10 @@ class ProjectModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         for f in request.FILES.getlist('files[]'):
-            # This looks not so right, could have cause some undesire behaviors....  
-            instance = File(file=f ,project=Project.objects.last())
+            from .util import calculate_file_hash
+            # This looks not so right, could have cause some undesire behaviors....
+            hashcode = calculate_file_hash(f)  
+            instance = File(file=f ,project=Project.objects.last(),md5=hashcode)
             instance.save()
             print(f,'111',instance,'111',instance.file.path)
             from .util import convert_type,generate_video_cover
@@ -490,9 +492,9 @@ class ProjectModelViewSet(ModelViewSet):
             new_keyframe.save()
 
         all_key = KeyFrame.objects.filter(file=file.id)
-        res = [{'id': file.id, 'description': '视频关键帧，用于后续的各项检测','frame':file.frame ,'time':file.time , 'file':file.path, } for file in all_key ]
+        res = [{'id': file.id, 'description': '视频关键帧，用于后续的各项检测','frame':file.frame ,'timestamp':file.time , 'src':file.path, } for file in all_key ]
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+        return Response(data=res, status=status.HTTP_200_OK)
 
         
     '''处理一个关键帧'''

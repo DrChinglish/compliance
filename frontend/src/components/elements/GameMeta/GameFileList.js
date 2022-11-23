@@ -115,8 +115,7 @@ export default class GameFileList extends Component {
           text:`发生了一个错误：${reason.name} ${reason.message}`
         }
       })
-    })
-    .then(res=>{
+    },res=>{
       this.setState({
         keyframes:res,
         loading:false
