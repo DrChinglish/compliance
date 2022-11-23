@@ -37,6 +37,7 @@ export function generateTreeData(projectFiles:ProjectFiles){
                 icon:(props)=>(<ListItemFileIcon type={filedetail.type} ext={filedetail.ext} size='14px' origin/>)
             })
         }
+        
         dataoftype.children=nodeChildren
         dataoftype.checkable=dataoftype.children.length>0
         data.push(dataoftype)
@@ -51,13 +52,13 @@ function generateFileKey(fid:number,type:string){
 function extractFileTypeFromKey(key: React.Key){
     let str:string[] = key.toString().split('-')
     if(str.length!=2)
-        return -1
+        return ''
     else{
         return str[0]
     }
 }
 
-export function extractFileIDFromKey(key:React.Key){
+function extractFileIDFromKey(key:React.Key){
     let str:string[] = key.toString().split('-')
     if(str.length!=2)
         return -1
@@ -72,10 +73,13 @@ export function getFilesFromKeys(projectFiles:ProjectFiles, checkedKeys:React.Ke
         let files=projectFiles[key]
         files.forEach((file)=>{
             if(checkedKeys.indexOf(generateFileKey(file.id,key))!==-1){
+                if(!res[key])
+                    res[key]=[]
                 res[key].push(file as FileMeta)
             }
         })
     }
+    console.log(`Got files:\n`,res)
     return res
 }
 
@@ -83,6 +87,7 @@ export function removeFileByKeys(current:ProjectFiles, to_delete:React.Key[]){
     for(let key in to_delete){
         let fid = extractFileIDFromKey(key)
         let type = extractFileTypeFromKey(key)
+        if(fid<0||type.length===0)
         if(current[type]){
             let index = current[type].findIndex((value)=>value.id===fid)
             if(index!==-1){
@@ -100,16 +105,21 @@ export function removeFileByKeys(current:ProjectFiles, to_delete:React.Key[]){
 }
 
 export function mergeTreeData(current:ProjectFiles, added:ProjectFiles){
+    console.log(added)
     for(let key in added){
         if(!current[key]){
             // not yet created
             current[key]=[]
         }
         let addfiles = added[key]
+        console.log(addfiles)
         for(let addfile of addfiles){
-            if(current[key].findIndex((file)=>file.id===addfile.id)!==-1)
+            if(current[key].findIndex((file)=>file.id===addfile.id)===-1)
             current[key].push(addfile as FileMeta)
         }
     }
-    return current
+    console.log(`After merge:\n`,current)
+    return {...current}
 }
+
+

@@ -12,17 +12,23 @@ type Props = {
 
 export default function FileTree(props: Props) {
 
-    
     const [checkedKeys,setCheckedKeys] = useState<React.Key[]>([])
+    const [fileList,setFileList] = useState<ProjectFiles>(props.projectFiles)
+    useEffect(()=>{
+        setFileList(props.projectFiles)
+        //console.log('set')
+    },[props.projectFiles])
 
     const onCheck=(checkedKeysValue:React.Key[])=>{
         setCheckedKeys(checkedKeysValue)
-        props.onKeyChecked?props.onKeyChecked(checkedKeysValue):null
+        if(props.onKeyChecked){
+            props.onKeyChecked(checkedKeysValue)
+        }
     } 
 
 return (
     <DirectoryTree 
-    treeData={generateTreeData(props.projectFiles)}
+    treeData={generateTreeData(fileList)}
     multiple
     defaultExpandAll
     checkable

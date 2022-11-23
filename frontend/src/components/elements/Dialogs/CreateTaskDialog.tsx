@@ -46,8 +46,8 @@ export default function CreateTaskDialog(props: Props) {
                 <FileTree projectFiles={filesSource} onKeyChecked={handleUpdateKeys('source')}/>
             </Paper>
             <Stack spacing={2} alignItems={'center'} justifyContent='center'>
-                <Button variant='outlined' onClick={handleTransferFiles('add')}><KeyboardDoubleArrowLeftIcon/></Button>
-                <Button variant='outlined' onClick={handleTransferFiles('remove')}><KeyboardDoubleArrowRightIcon/></Button>
+                <Button variant='outlined' onClick={handleTransferFiles('remove')}><KeyboardDoubleArrowLeftIcon/></Button>
+                <Button variant='outlined' onClick={handleTransferFiles('add')}><KeyboardDoubleArrowRightIcon/></Button>
             </Stack>
             <Paper sx={{p:1,overflow:'auto',maxHeight:'50vh',width:'30vw'}}>
                 <Typography variant='caption'>{`已选择`}</Typography>

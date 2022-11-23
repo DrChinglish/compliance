@@ -143,7 +143,7 @@ export default class GameMeta extends Component {
   render() {
     //console.log(this.state.fileList)
     // Define the panels here
-    
+    //console.log(this.state.fileList)
     let panels=[
         {
             label:'审核概览',

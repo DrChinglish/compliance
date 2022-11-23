@@ -21,8 +21,8 @@ export function getStaticResources(url:string){
 
 export function getProcessedFile(pid:number,fid:number,variant:'image'|'text'){
     let p1=variant==='image'?'images':'texts'
-    let p2=variant==='image'?'process_img':'process_doc'
-    return `${urlmapping.apibase.game}/projects/${pid}/${p1}/${fid}/${p2}`
+ 
+    return `${urlmapping.apibase.game}/projects/${pid}/${p1}/${fid}/result`
 }
 
 async function fetchRequest(url:string,init?:RequestInit,catchCallback?:(e:any)=>void) {

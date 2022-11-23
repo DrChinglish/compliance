@@ -103,7 +103,7 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
   async componentDidMount(){
     await this.projectInfo(this.props.params.id)
     //let fileList = await this.getFileList()
-    console.log(fileList)
+    //console.log(fileList)
     // this.setState({
     //   fileList:fileList
     // })

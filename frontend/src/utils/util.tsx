@@ -21,7 +21,11 @@ export function formatTime(time:string|number){
 
 export function classifyFiles(fileList:FileMeta[]){
     //console.log(props.fileList)
-    let classifiedList:ClassifiedFileList={}
+    let classifiedList:ClassifiedFileList={
+        text:[],
+        audio:[],
+        video:[],
+    }
     for(let file of fileList){
         if(!classifiedList[file.type??'other'])
             classifiedList[file.type??'other'] = []

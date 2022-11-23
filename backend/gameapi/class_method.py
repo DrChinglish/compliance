@@ -126,7 +126,10 @@ class ImageProcess(object):
         yolo = YOLO()     
         r_image= yolo.detect_image(self.image, crop = False, count=True)
 
-        self.process_result['skull'] = {'image':self.get_img_base64(r_image)}
+
+        # self.get_img_base64(r_image) 将会报错：AttributeError: 'tuple' object has no attribute 'save'
+        # 输出将会是(<PIL.Image.Image image mode=RGB size=1708x11233 at 0x1C5F78A0F70>, 0)，一个元组
+        self.process_result['skull'] = {'image':self.get_img_base64(r_image[0])}
 
 
     # 检测血液
@@ -629,6 +632,7 @@ def img_base64(image):
     import io
     import base64
     im_io = io.BytesIO()
+    print(image)
     image.save(im_io, 'png', quality=70)
     im_io.seek(0)
     im_io_png = base64.b64encode(im_io.getvalue())

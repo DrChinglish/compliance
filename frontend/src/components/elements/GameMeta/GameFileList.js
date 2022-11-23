@@ -203,6 +203,7 @@ export default class GameFileList extends Component {
 
   render() {
     let {fileList} = this.state
+    // console.log(fileList)
     let content
     if(this.state.selected==-1){
       content = <EmptyHint text="选择一个文件以查看详情"/>
