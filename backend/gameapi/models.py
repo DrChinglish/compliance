@@ -80,7 +80,7 @@ class Tasks(models.Model):
         ('failed','Failed')
     )
     project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_tasks', verbose_name='处理任务')
-    files = models.CharField(max_length=1024,default='')
+    files = models.JSONField(default=dict) #file ids
     status = models.CharField(max_length=20,choices=STATUS_CHOICES_TASK,default='created')
 
 

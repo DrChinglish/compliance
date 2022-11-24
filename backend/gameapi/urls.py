@@ -26,5 +26,6 @@ urlpatterns = [
 router = DefaultRouter()
 router.register("projects", views.ProjectModelViewSet, "projects")
 router.register("files", views.FileModelViewSet, "files")
+router.register('tasks',views.ProcessTaskViewSet,'tasks')
 router.register("advices", views.GameAdviceModelSerializer, "advices")
 urlpatterns += router.urls

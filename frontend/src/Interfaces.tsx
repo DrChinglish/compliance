@@ -13,7 +13,7 @@ export interface FileInfoBasic{
 
 export interface SnackbarStatus{
     show:boolean,
-    text:string,
+    text:string|Error,
     severity:'success'|'warning'|'error'
 }
 

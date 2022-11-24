@@ -159,8 +159,8 @@ import FileUploadIcon from '@mui/icons-material/FileUpload';
                     <MenuSimple menuItems={menuItems[this.state.type]} anchorEl={this.state.anchorElMenu}
                     onItemClickIndex={this.handleMenuItemClick} onclose={this.handleMenuClose}/>
                     <CreateTaskDialog open={this.state.showDialogAddTask} onClose={this.handleDialogClose}
-                     projectFiles={{...classifyFiles(this.state.fileList),
-                     ['healthyReminder']:[this.state.healthyReminder]}}/>
+                     projectFiles={{...classifyFiles(this.state.fileList), ['healthyReminder']:[this.state.healthyReminder]}}
+                     pid={this.props.params.id}/>
                     <UploadFileDialog open={this.state.showDialog} onClose={this.handleDialogClose} 
                     pid={this.props.params.id} uploadTo={uploadNewFile}/>
                   </>

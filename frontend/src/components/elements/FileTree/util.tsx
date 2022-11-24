@@ -18,22 +18,25 @@ export interface ProjectFiles{
 
 
 
-export function generateTreeData(projectFiles:ProjectFiles){
+export function generateTreeData(projectFiles:ProjectFiles, disabledKeys:React.Key[]){
     let data:DataNode[]=[]
     for(let key in projectFiles){
         let dataoftype:DataNode={
             title:keyLocalization[key],
-            key:key
+            key:key,
+            disableCheckbox:disabledKeys.includes(key),
         }
         let nodeChildren:DataNode[] = []
         for(let file of projectFiles[key] ){
             if(!file.id)
                 continue
             let filedetail = file as FileMeta
+            let filekey = generateFileKey(file.id,key)
             nodeChildren.push({
                 title:filedetail.name??`${keyLocalization[key]}-${filedetail.id}`,
-                key:generateFileKey(file.id,key),
+                key:filekey,
                 isLeaf:true,
+                disableCheckbox:disabledKeys.includes(filekey),
                 icon:(props)=>(<ListItemFileIcon type={filedetail.type} ext={filedetail.ext} size='14px' origin/>)
             })
         }
@@ -83,11 +86,18 @@ export function getFilesFromKeys(projectFiles:ProjectFiles, checkedKeys:React.Ke
     return res
 }
 
+export function setDisabled(current:ProjectFiles, keys:React.Key[], disable:boolean = true){
+
+}
+
 export function removeFileByKeys(current:ProjectFiles, to_delete:React.Key[]){
-    for(let key in to_delete){
+    for(let key of to_delete){
         let fid = extractFileIDFromKey(key)
         let type = extractFileTypeFromKey(key)
-        if(fid<0||type.length===0)
+        if(fid<0||type.length===0){
+            console.log(`Warning, incorrect file id or type of file ${key}.`)
+            continue
+        }
         if(current[type]){
             let index = current[type].findIndex((value)=>value.id===fid)
             if(index!==-1){
@@ -95,13 +105,15 @@ export function removeFileByKeys(current:ProjectFiles, to_delete:React.Key[]){
             }else{
                 console.log(`Warning, trying to delete file that does not exist, file id:${fid}`)
             }
-            if(current[key].length===0){
-                Reflect.deleteProperty(current,key)
+            if(current[type].length===0){
+                Reflect.deleteProperty(current,type)
             }
         }else{
             console.log(`Warning, trying to delete file that belongs to a non exist type:${type}`)
         }
     }
+    console.log(current)
+    return {...current}
 }
 
 export function mergeTreeData(current:ProjectFiles, added:ProjectFiles){

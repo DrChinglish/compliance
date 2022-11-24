@@ -27,7 +27,8 @@ export default function SnackBar(props: Props) {
         open={open} autoHideDuration={3000} onClose={handleClose}>
         <Alert severity={props.status.severity as AlertColor} 
         sx={{width:'50ch'}}>
-            {props.status.text}
+            {props.status.text instanceof Error?`${props.status.text.name}:${props.status.text.message}`
+            :props.status.text}
         </Alert>
     </Snackbar>
   )

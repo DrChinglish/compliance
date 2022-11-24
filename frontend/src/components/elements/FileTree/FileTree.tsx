@@ -1,23 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import { Tree } from 'antd'
 import { generateTreeData, ProjectFiles } from './util'
-import { DirectoryTreeProps } from 'antd/es/tree'
+import { DataNode, DirectoryTreeProps } from 'antd/es/tree'
 
 const {DirectoryTree} = Tree
 
 type Props = {
     projectFiles:ProjectFiles,
-    onKeyChecked?:(checkedKeysValue:React.Key[])=>void
+    onKeyChecked?:(checkedKeysValue:React.Key[])=>void,
+    disabledKeys?:React.Key[],
+    checkedKeys?:React.Key[]
 }
 
 export default function FileTree(props: Props) {
 
     const [checkedKeys,setCheckedKeys] = useState<React.Key[]>([])
-    const [fileList,setFileList] = useState<ProjectFiles>(props.projectFiles)
+    const [treeData, setTreeData] = useState<DataNode[]>(generateTreeData(props.projectFiles,props.disabledKeys??[]))
     useEffect(()=>{
-        setFileList(props.projectFiles)
+        setTreeData(generateTreeData(props.projectFiles,props.disabledKeys??[]))
+        if(props.checkedKeys)
+            setCheckedKeys(props.checkedKeys)
         //console.log('set')
-    },[props.projectFiles])
+    },[props.projectFiles,props.disabledKeys,props.checkedKeys])
 
     const onCheck=(checkedKeysValue:React.Key[])=>{
         setCheckedKeys(checkedKeysValue)
@@ -28,7 +32,7 @@ export default function FileTree(props: Props) {
 
 return (
     <DirectoryTree 
-    treeData={generateTreeData(fileList)}
+    treeData={treeData}
     multiple
     defaultExpandAll
     checkable

@@ -89,7 +89,7 @@ export default class HealthyReminder extends Component {
     }
 
   render() {
-    console.log(this.state)
+    // console.log(this.state)
     if(this.state.file.id>0&&this.state.resultStatus==='initial'){
       this.getPrecessResult()
     }

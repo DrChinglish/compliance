@@ -4,6 +4,7 @@ import { RcFile } from "antd/lib/upload"
 import cookie from 'react-cookies'
 import fetchHandle from './FetchErrorhandle'
 import { FileInfoBasic, FileMeta } from "../Interfaces"
+import { ProjectFiles } from "../components/elements/FileTree/util"
 
 export function getMediaResources(pid:number,fid:number){
     return urlmapping.host+`/api/projects/${pid}/media_file/?fid=${fid}`
@@ -160,4 +161,24 @@ handler?:(res:any)=>void) {
             }
         },catchCallback,handler
     )
+}
+
+export async function createTask(pid:number,files:ProjectFiles ,catchCallback?:(e:any)=>void,
+handler?:(res:any)=>void) {
+    let formData = new FormData()
+    formData.append('project',pid.toString())
+    formData.append('files',JSON.stringify(files))
+    console.log(formData)
+    let url = `${urlmapping.apibase.game}/tasks/`
+    return fetchRequest(url,
+            {
+                method:'POST',
+                mode:'cors',
+                body:formData,
+                credentials:"include",
+                headers:{
+                    'X-CSRFToken':cookie.load('csrftoken')
+                }
+            },catchCallback,handler
+        )
 }

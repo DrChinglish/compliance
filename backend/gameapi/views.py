@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-from .models import Project, File, KeyFrame, GameAdvice
-from .serializers import ProjectModelSerializer, FileModelSerializer, GameAdviceModelSerializer, KeyFrameModelSerializer
+from .models import Project, File, KeyFrame, GameAdvice, Tasks
+from .serializers import ProjectTaskModelSerializer,ProjectModelSerializer, FileModelSerializer, GameAdviceModelSerializer, KeyFrameModelSerializer
 from rest_framework.decorators import action
 from .class_method import *
 from django.http import FileResponse
@@ -36,9 +36,17 @@ class GameAdviceModelSerializer(ModelViewSet):
 
 
 
+class ProcessTaskViewSet(ModelViewSet):
+    queryset = Tasks.objects.all()
+    serializer_class = ProjectTaskModelSerializer
 
-
-
+    '''创建任务'''
+    def create(self,request):
+        # print(request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'data':serializer.data,'status':1},status=status.HTTP_200_OK)
 
 class FileModelViewSet(ModelViewSet):
     queryset = File.objects.all()
