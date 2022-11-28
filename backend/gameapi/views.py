@@ -504,7 +504,30 @@ class ProjectModelViewSet(ModelViewSet):
 
         return Response(data=res, status=status.HTTP_200_OK)
 
-        
+    
+    '''获取任务结果'''
+    def get_task_result(self,request):
+        task_id = request.POST.get('task_id')
+        from backend.celery import app
+        res = app.AsyncResult(task_id)
+        if res.state == 'SUCCESS':
+            ret = res.get()
+        else :
+            ret = {'info':'Result not ready','state':res.state}
+        return Response(data = ret, status=status.HTTP_200_OK)
+
+    '''处理一个关键帧(测试任务队列)'''
+    def process_frame_task(self, request, pk, file_id, frame_id):
+        from .tasks import process_frame
+        instance = Project.objects.get(id=pk)
+        videofile = File.objects.get(id=file_id)
+        res = process_frame.delay(frame_id)
+        print(res)
+        print(res.id)
+
+
+        return Response(data=res.id, status=status.HTTP_200_OK)
+
     '''处理一个关键帧'''
     def process_frame(self, request, pk, file_id, frame_id):
         instance = Project.objects.get(id=pk)

@@ -17,7 +17,10 @@ urlpatterns = [
     path("projects/<int:pk>/texts/<int:file_id>/result", views.ProjectModelViewSet.as_view({"get":"process_doc"})),
     path("projects/<int:pk>/audios/<int:file_id>/result", views.ProjectModelViewSet.as_view({"get": "process_audio"})),
     path("projects/<int:pk>/videos/<int:file_id>/key_frames", views.ProjectModelViewSet.as_view({"get": "key_frames"})),
+    path("projects/<int:pk>/videos/<int:file_id>/key_frames/<int:frame_id>/submit", views.ProjectModelViewSet.as_view({"get": "process_frame_task"})),
     path("projects/<int:pk>/videos/<int:file_id>/key_frames/<int:frame_id>/result", views.ProjectModelViewSet.as_view({"get": "process_frame"})),
+    
+    path("projects/task_result/",views.ProjectModelViewSet.as_view({"post": "get_task_result"})),
     re_path("media/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 
 ]
