@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import {ToggleButton, ToggleButtonGroup, Stack, Typography, Divider, Container, Paper, Box } from '@mui/material'
-import Titles from '../../../../typography/Titles'
-import Paragraphs from '../../../../typography/Paragraphs'
+import {ToggleButton, ToggleButtonGroup,  Paper, Box } from '@mui/material'
 import FileContentLayout from './FileContentLayout'
 import HightlightedText from '../../../../typography/HightlightedText'
 export default function TextFileContent(props){

@@ -42,6 +42,7 @@ export default function CreateTaskDialog(props: Props) {
                 console.log(res)
                 if(res.status===1){
                     setSnackbarStatus({show:true,severity:'success',text:'任务已经成功创建'})
+                    console.log(res)
                 }else{
                     setSnackbarStatus({show:true,severity:'warning',text:'发生了未知错误'})
                 }

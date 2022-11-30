@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from .util import convert_type
-
+import uuid
 # Create your models here.
 
 
@@ -62,6 +62,7 @@ def get_file_dir(instance, filename):
 class File(models.Model):
     STATUS_CHOICES_FILE=(
         ('uploaded','Uploaded'),
+        ('ready','ready'),# For video, indicates that keyframes has been extracted.
         ('processing','Processing'),
         ('error','Error'),
         ('done','Done')
@@ -69,6 +70,7 @@ class File(models.Model):
     project = models.ForeignKey(Project,on_delete=models.CASCADE, related_name='project_files' , verbose_name='所属项目')
     file = models.FileField(upload_to=get_file_dir, verbose_name='上传文件')
     md5 = models.CharField(max_length=30,default='')
+    result = models.JSONField(default=dict)
     status = models.CharField(max_length=20,choices=STATUS_CHOICES_FILE,default='uploaded')
 
 '''任务表'''
@@ -82,6 +84,7 @@ class Tasks(models.Model):
     project = models.ForeignKey(Project,on_delete=models.CASCADE,related_name='project_tasks', verbose_name='处理任务')
     files = models.JSONField(default=dict) #file ids
     status = models.CharField(max_length=20,choices=STATUS_CHOICES_TASK,default='created')
+    task_id = models.UUIDField(verbose_name='任务ID',default=uuid.uuid4)
 
 
 def get_file_type(instance, filename):
@@ -103,7 +106,7 @@ class GameAdvice(models.Model):
 
 '''视频关键帧表'''
 class KeyFrame(models.Model):
-    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='vedio_keyframes', verbose_name='所属文件', null=True)
+    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='video_keyframes', verbose_name='所属文件', null=True)
     path = models.CharField(max_length=40,)
     time = models.CharField(max_length=20, default='')
     frame = models.IntegerField(null=True)

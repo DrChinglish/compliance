@@ -13,8 +13,8 @@ from .serializers import ProjectTaskModelSerializer,ProjectModelSerializer, File
 from rest_framework.decorators import action
 from .class_method import *
 from django.http import FileResponse
-
-
+from django.forms.models import model_to_dict
+from celery.result import GroupResult
 
 
 
@@ -42,11 +42,47 @@ class ProcessTaskViewSet(ModelViewSet):
 
     '''创建任务'''
     def create(self,request):
+        from .tasks import process_video
+        from celery import group
         # print(request.data)
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'data':serializer.data,'status':1},status=status.HTTP_200_OK)
+        task = Tasks.objects.get(id = serializer.data['id'])
+        # print(task.files['a'],task.files)
+        tasks = []
+        file_info = serializer.data['files']
+        for type,files in file_info.items():
+            if type == 'video':
+                for file in files:
+                    tasks.append(process_video.s(file['id']))
+        task_res = group(tasks).delay()
+        task.task_id = task_res.id
+        task_res.save()
+        task.save()
+        return Response({'data':model_to_dict(task),'status':1},status=status.HTTP_200_OK)
+
+    '''任务进度'''
+    @action(methods=['GET'],detail=True,url_path='progress')
+    def progress(self,request,pk):
+        task = Tasks.objects.get(id=pk)
+        task_uuid = task.task_id
+        task_result = GroupResult.restore(task_uuid)
+        res={}
+        res['successful'] = task_result.successful()
+        res['completed']  = task_result.completed_count()
+        res['total'] = len(task_result.results)
+        res['ready'] = task_result.ready()
+        
+        return Response(data=res,status=status.HTTP_200_OK)
+
+    @action(methods=['GET'],detail=True,url_path='result')
+    def result(self,request,pk):
+        task = Tasks.objects.get(id=pk)
+        task_uuid = task.task_id
+        task_result = GroupResult.restore(task_uuid)
+        if task_result.ready():
+            task_result.get()
 
 class FileModelViewSet(ModelViewSet):
     queryset = File.objects.all()
@@ -72,7 +108,14 @@ class FileModelViewSet(ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
+    @action(methods=['GET'],detail=True,url_path='result')
+    def result(self,request,pk):
+        file = File.objects.get(id=pk)
+        if file.status == 'done':
+            return Response({'status':1,'result':file.result},status=status.HTTP_200_OK)
+        else :
+            return Response({'status':0,'text':'结果未完成处理或处理过程中发生了错误','state':file.status},
+            status=status.HTTP_200_OK)
 
 
 
@@ -486,20 +529,24 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
         path = './media/' + str(file.file)
-        #开始抽取关键帧
-        vediofilter = VideoProcess()
-        vediofilter.extract_frame(path)
-        key_frame = zip(vediofilter.frame,vediofilter.frame_time, vediofilter.frame_path)
-        #保存关键帧到数据库
-        for i,j,k in key_frame:
-            new_keyframe = KeyFrame.objects.create()
-            new_keyframe.file = file
-            new_keyframe.path = k
-            new_keyframe.time = j
-            new_keyframe.frame = i
-            new_keyframe.save()
-
-        all_key = KeyFrame.objects.filter(file=file.id)
+        if file.status == 'uploaded' or request.GET.get('force').lower() == 'true':    
+            #清除原来的关键帧
+            file.video_keyframes.all().delete()
+            #开始抽取关键帧
+            vediofilter = VideoProcess()
+            vediofilter.extract_frame(path)
+            key_frame = zip(vediofilter.frame,vediofilter.frame_time, vediofilter.frame_path)
+            #保存关键帧到数据库
+            for i,j,k in key_frame:
+                new_keyframe = KeyFrame.objects.create()
+                new_keyframe.file = file
+                new_keyframe.path = k
+                new_keyframe.time = j
+                new_keyframe.frame = i
+                new_keyframe.save()
+            file.status = 'ready'
+            file.save()
+        all_key = file.video_keyframes.all()
         res = [{'id': file.id, 'description': '视频关键帧，用于后续的各项检测','frame':file.frame ,'timestamp':file.time , 'src':file.path, } for file in all_key ]
 
         return Response(data=res, status=status.HTTP_200_OK)
