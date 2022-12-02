@@ -1,0 +1,76 @@
+[10100] 02 Dec 17:11:19.613 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+[10100] 02 Dec 17:11:19.614 # Redis version=5.0.14.1, bits=64, commit=ec77f72d, modified=0, pid=10100, just started
+[10100] 02 Dec 17:11:19.614 # Configuration loaded
+[10100] 02 Dec 17:11:19.615 # Could not create server TCP listening socket 127.0.0.1:6379: bind: 操作成功完成。
+[21080] 02 Dec 17:11:25.513 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+[21080] 02 Dec 17:11:25.513 # Redis version=5.0.14.1, bits=64, commit=ec77f72d, modified=0, pid=21080, just started
+[21080] 02 Dec 17:11:25.513 # Configuration loaded
+[21080] 02 Dec 17:11:25.515 # Could not create server TCP listening socket 127.0.0.1:6379: bind: 操作成功完成。
+[20692] 02 Dec 17:11:35.903 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+[20692] 02 Dec 17:11:35.905 # Redis version=5.0.14.1, bits=64, commit=ec77f72d, modified=0, pid=20692, just started
+[20692] 02 Dec 17:11:35.905 # Configuration loaded
+[20692] 02 Dec 17:11:35.906 # Could not create server TCP listening socket 127.0.0.1:6379: bind: 操作成功完成。
+[16760] 02 Dec 17:12:05.046 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+[16760] 02 Dec 17:12:05.047 # Redis version=5.0.14.1, bits=64, commit=ec77f72d, modified=0, pid=16760, just started
+[16760] 02 Dec 17:12:05.047 # Configuration loaded
+                _._                                                  
+           _.-``__ ''-._                                             
+      _.-``    `.  `_.  ''-._           Redis 5.0.14.1 (ec77f72d/0) 64 bit
+  .-`` .-```.  ```\/    _.,_ ''-._                                   
+ (    '      ,       .-`  | `,    )     Running in standalone mode
+ |`-._`-...-` __...-.``-._|'` _.-'|     Port: 6379
+ |    `-._   `._    /     _.-'    |     PID: 16760
+  `-._    `-._  `-./  _.-'    _.-'                                   
+ |`-._`-._    `-.__.-'    _.-'_.-'|                                  
+ |    `-._`-._        _.-'_.-'    |           http://redis.io        
+  `-._    `-._`-.__.-'_.-'    _.-'                                   
+ |`-._`-._    `-.__.-'    _.-'_.-'|                                  
+ |    `-._`-._        _.-'_.-'    |                                  
+  `-._    `-._`-.__.-'_.-'    _.-'                                   
+      `-._    `-.__.-'    _.-'                                       
+          `-._        _.-'                                           
+              `-.__.-'                                               
+
+[16760] 02 Dec 17:12:05.050 # Server initialized
+[16760] 02 Dec 17:12:05.051 * DB loaded from disk: 0.001 seconds
+[16760] 02 Dec 17:12:05.051 * Ready to accept connections
+[16760] 02 Dec 17:17:06.072 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 17:17:06.078 * Background saving started by pid 2576
+[16760] 02 Dec 17:17:06.182 # fork operation complete
+[16760] 02 Dec 17:17:06.190 * Background saving terminated with success
+[16760] 02 Dec 17:22:07.045 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 17:22:07.062 * Background saving started by pid 6648
+[16760] 02 Dec 17:22:07.169 # fork operation complete
+[16760] 02 Dec 17:22:07.179 * Background saving terminated with success
+[16760] 02 Dec 18:09:32.993 * 1 changes in 900 seconds. Saving...
+[16760] 02 Dec 18:09:33.003 * Background saving started by pid 18724
+[16760] 02 Dec 18:09:33.106 # fork operation complete
+[16760] 02 Dec 18:09:33.115 * Background saving terminated with success
+[16760] 02 Dec 18:14:34.044 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 18:14:34.059 * Background saving started by pid 17788
+[16760] 02 Dec 18:14:34.169 # fork operation complete
+[16760] 02 Dec 18:14:34.176 * Background saving terminated with success
+[16760] 02 Dec 18:19:35.076 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 18:19:35.091 * Background saving started by pid 18352
+[16760] 02 Dec 18:19:35.202 # fork operation complete
+[16760] 02 Dec 18:19:35.213 * Background saving terminated with success
+[16760] 02 Dec 18:24:36.073 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 18:24:36.086 * Background saving started by pid 17428
+[16760] 02 Dec 18:24:36.198 # fork operation complete
+[16760] 02 Dec 18:24:36.211 * Background saving terminated with success
+[16760] 02 Dec 18:30:01.635 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 18:30:01.641 * Background saving started by pid 21332
+[16760] 02 Dec 18:30:01.745 # fork operation complete
+[16760] 02 Dec 18:30:01.752 * Background saving terminated with success
+[16760] 02 Dec 18:35:02.002 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 18:35:02.008 * Background saving started by pid 1092
+[16760] 02 Dec 18:35:02.112 # fork operation complete
+[16760] 02 Dec 18:35:02.119 * Background saving terminated with success
+[16760] 02 Dec 18:40:03.027 * 10 changes in 300 seconds. Saving...
+[16760] 02 Dec 18:40:03.038 * Background saving started by pid 6940
+[16760] 02 Dec 18:40:03.484 # fork operation complete
+[16760] 02 Dec 18:40:03.490 * Background saving terminated with success
+[16760] 02 Dec 18:55:04.054 * 1 changes in 900 seconds. Saving...
+[16760] 02 Dec 18:55:04.064 * Background saving started by pid 18732
+[16760] 02 Dec 18:55:04.180 # fork operation complete
+[16760] 02 Dec 18:55:04.193 * Background saving terminated with success

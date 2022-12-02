@@ -42,7 +42,7 @@ class ProcessTaskViewSet(ModelViewSet):
 
     '''创建任务'''
     def create(self,request):
-        from .tasks import process_video
+        from .tasks import process_video, process_audio
         from celery import group
         # print(request.data)
         serializer = self.get_serializer(data=request.data)
@@ -53,9 +53,11 @@ class ProcessTaskViewSet(ModelViewSet):
         tasks = []
         file_info = serializer.data['files']
         for type,files in file_info.items():
-            if type == 'video':
-                for file in files:
+            for file in files:
+                if type == 'video':
                     tasks.append(process_video.s(file['id']))
+                if type == 'audio':
+                    tasks.append(process_audio.s(file['id']))
         task_res = group(tasks).delay()
         task.task_id = task_res.id
         task_res.save()
@@ -105,7 +107,6 @@ class FileModelViewSet(ModelViewSet):
             unzippath = 'media/files/game_projects/project_{}'.format( instance.project.title)
             with unzipfile as zfp:
                 zfp.extractall(unzippath)  # 解压到指定目录
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @action(methods=['GET'],detail=True,url_path='result')
@@ -117,6 +118,32 @@ class FileModelViewSet(ModelViewSet):
             return Response({'status':0,'text':'结果未完成处理或处理过程中发生了错误','state':file.status},
             status=status.HTTP_200_OK)
 
+    '''获取已处理好的视频文件处理结果'''
+    @action(methods=['GET'],detail=True,url_path='result_video')
+    def result_video(self,request,pk):
+        from .util import convert_type
+        file = File.objects.get(id=pk)
+        res = {'status':1}
+        type = convert_type(file.file.name)
+        if type != 'video':
+            res['status'] = -1
+            res['text'] = '文件类型错误，预期文件类型：video，接收到：{}'.format(type)
+            return Response(res,status=status.HTTP_200_OK)
+        if file.status == 'done':
+            keyframes = file.video_keyframes.all()
+            def renamedict(frames):
+                for frame in frames:
+                    dict = model_to_dict(frame,exclude=['file'])
+                    dict['timestamp'] = dict.pop('time')
+                    dict['src'] = dict.pop('path')
+                    dict['description'] = dict.pop('result')['is_blood']
+                    yield dict
+            res['keyframes'] = list(renamedict(keyframes))
+
+            return Response(res,status=status.HTTP_200_OK)
+        else :
+            return Response({'status':0,'text':'结果未完成处理或处理过程中发生了错误','state':file.status},
+            status=status.HTTP_200_OK)
 
 
 class ProjectModelViewSet(ModelViewSet):

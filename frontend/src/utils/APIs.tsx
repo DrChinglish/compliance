@@ -163,6 +163,21 @@ handler?:(res:any)=>void) {
     )
 }
 
+export async function videoResult(pid:number,fid:number,catchCallback?:(e:any)=>void,
+handler?:(res:any)=>void) {
+    let url = `${urlmapping.apibase.game}/files/${fid}/result_video/`
+    return fetchRequest(url,
+        {
+            method:'GET',
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        },catchCallback,handler
+    )
+}
+
 export async function createTask(pid:number,files:ProjectFiles ,catchCallback?:(e:any)=>void,
 handler?:(res:any)=>void) {
     let formData = new FormData()

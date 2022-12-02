@@ -8,7 +8,8 @@ export interface FileMeta extends FileInfoBasic{
 
 export interface FileInfoBasic{
   id: number,
-  url:string
+  url:string,
+  status:FileProcessStatus|VideoFileStatus
 }
 
 export interface SnackbarStatus{
@@ -40,3 +41,7 @@ export interface ClassifiedFileList{
 }
 
 export type LoadingStatus = 'initial'|'loading'|'error'|'success'|string
+
+export type FileProcessStatus = 'uploaded'|'processing'|'error'|'done'
+
+export type VideoFileStatus = FileProcessStatus | 'ready'

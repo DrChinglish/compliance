@@ -106,8 +106,15 @@ class GameAdvice(models.Model):
 
 '''视频关键帧表'''
 class KeyFrame(models.Model):
+    STATUS_CHOICES_KEYFRAME = (
+        ('uploaded', 'Uploaded'),
+        ('processing', 'Processing'),
+        ('error', 'Error'),
+        ('done', 'Done'),
+    )
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='video_keyframes', verbose_name='所属文件', null=True)
     path = models.CharField(max_length=40,)
     time = models.CharField(max_length=20, default='')
     frame = models.IntegerField(null=True)
-  
+    result = models.JSONField(default=dict)
+    status = models.CharField(max_length=20,choices=STATUS_CHOICES_KEYFRAME,default='uploaded',verbose_name='状态')

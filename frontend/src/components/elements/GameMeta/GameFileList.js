@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 // import {FixedSizeList} from 'react-window'
 import urlmapping from "../../../urlMapping.json"
 import RefreshIcon from '@mui/icons-material/Refresh';
-import {getProcessedFile, processVideo} from '../../../utils/APIs'
+import {getProcessedFile, processVideo, videoResult} from '../../../utils/APIs'
 import EmptyHint from '../../Hints/EmptyHint';
 import ListItemFile from './subComponents/ListItemFile';
 import TextFileContent from './subComponents/FileContents/TextFileContent';
@@ -106,7 +106,8 @@ export default class GameFileList extends Component {
       loading:true,
       loaderr:{status:false,index:-1,text:'未知错误'}
     })
-    processVideo(this.props.pid,this.state.fileList[value].id,(reason)=>{
+    // processVideo(this.props.pid,this.state.fileList[value].id,(reason)=>{
+    videoResult(this.props.pid,this.state.fileList[value].id,(reason)=>{
       this.setState({
         loading:false,
         loaderr:{
@@ -116,10 +117,23 @@ export default class GameFileList extends Component {
         }
       })
     },res=>{
-      this.setState({
-        keyframes:res,
-        loading:false
-      })
+      console.log(res)
+      if(res.status !== 1){
+        this.setState({
+          loading:false,
+          loaderr:{
+            index:value,
+            status:true,
+            text:`发生了一个错误：${res.text}`
+          }
+        })
+      }else{
+        this.setState({
+          keyframes:res.keyframes,
+          loading:false
+        })
+      }
+      
     })
   }
 
