@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'gameapi',
     'dataapp',
+    'platformapi',
     'dataappentry.apps.FrontendConfig',
     
 ]
@@ -193,7 +194,14 @@ MEDIA_ROOT = BASE_DIR / "media"
 CKEDITOR_UPLOAD_PATH="uploads/"
 
 
+AUTH_USER_MODEL="platformapi.UserInfo"
+
+
+
 # Celery settings
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BROKER_URL = 'redis://localhost:6379/0' 
+
+
+

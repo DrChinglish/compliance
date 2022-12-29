@@ -23,6 +23,7 @@ urlpatterns = [
     path('', include('dataapp.urls', namespace='dataapp')),
     path('',include('dataappentry.urls')),
     path('api/',include('gameapi.urls')),
+    path('papi/',include('platformapi.urls')),
 ]
 
 # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
