@@ -8,12 +8,13 @@ export interface FileMeta extends FileInfoBasic{
 
 export interface FileInfoBasic{
   id: number,
-  url:string
+  url:string,
+  status:FileProcessStatus|VideoFileStatus
 }
 
 export interface SnackbarStatus{
     show:boolean,
-    text:string,
+    text:string|Error,
     severity:'success'|'warning'|'error'
 }
 
@@ -34,3 +35,13 @@ export interface MenuItemMeta{
   icon?:React.ReactNode,
   onItemClick?:()=>void
 }
+
+export interface ClassifiedFileList{
+  [key:string]:FileMeta[]
+}
+
+export type LoadingStatus = 'initial'|'loading'|'error'|'success'|string
+
+export type FileProcessStatus = 'uploaded'|'processing'|'error'|'done'
+
+export type VideoFileStatus = FileProcessStatus | 'ready'

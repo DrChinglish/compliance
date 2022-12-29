@@ -7,7 +7,7 @@ from .key_frame import Extractor
 from paddleocr import PaddleOCR, draw_ocr
 from PIL import Image
 import numpy as np
-
+from paddlespeech.cli.asr.infer import ASRExecutor
 
 
 # 处理图片数据
@@ -125,7 +125,10 @@ class ImageProcess(object):
         yolo = YOLO()     
         r_image= yolo.detect_image(self.image, crop = False, count=True)
 
-        self.process_result['skull'] = {'image':self.get_img_base64(r_image)}
+
+        # self.get_img_base64(r_image) 将会报错：AttributeError: 'tuple' object has no attribute 'save'
+        # 输出将会是(<PIL.Image.Image image mode=RGB size=1708x11233 at 0x1C5F78A0F70>, 0)，一个元组
+        self.process_result['skull'] = {'image':self.get_img_base64(r_image[0])}
 
 
     # 检测血液
@@ -320,11 +323,39 @@ class SpeechProcess(object):
         self.process_result = {}  # 敏感词
         self.keyword_time = {}    # 敏感词所时间
 
+    @classmethod
+    def get_converted_path(self,path):
+        import os
+        # return os.path.join(os.path.join(os.path.dirname(path),'converted_wav'),os.path.splitext(os.path.basename(path))[0],'.wav')
+        return '{0}/converted_wav/{1}.wav'.format(os.path.dirname(path),os.path.splitext(os.path.basename(path))[0])
+
+    def convert_to_wav(self,path):
+        import os
+        from pydub import AudioSegment
+        print('Converting file...')
+        converteddir = os.path.join(os.path.dirname(path),'converted_wav')
+        if not os.path.exists(converteddir):
+            os.makedirs(converteddir)
+        
+        convertedpath = self.get_converted_path(path)
+        audio = AudioSegment.from_file(path)
+        audio.export(convertedpath,format='wav')
+
     def init_para(self, path):
-        from paddlespeech.cli.asr.infer import ASRExecutor
+        print('init speech process')
+        
         from paddlespeech.cli.text.infer import TextExecutor
-    
+        import os
+        import soundfile as sf
+        print('import')
+        ext = os.path.splitext(path)[1].strip('.')
+        if ext.upper() not in sf.available_formats().keys():
+            if not os.path.exists(self.get_converted_path(path)):
+                self.convert_to_wav(path)
+            path = self.get_converted_path(path)
+        print('asr')
         asr = ASRExecutor()
+        print('asr done')
         self.re_sample(path)
         result = asr(audio_file=path)
         
@@ -334,6 +365,7 @@ class SpeechProcess(object):
 
     #将音频的采样率改成16000,方便模型调用
     def re_sample(self, path):
+        print('resampling')
         import librosa
         import soundfile as sf
         import numpy as np
@@ -346,6 +378,7 @@ class SpeechProcess(object):
 
     # 处理敏感词
     def process_sensitive_word(self):    
+        print('sensitive')
         count = 0    #敏感词数量
         senstive_item = []   #敏感词             
         if len(self.recongnize_sensitive(self.txts)[0]):
@@ -357,6 +390,7 @@ class SpeechProcess(object):
 
     # 处理英文
     def process_english_word(self):
+        print('english')
         count = 0    #敏感词数量
         english_item = []   #敏感词  
         if len(self.recongnize_english(self.txts)[0]):
@@ -652,6 +686,7 @@ def img_base64(image):
     import io
     import base64
     im_io = io.BytesIO()
+    print(image)
     image.save(im_io, 'png', quality=70)
     im_io.seek(0)
     im_io_png = base64.b64encode(im_io.getvalue())

@@ -8,11 +8,15 @@ import EmptyHint from '../../../../Hints/EmptyHint'
 import UploadIcon from '@mui/icons-material/Upload';
 import ActionHint from '../../../../Hints/ActionHint'
 import UploadFileDialog from '../../../Dialogs/UploadFileDialog'
-import { getHealthyReminder, getStaticResources, uploadHealthyReminder } from '../../../../../utils/APIs'
+import PreviewImage from '../../../PreviewImage'
+import { getHealthyReminder, getStaticResources, processHealthyReminder, uploadHealthyReminder } from '../../../../../utils/APIs'
 import LoadingProgress from '../LoadingProgress'
 import TitleAction from '../../../TitleAction'
 import DeleteIcon from '@mui/icons-material/Delete';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import StatusContainer from '../../../StatusContainer'
 import DeleteFileDialog from '../../../Dialogs/DeleteFileDialog'
+import { convertBase64Image } from '../../../../../utils/util'
 export default class HealthyReminder extends Component {
 
     componentDidMount=()=>{
@@ -30,9 +34,13 @@ export default class HealthyReminder extends Component {
               id:-1
             },
             open:false,
+            coverageRate:0,
             uploadDialogOpen:false,
             deleteDialogOpen:false,
-            loadingNewFile:false
+            loadingNewFile:false,
+            processedImage:undefined,
+            resultStatus:'initial',
+
         }
     }
 
@@ -59,8 +67,7 @@ export default class HealthyReminder extends Component {
       })
       console.log(this.state)
       this.setState({loadingNewFile:true})
-      getHealthyReminder(this.props.pid)
-      .then(res=>{
+      getHealthyReminder(this.props.pid,undefined,res=>{
         console.log(res)
         if(res.status===1){
           //has file
@@ -72,8 +79,20 @@ export default class HealthyReminder extends Component {
       })
     }
 
+    getPrecessResult=()=>{
+      this.setState({resultStatus:'loading'})
+      processHealthyReminder(this.props.pid,this.state.file.id,(reason)=>{this.setState({resultStatus:'error'})},
+      res=>{
+        let r = res.game_advice
+        this.setState({coverageRate:r.coverage_rate,processedImage:r.image,resultStatus:'success'})
+      })
+    }
+
   render() {
-    console.log(this.state)
+    // console.log(this.state)
+    if(this.state.file.id>0&&this.state.resultStatus==='initial'){
+      this.getPrecessResult()
+    }
     let contentNoFile = 
     <>
       <ActionHint text='还没有上传游戏健康忠告文件' extra={
@@ -103,18 +122,18 @@ export default class HealthyReminder extends Component {
           <Titles>识别结果</Titles>
         </TitleAction>
         <Box sx={{height:'60%'}}>
-          <Paper elevation={8} sx={{pl:2,py:2,height:'100%'}}>
-            <Paragraphs sx={{overflowY:'scroll',maxHeight:'100%'}}>{`ut the four main constraints that against data trading flow: Uncontrollability of data, Inequivalence of data value, Difference of objective with data, Insufficiency of data discovery.Then, the author suggests the concept of data trading rights as an architecture to eliminate the four constraints. Furthermore, the author proposes an idea of data usage rights securities, which binds the data usage rights with the dataset and allows the data to be treated as tangible assets.Finally, the author gives a brief specification of the data market with data usage rights, illustrating the basic structure and trading procedure of it. Besides that, the author also elaborates some key technological requirements of the data market with data usage right.AdvantageThe author gives a clear review on the existing standards or pieces of literature surrounding the data trading architecture. For example, the author introduces the practice of China on data trading market.The author explains in detail the constraints on the use of data, and then introduce the role of the data trading market. The structure of the article is clear.Propose a new concept of data usage rights securities and the simple structure of the trading market with data usage rights.WeaknessesThe article needs more explanation on the way to implement data usage right securities:How to generate and issue data usage right securities?What techniques could be used to ensure the exclusivity, tangibilization, traceability and identification of the data usage right securities?What is the technical detail of the identifier signifying the dataset?Needs more explanation on the procedure of trading, especially about the data usage right securities:What is the whole process of trading using data usage right securities, from issuance to exercise?What roles do the stakeholders and objects play in the data market, please show it in a figure.The article does not meet the need of novelty, only the concept but not the detail implementation is proposed.DetailsIn part V, Fig 3 Transformation of the state of dataset and data usage rights securities are not explained very clearly. It should not only introduce the concept, but also explain the transformation processIn part VI, add tw
-            ttttttttttttttttttttttttt
-            ttttttt`}</Paragraphs>
-          </Paper>
+          <StatusContainer status={this.state.resultStatus} 
+          errorAction={<IconButton onClick={()=>this.getPrecessResult()}><RefreshIcon/></IconButton>}>
+            <PreviewImage src={convertBase64Image(this.state.processedImage)}/>
+            <br/>
+            <Titles variant={'left'} gutterBottom>结果分析</Titles>
+            <Stack direction='row' spacing={2} divider={<Divider orientation='vertical' sx={{height:'80%'}}/>} alignItems='center' justifyContent='center'>
+                <LabelCircularProgress value={parseInt(this.state.coverageRate)} title='匹配程度'/>
+                <CheckStatus status={parseInt(this.state.coverageRate)===100}/>
+            </Stack>
+          </StatusContainer>
         </Box>
-        <br/>
-        <Titles variant={'left'} gutterBottom>结果分析</Titles>
-        <Stack direction='row' spacing={2} divider={<Divider orientation='vertical' sx={{height:'80%'}}/>} alignItems='center' justifyContent='center'>
-            <LabelCircularProgress value={50} title='匹配程度'/>
-            <CheckStatus status={true}/>
-        </Stack>
+        
     </>
     
     return (

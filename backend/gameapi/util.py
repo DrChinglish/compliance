@@ -14,7 +14,7 @@ def convert_type(name):
     text = ['.txt','.docx','.doc']
     image = ['.jpg','.jpeg','.gif','.png','.svg','.psd','.pcd','.raw','.bmp','.tif']
     table = ['.csv','.xls','.xlsx']
-    audio = ['.mp3','.wav','.aac','.wma','m4a']
+    audio = ['.mp3','.wav','.aac','.wma','.m4a']
     video = ['.mp4','.m4v','.avi']
 
     ext =  os.path.splitext(name)[1].lower()

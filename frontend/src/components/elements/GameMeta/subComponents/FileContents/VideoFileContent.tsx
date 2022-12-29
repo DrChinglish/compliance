@@ -1,7 +1,7 @@
 import React, { Component, createRef } from 'react'
 import ReactPlayer from 'react-player/lazy'
 import { ImageList } from '@mui/material'
-import { getStaticResources } from '../../../../../utils/APIs'
+import { getMediaResources, getStaticResources } from '../../../../../utils/APIs'
 import { FileMeta, VideoFrameMeta } from '../../../../../Interfaces'
 import FileContentLayout from './FileContentLayout'
 import Titles from '../../../../typography/Titles'
@@ -12,7 +12,8 @@ const USE_LEGACY_VIDEO = true
 
 type Props = {
   video: FileMeta,
-  keyframes:VideoFrameMeta[]
+  keyframes:VideoFrameMeta[],
+  pid:number
 }
 
 type State = {}
@@ -35,19 +36,20 @@ export default class VideoFileContent extends Component<Props, State> {
   }
 
   seekVideo=(timestamp:string|number)=>{
+    //console.log(timestamp)
     let time = formatTime(timestamp)
-    console.log(time)
-    this.videoref.current!.currentTime=100 
+    //console.log(time)
+    this.videoref.current!.currentTime=time
   }
 
   render() {
     let video=USE_LEGACY_VIDEO?
-    <video controls style={{height:'100%',width:'100%'}} ref={this.videoref}>
-      <source src={getStaticResources(this.props.video.url)}/>
+    <video src={getMediaResources(this.props.pid,this.props.video.id)} controls 
+    style={{height:'100%',width:'100%'}} ref={this.videoref}>
     </video>
     :
     <ReactPlayer config={{file:{attributes:{src:undefined}}}} 
-          onError={(e,data)=>console.log(e,data)} url={[getStaticResources(this.props.video.url)]} 
+          onError={(e,data)=>console.log(e,data)} url={[getMediaResources(this.props.pid,this.props.video.id)]} 
           controls height='100%' width='100%'/>
     //console.log(ReactPlayer.canPlay(getStaticResources(this.props.video.url)))
     return (

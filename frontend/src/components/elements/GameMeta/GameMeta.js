@@ -13,6 +13,7 @@ import LoadingProgress from './subComponents/LoadingProgress';
 import ProjectCheckList from './ProjectCheckList';
 import fetchHandle from '../../../utils/FetchErrorhandle'
 import ErrorHint from '../../Hints/ErrorHint';
+import { classifyFiles } from '../../../utils/util';
 function a11yProps(index) {
     return {
       id: `game-meta-tab-${index}`,
@@ -85,25 +86,8 @@ export default class GameMeta extends Component {
     
 
     static getDerivedStateFromProps(props,state){
-        let fileList={
-            text:[],
-            image:[],
-            audio:[],
-            video:[],
-            other:[]
-        }
+        let fileList = classifyFiles(props.fileList)
         //console.log(props.fileList)
-        for(let file of props.fileList){
-            let target 
-            switch(file.type){
-                case 'text': target = fileList.text;break;
-                case 'image':target = fileList.image;break;
-                case 'audio':target = fileList.audio;break;
-                case 'video':target = fileList.video;break;
-                default : target = fileList.other;break;
-            }
-            target.push(file)
-        }
         //console.log(fileList)
         return {fileList:fileList,healthyReminder:props.healthyReminder}
     }
@@ -159,7 +143,7 @@ export default class GameMeta extends Component {
   render() {
     //console.log(this.state.fileList)
     // Define the panels here
-    
+    //console.log(this.state.fileList)
     let panels=[
         {
             label:'审核概览',

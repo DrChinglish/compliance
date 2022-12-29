@@ -3,7 +3,7 @@ from email.policy import default
 from rest_framework import serializers
 # 序列化基类
 
-from .models import Project, File, KeyFrame, GameAdvice
+from .models import Project, File, KeyFrame, GameAdvice,Tasks
 
 
 class FileModelSerializer(serializers.ModelSerializer):
@@ -23,6 +23,11 @@ class KeyFrameModelSerializer(serializers.ModelSerializer):
         model = KeyFrame
         fields = "__all__"
      
+
+class ProjectTaskModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tasks
+        fields = '__all__'
 
 
 class ProjectModelSerializer(serializers.ModelSerializer):

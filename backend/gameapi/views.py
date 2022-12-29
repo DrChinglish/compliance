@@ -8,13 +8,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
-from .models import Project, File, KeyFrame, GameAdvice
-from .serializers import ProjectModelSerializer, FileModelSerializer, GameAdviceModelSerializer, KeyFrameModelSerializer
+from .models import Project, File, KeyFrame, GameAdvice, Tasks
+from .serializers import ProjectTaskModelSerializer,ProjectModelSerializer, FileModelSerializer, GameAdviceModelSerializer, KeyFrameModelSerializer
 from rest_framework.decorators import action
 from .class_method import *
-
-
-
+from django.http import FileResponse
+from django.forms.models import model_to_dict
+from celery.result import GroupResult
 
 
 
@@ -36,9 +36,55 @@ class GameAdviceModelSerializer(ModelViewSet):
 
 
 
+class ProcessTaskViewSet(ModelViewSet):
+    queryset = Tasks.objects.all()
+    serializer_class = ProjectTaskModelSerializer
 
+    '''创建任务'''
+    def create(self,request):
+        from .tasks import process_video, process_audio
+        from celery import group
+        # print(request.data)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        task = Tasks.objects.get(id = serializer.data['id'])
+        # print(task.files['a'],task.files)
+        tasks = []
+        file_info = serializer.data['files']
+        for type,files in file_info.items():
+            for file in files:
+                if type == 'video':
+                    tasks.append(process_video.s(file['id']))
+                if type == 'audio':
+                    tasks.append(process_audio.s(file['id']))
+        task_res = group(tasks).delay()
+        task.task_id = task_res.id
+        task_res.save()
+        task.save()
+        return Response({'data':model_to_dict(task),'status':1},status=status.HTTP_200_OK)
 
+    '''任务进度'''
+    @action(methods=['GET'],detail=True,url_path='progress')
+    def progress(self,request,pk):
+        task = Tasks.objects.get(id=pk)
+        task_uuid = task.task_id
+        task_result = GroupResult.restore(task_uuid)
+        res={}
+        res['successful'] = task_result.successful()
+        res['completed']  = task_result.completed_count()
+        res['total'] = len(task_result.results)
+        res['ready'] = task_result.ready()
+        
+        return Response(data=res,status=status.HTTP_200_OK)
 
+    @action(methods=['GET'],detail=True,url_path='result')
+    def result(self,request,pk):
+        task = Tasks.objects.get(id=pk)
+        task_uuid = task.task_id
+        task_result = GroupResult.restore(task_uuid)
+        if task_result.ready():
+            task_result.get()
 
 class FileModelViewSet(ModelViewSet):
     queryset = File.objects.all()
@@ -61,11 +107,43 @@ class FileModelViewSet(ModelViewSet):
             unzippath = 'media/files/game_projects/project_{}'.format( instance.project.title)
             with unzipfile as zfp:
                 zfp.extractall(unzippath)  # 解压到指定目录
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(methods=['GET'],detail=True,url_path='result')
+    def result(self,request,pk):
+        file = File.objects.get(id=pk)
+        if file.status == 'done':
+            return Response({'status':1,'result':file.result},status=status.HTTP_200_OK)
+        else :
+            return Response({'status':0,'text':'结果未完成处理或处理过程中发生了错误','state':file.status},
+            status=status.HTTP_200_OK)
 
+    '''获取已处理好的视频文件处理结果'''
+    @action(methods=['GET'],detail=True,url_path='result_video')
+    def result_video(self,request,pk):
+        from .util import convert_type
+        file = File.objects.get(id=pk)
+        res = {'status':1}
+        type = convert_type(file.file.name)
+        if type != 'video':
+            res['status'] = -1
+            res['text'] = '文件类型错误，预期文件类型：video，接收到：{}'.format(type)
+            return Response(res,status=status.HTTP_200_OK)
+        if file.status == 'done':
+            keyframes = file.video_keyframes.all()
+            def renamedict(frames):
+                for frame in frames:
+                    dict = model_to_dict(frame,exclude=['file'])
+                    dict['timestamp'] = dict.pop('time')
+                    dict['src'] = dict.pop('path')
+                    dict['description'] = dict.pop('result')['is_blood']
+                    yield dict
+            res['keyframes'] = list(renamedict(keyframes))
 
+            return Response(res,status=status.HTTP_200_OK)
+        else :
+            return Response({'status':0,'text':'结果未完成处理或处理过程中发生了错误','state':file.status},
+            status=status.HTTP_200_OK)
 
 
 class ProjectModelViewSet(ModelViewSet):
@@ -81,8 +159,10 @@ class ProjectModelViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         for f in request.FILES.getlist('files[]'):
-            # This looks not so right, could have cause some undesire behaviors....  
-            instance = File(file=f ,project=Project.objects.last())
+            from .util import calculate_file_hash
+            # This looks not so right, could have cause some undesire behaviors....
+            hashcode = calculate_file_hash(f)  
+            instance = File(file=f ,project=Project.objects.last(),md5=hashcode)
             instance.save()
             print(f,'111',instance,'111',instance.file.path)
             from .util import convert_type,generate_video_cover
@@ -147,7 +227,17 @@ class ProjectModelViewSet(ModelViewSet):
         self.get_object().delete()
         return Response({'mes': '删除成功'}, status=status.HTTP_200_OK)
 
-
+    '''获取媒体文件（视频）'''
+    @action(methods=['get'],detail=True, url_path='media_file')
+    def get_media_files(self,request,pk):
+        fid = request.GET.get('fid')
+        file_path = File.objects.get(id=fid).file.path
+        open_file = open(file_path,'rb')
+        response = FileResponse(open_file)
+        file_size = os.path.getsize(file_path)
+        response['Content-Range'] = f'bytes 0-{str(file_size)}/{str(file_size)}'
+        response['Accept-Ranges'] = 'bytes'
+        return response
 
     '''获取项目所有图片文件'''
     @action(methods=["get"], detail=True, url_path="images")
@@ -466,25 +556,52 @@ class ProjectModelViewSet(ModelViewSet):
         instance = Project.objects.get(id=pk)
         file = File.objects.get(id=file_id)
         path = './media/' + str(file.file)
-        #开始抽取关键帧
-        vediofilter = VideoProcess()
-        vediofilter.extract_frame(path)
-        key_frame = zip(vediofilter.frame,vediofilter.frame_time, vediofilter.frame_path)
-        #保存关键帧到数据库
-        for i,j,k in key_frame:
-            new_keyframe = KeyFrame.objects.create()
-            new_keyframe.file = file
-            new_keyframe.path = k
-            new_keyframe.time = j
-            new_keyframe.frame = i
-            new_keyframe.save()
+        if file.status == 'uploaded' or request.GET.get('force').lower() == 'true':    
+            #清除原来的关键帧
+            file.video_keyframes.all().delete()
+            #开始抽取关键帧
+            vediofilter = VideoProcess()
+            vediofilter.extract_frame(path)
+            key_frame = zip(vediofilter.frame,vediofilter.frame_time, vediofilter.frame_path)
+            #保存关键帧到数据库
+            for i,j,k in key_frame:
+                new_keyframe = KeyFrame.objects.create()
+                new_keyframe.file = file
+                new_keyframe.path = k
+                new_keyframe.time = j
+                new_keyframe.frame = i
+                new_keyframe.save()
+            file.status = 'ready'
+            file.save()
+        all_key = file.video_keyframes.all()
+        res = [{'id': file.id, 'description': '视频关键帧，用于后续的各项检测','frame':file.frame ,'timestamp':file.time , 'src':file.path, } for file in all_key ]
 
-        all_key = KeyFrame.objects.filter(file=file.id)
-        res = [{'id': file.id, 'description': '视频关键帧，用于后续的各项检测','frame':file.frame ,'time':file.time , 'file':file.path, } for file in all_key ]
+        return Response(data=res, status=status.HTTP_200_OK)
 
-        return Response(data=res, status=status.HTTP_204_NO_CONTENT)
+    
+    '''获取任务结果'''
+    def get_task_result(self,request):
+        task_id = request.POST.get('task_id')
+        from backend.celery import app
+        res = app.AsyncResult(task_id)
+        if res.state == 'SUCCESS':
+            ret = res.get()
+        else :
+            ret = {'info':'Result not ready','state':res.state}
+        return Response(data = ret, status=status.HTTP_200_OK)
 
-        
+    '''处理一个关键帧(测试任务队列)'''
+    def process_frame_task(self, request, pk, file_id, frame_id):
+        from .tasks import process_frame
+        instance = Project.objects.get(id=pk)
+        videofile = File.objects.get(id=file_id)
+        res = process_frame.delay(frame_id)
+        print(res)
+        print(res.id)
+
+
+        return Response(data=res.id, status=status.HTTP_200_OK)
+
     '''处理一个关键帧'''
     def process_frame(self, request, pk, file_id, frame_id):
         instance = Project.objects.get(id=pk)

@@ -11,9 +11,11 @@ import urlmapping from '../../../../urlMapping.json'
 import { Box } from '@mui/system';
 interface ListItemFileIconProps{
   type : 'text'|'image'|'audio'|'video'|'other'| undefined,
-  ext:string,
+  size?:string|number,
+  ext?:string,
   coverurl?:string, //image data in url
   coverimg?:string //image data in base64
+  origin?:boolean
 }
 
 type ImageIconLayoutProps={
@@ -29,6 +31,9 @@ function ImageIconLayout(props:ImageIconLayoutProps){
 
 export default function ListItemFileIcon(props:ListItemFileIconProps){
     let icon:undefined|React.ReactNode = undefined
+    let styleprops = {
+      fontSize:props.size??'24px'
+    }
     if(props.coverurl){
       icon = <ImageIconLayout>
         <img src={urlmapping.host+urlmapping.apibase.other+props.coverurl}/>
@@ -40,21 +45,26 @@ export default function ListItemFileIcon(props:ListItemFileIconProps){
     }
     else
       switch(props.ext){
-        case '.doc': case '.docx':icon = <FileWordOutlined style={{fontSize:'24px'}}/>;break;
-        case '.txt':icon = <FileTextOutlined style={{fontSize:'24px'}}/>;break;
-        case '.jpg': case '.jpeg':icon = <FileJpgOutlined style={{fontSize:'24px'}}/>;break;
-        case '.xls': case '.xlsx':icon = <FileExcelOutlined style={{fontSize:'24px'}}/>;break;
-        case '.gif':icon = <FileGifOutlined style={{fontSize:'24px'}}/>;break;
+        case '.doc': case '.docx':icon = <FileWordOutlined style={styleprops}/>;break;
+        case '.txt':icon = <FileTextOutlined style={styleprops}/>;break;
+        case '.jpg': case '.jpeg':icon = <FileJpgOutlined style={styleprops}/>;break;
+        case '.xls': case '.xlsx':icon = <FileExcelOutlined style={styleprops}/>;break;
+        case '.gif':icon = <FileGifOutlined style={styleprops}/>;break;
         default:
           switch(props.type){
-          case 'text':icon = <DescriptionIcon/>; break;
-          case 'image':icon = <ImageOutlinedIcon/>;break;
-          case 'audio':icon = <MusicNoteOutlinedIcon />;break;
-          case 'video':icon = <TheatersIcon/>;break;
-          default:icon = <FileUnknownOutlined  style={{fontSize:'24px'}}/>;
+          case 'text':icon = <DescriptionIcon sx={styleprops}/>; break;
+          case 'image':icon = <ImageOutlinedIcon sx={styleprops}/>;break;
+          case 'audio':icon = <MusicNoteOutlinedIcon sx={styleprops}/>;break;
+          case 'video':icon = <TheatersIcon sx={styleprops}/>;break;
+          default:icon = <FileUnknownOutlined  style={styleprops}/>;
         }  
       }
     
   
-    return <ListItemIcon sx={{justifyContent:'center'}}>{icon}</ListItemIcon>
+    return props.origin?
+    <Box width='100%' height='100%' display='flex' justifyContent='center' alignItems='center'>
+      {icon}
+    </Box>
+    :
+    <ListItemIcon sx={{justifyContent:'center'}}>{icon}</ListItemIcon>
   }
