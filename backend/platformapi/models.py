@@ -3,22 +3,112 @@ from django.utils import timezone
 # from django.urls import reverse
 
 
-'''用户表'''
-class User(models.Model):
-    username = models.CharField(max_length=128, unique=True)
-    password = models.CharField(max_length=256)
-    email = models.EmailField(unique=True)
-    c_time = models.DateTimeField(auto_now_add=True)
+from django.contrib.auth.models import AbstractUser
 
-    class Meta:
-        ordering = ['c_time']
+
+class UserInfo(AbstractUser):
+    """
+    用户信息
+    """
+   
+    telephone = models.CharField(max_length=11, null=True, unique=True)
+    create_time = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
+
+    site = models.OneToOneField(to='Site', to_field='id', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.username
 
 
-'''项目表'''
+
+class Site(models.Model):
+    """
+    后台站点表
+    """
+  
+    title = models.CharField(verbose_name='标题', max_length=64)
+    site_name = models.CharField(verbose_name='站点名称', max_length=64)
+    theme = models.CharField(verbose_name='主题', max_length=32)
+
+    def __str__(self):
+        return self.title
+
+
+
+class Category(models.Model):
+    """
+    分类表
+    """
+    CATEGORY_CHOICES = (
+        ('hoax', '诈骗'),
+        ('intrusion', '入侵'),
+        ('network_scanning', '网络扫描'),
+        ('misdirected_email', '误发邮件'),
+        ('game', '游戏数据'),
+        ('text', '文本数据'),
+        ('speech', '语音数据'),
+        ('image', '图片数据'),
+    )
+
+   
+    title = models.CharField(verbose_name='分类标题',max_length=32, choices=CATEGORY_CHOICES, default='misdirected_email')
+    site = models.ForeignKey(verbose_name='所属站点', to='Site', to_field='id', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.title
+
+
+class Tag(models.Model):
+    """
+    标签表
+    """
+ 
+    title = models.CharField(verbose_name='标签名称', max_length=32)
+    site = models.ForeignKey(verbose_name='所属站点', to='Site', to_field='id', on_delete=models.CASCADE)
+  
+    def __str__(self):
+        return self.title
+
+
+
+class Law(models.Model):
+    """
+    法律表
+    """
+ 
+    law_article = models.CharField(verbose_name='所属法律', max_length=50)
+    serial_number = models.CharField(verbose_name='条目', max_length=30)
+    law_term = models.TextField()
+    primary_classification = models.CharField(verbose_name='一级分类', max_length=50)
+    secondary_classification = models.CharField(verbose_name='二级分类', max_length=50)
+    third_classification = models.CharField(verbose_name='三级分类', max_length=50)
+  
+    def __str__(self):
+        return self.law_term
+
+
+
+class Question(models.Model):
+    """
+    问卷建议表
+    """
+
+    serial_number = models.CharField(verbose_name='条目', max_length=30)
+    question = models.TextField()
+    suggestion = models.TextField()
+    score = models.IntegerField(default=0)
+
+    law = models.ForeignKey(verbose_name='所属法律条目', to='Law', to_field='id', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.question
+
+
+
 class Project(models.Model):
+    '''
+    项目表
+    '''
     STATUS_CHOICES = (
         ('open', 'Open'),
         ('closed', 'Closed'),
@@ -28,58 +118,61 @@ class Project(models.Model):
         ('pending', 'Pending'),
         ('other', "Other")
     )
-
     CATEGORY_CHOICES = (
-        ('hoax', 'Hoax'),
-        ('intrusion', 'intrusion'),
-        ('network_scanning', 'Network_scanning'),
-        ('misdirected_email', 'misdirected_email'),
-        ('game', 'Game'),
-        ('table', 'Table'),
-        ('text', 'Text'),
-        ('speech', 'Speech'),
-        ('image', 'Image'),
+        ('hoax', '诈骗'),
+        ('intrusion', '入侵'),
+        ('network_scanning', '网络扫描'),
+        ('misdirected_email', '误发邮件'),
+        ('game', '游戏数据'),
+        ('text', '文本数据'),
+        ('speech', '语音数据'),
+        ('image', '图片数据'),
     )
 
+  
     title = models.CharField(max_length=300)
-    # author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_posts')
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_projects')
-    discription = models.TextField()
-    # upload = models.FileField(upload_to='files/')
-    category = models.CharField(max_length=10, choices=CATEGORY_CHOICES, default='misdirected_email')
-    publish = models.DateTimeField(default=timezone.now)
+    description = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='new')
+    personal_protection_law = models.BooleanField(default=True)
+    network_security_law = models.BooleanField(default=False)
+    data_security_law = models.BooleanField(default=False)
+   
+    # user = models.ForeignKey(verbose_name='创建者', to='UserInfo', to_field='id', on_delete=models.CASCADE)
+    # category = models.ForeignKey(to='Category', to_field='id', null=True, on_delete=models.CASCADE)
+    category = models.CharField(max_length=64, choices=CATEGORY_CHOICES, default='misdirected_email')
+    tags = models.ManyToManyField(
+        to="Tag",
+        through='Project2Tag',
+        through_fields=('project', 'tag'),
+    )
 
-    def to_dict(self):
-        """重写model_to_dict()方法转字典"""
-        from datetime import datetime
-
-        opts = self._meta
-        data = {}
-        for f in opts.concrete_fields:
-            value = f.value_from_object(self)
-            if isinstance(value, datetime):
-                value = value.strftime('%Y-%m-%d %H:%M:%S')
-            elif isinstance(f, models.FileField):
-                value = value.url if value else None
-            data[f.name] = value
-        return data
-
-    class Meta:
-        ordering = ('-publish',)
 
     def __str__(self):
         return self.title
 
+
+class Project2Tag(models.Model):
+   
+    project = models.ForeignKey(verbose_name='项目', to="Project", to_field='id', on_delete=models.CASCADE)
+    tag = models.ForeignKey(verbose_name='标签', to="Tag", to_field='id', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [
+            ('project', 'tag'),
+        ]
+
+    def __str__(self):
+        v = self.article.title + "---" + self.tag.title
+        return v
 
 
 
 '''文件表'''
 def get_file_dir(instance, filename):
 
-    return 'files/game_projects/project_{0}/{1}'.format(instance.project.title, filename)
+    return 'files/platformapi/project_files/project_{0}/{1}'.format(instance.project.title, filename)
 
 class File(models.Model):
     STATUS_CHOICES_FILE = (
@@ -88,10 +181,25 @@ class File(models.Model):
         ('error', 'Error'),
         ('done', 'Done')
     )
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_files', verbose_name='所属项目')
+  
     file = models.FileField(upload_to=get_file_dir, verbose_name='上传文件')
     md5 = models.CharField(max_length=30, default='')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES_FILE, default='uploaded')
+
+    project = models.ForeignKey(verbose_name='所属项目', to='Project', to_field='id', related_name='project_files',on_delete=models.CASCADE)
+
+
+
+class ProjectQuest(models.Model):
+    '''
+    项目问卷
+    '''
+    answer = models.BooleanField(default=False)
+  
+    project = models.ForeignKey(verbose_name='所属项目', to='Project', to_field='id', on_delete=models.CASCADE)
+    question = models.ForeignKey(verbose_name='问题', to='Question', to_field='id', on_delete=models.CASCADE)
+
+    
 
 
 '''任务表'''
@@ -102,52 +210,45 @@ class Tasks(models.Model):
         ('success', 'Success'),
         ('failed', 'Failed')
     )
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_tasks', verbose_name='处理任务')
+   
     files = models.JSONField(default=dict)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES_TASK, default='created')
+
+    project = models.ForeignKey(verbose_name='所属项目', to='Project', to_field='id', on_delete=models.CASCADE)
+
+
+
+
 
 
 '''敏感数据表'''
 class RiskData(models.Model):
     TYPE_CHOICES = (
-        ('specified_identity', 'Specified_identity'),
-        ('bioinformation', 'Bioinformation'),
-        ('financial_account', 'Financial_account;'),
-        ('healthcare', 'Healthcare'),
-        ('track ', 'Track '),
-        ('authentication_information', 'Authentication_information'),
-        ('juveniles_information', 'Juveniles_information'),
-        ('other', 'Other'),
+        ('specified_identity', '特定身份'),
+        ('bioinformation', '生物识别信息'),
+        ('financial_account', '金融账户;'),
+        ('healthcare', '医疗健康'),
+        ('track ', '行踪轨迹 '),
+        ('authentication_information', '身份鉴别信息'),
+        ('juveniles_information', '未成年人个人信息'),
+        ('other', '其他敏感信息'),
     )
+ 
+    content = models.CharField(max_length=400)
+    type = models.CharField(max_length=100, choices=TYPE_CHOICES, default='specified_identity')
 
+    project = models.ForeignKey(verbose_name='所属项目', to='Project', to_field='id', on_delete=models.CASCADE)
+    file = models.ForeignKey(verbose_name='所属项目', to='File', to_field='id', on_delete=models.CASCADE)
 
-    content = models.CharField(max_length=40)
-    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='specified_identity')
-    project = models.FileField(Project, on_delete=models.CASCADE, related_name='project_risks', verbose_name='所属项目')
-    file = models.FileField(File, on_delete=models.CASCADE,  related_name='file_risks',verbose_name='所属文件')
 
 
 
 '''视频关键帧表'''
 class KeyFrame(models.Model):
-    file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='video_keyframes', verbose_name='所属文件')
+  
     path = models.CharField(max_length=40)
     time = models.CharField(max_length=20, default='')
     frame = models.IntegerField(null=True)
 
+    file = models.ForeignKey(verbose_name='所属项目', to='File', to_field='id', on_delete=models.CASCADE)
 
-'''操作表'''
-class Operation(models.Model):
-    content = models.CharField(max_length=500)
-    task = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='post_operation')
-    quantity = models.IntegerField(null=True)
-    created = models.DateTimeField(default=timezone.now)
-    high_proportion = models.DecimalField(null=True, max_digits=3, decimal_places=2)
-    middle_proportion = models.DecimalField(null=True, max_digits=3, decimal_places=2)
-    low_proportion = models.DecimalField(null=True, max_digits=3, decimal_places=2)
-
-    class Meta:
-        ordering = ('-created',)
-
-    def __str__(self):
-        return self.content

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'gameapi',
     'dataapp',
+    'platformapi',
     'dataappentry.apps.FrontendConfig',
     
 ]
@@ -188,3 +189,6 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 #ckeditor upload path
 CKEDITOR_UPLOAD_PATH="uploads/"
+
+
+AUTH_USER_MODEL="platformapi.UserInfo"
