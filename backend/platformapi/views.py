@@ -10,7 +10,10 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Project, File, UserInfo, Category, Law, Question, ProjectQuest
 from .serializers import ProjectModelSerializer, FileModelSerializer, UserModelSerializer, CategoryModelSerializer,ProjectQuestModelSerializer
 from rest_framework.decorators import action
-from .class_method import *
+# from .class_method import *
+from platformapi.utils.class_method import *
+from platformapi.utils.law import *
+from platformapi.utils.score import *
 
 
 
@@ -19,40 +22,12 @@ class ProjectModelViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectModelSerializer
 
-    if not Law.objects.all():
-        for i in ['personal_protection_law','network_security_law', 'data_security_law']:
-            path = 'media/files/platformapi/law/{}.xlsx'.format(i)
-            law = pd.read_excel(path, index_col=None, header=4)
-            law.fillna(value = '', inplace=True)
-            for item in law.values:
-                new_law = Law(law_article= i, serial_number=item[0],law_term=item[1],
-                                # primary_classification=item[3],secondary_classification=item[4],
-                                # third_classification=item[5])
-                                primary_classification=item[4],secondary_classification=item[5],
-                                third_classification=item[6])
-                new_law.save()
-
-   
-
-    if not Question.objects.all():
-        for i in ['personal_protection_law','network_security_law', 'data_security_law']:
-            # path = 'media/files/platformapi/law/{}_question.xlsx'.format(i)
-            path = 'media/files/platformapi/law/{}.xlsx'.format(i)
-            question = pd.read_excel(path, index_col=None, header=4)
-            question.fillna(value = '', inplace=True)
-            for item in question.values:
-                # print(item)
-                law = Law.objects.filter(law_article=i, serial_number=item[0])[0]
-                # new_question = Question(serial_number=item[0],question=item[1],
-                #                 suggestion=item[2],score=item[3],
-                #                 law=law)
-                new_question = Question(serial_number=item[0],question=item[10],
-                                suggestion=item[11],score=item[12],
-                                law=law)
-                new_question.save()
+    '''项目启动时执行一次，将平台目前支持的法律保存到数据库'''
+    save_law_to_database()
+    save_question_to_database()
         
 
-    """添加一个项目"""
+    '''添加一个项目'''
     def create(self, request, **kwargs):
         print(type(request.data), request.data)
         serializer = self.get_serializer(data=request.data)
@@ -61,8 +36,9 @@ class ProjectModelViewSet(ModelViewSet):
 
         project =  Project.objects.last()
     
-        for i in ['personal_protection_law','network_security_law', 'data_security_law']:
+        for i in law_list:
             if request.data[i] == 'true':
+                print(type(request.data[i]),request.data[i])
                 for instence in Law.objects.filter(law_article=i):
                     for ques in Question.objects.filter(law=instence):
                         ProjectQuest(project=project, question=ques).save()
@@ -77,7 +53,7 @@ class ProjectModelViewSet(ModelViewSet):
         project = Project.objects.get(id=pk)
         res = []
         for i in ProjectQuest.objects.filter(project=project):
-            res.append({'id':i.id, 'question':i.question.question})
+            res.append({'id':i.id, 'law_article':i.question.law.law_article, 'question':i.question.question})
        
         if request.method == "POST":
             for key, values in request.data.items():
@@ -93,11 +69,10 @@ class ProjectModelViewSet(ModelViewSet):
 
     '''处理项目数据'''
     @action(methods=['GET'], detail=True, url_path="results") 
-    def process_data(self,request,pk,file_id):
-        from .class_method import DataProcess
+    def process_data(self,request,pk):
         project = Project.objects.get(id=pk)
         files = project.project_files.all()
-        path = files[0].fileS
+        path = 'media/' + str(files.last().file)
 
         # 开始处理数据
         dataprocesser = DataProcess()
@@ -107,23 +82,29 @@ class ProjectModelViewSet(ModelViewSet):
         dataprocesser.des_iamge()
         res = dataprocesser.sensitive_information
 
+        # 合规得分
+        scores = get_scores(project)
+
         # 合规建议、违规法条
-        suggestion = []
-        law = []
+        suggestion_list = []
+        law_list = []
         for i in ProjectQuest.objects.filter(project=project):
             if not i.answer:
-                law = Law.objects.filter(serial_number=i.question.serial_number)
-                suggestion.append(i.question.suggestion)
-                law.append(law.law_term)
+                law = Law.objects.filter(serial_number=i.question.serial_number)[0]
+                if i.question.suggestion:
+                    suggestion_list.append(i.question.suggestion)
+                law_list.append(law.law_term)
+
+
         
-        return Response({'risk_data':res, 'suggestion':suggestion,'law':law},status=status.HTTP_200_OK)
+        return Response({'risk_data':res, 'scores':scores, 'suggestion':suggestion_list,'law':law_list},status=status.HTTP_200_OK)
 
 
 
     '''上传项目文件'''
     @action(methods=['POST'], detail=True, url_path="upload") 
     def upload_new_files(self,request,pk):
-        from .util import calculate_file_hash
+        from utils.util import calculate_file_hash
         uploaded = 0
         filecount = len(request.FILES.getlist('files[]'))
         project = Project.objects.get(id=pk)
@@ -139,7 +120,7 @@ class ProjectModelViewSet(ModelViewSet):
             instance = File(file=f ,project=project,md5=hashcode)
             instance.save()
         
-            from .util import convert_type,generate_video_cover
+            from utils.util import convert_type,generate_video_cover
             if convert_type(instance.file.path) == 'video':
                 generate_video_cover(instance)
             uploaded+=1
