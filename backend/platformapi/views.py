@@ -22,25 +22,32 @@ class ProjectModelViewSet(ModelViewSet):
     if not Law.objects.all():
         for i in ['personal_protection_law','network_security_law', 'data_security_law']:
             path = 'media/files/platformapi/law/{}.xlsx'.format(i)
-            law = pd.read_excel(path, index_col=None, header=0)
+            law = pd.read_excel(path, index_col=None, header=4)
             law.fillna(value = '', inplace=True)
             for item in law.values:
                 new_law = Law(law_article= i, serial_number=item[0],law_term=item[1],
-                                primary_classification=item[3],secondary_classification=item[4],
-                                third_classification=item[5])
+                                # primary_classification=item[3],secondary_classification=item[4],
+                                # third_classification=item[5])
+                                primary_classification=item[4],secondary_classification=item[5],
+                                third_classification=item[6])
                 new_law.save()
 
    
 
     if not Question.objects.all():
         for i in ['personal_protection_law','network_security_law', 'data_security_law']:
-            path = 'media/files/platformapi/law/{}_question.xlsx'.format(i)
-            question = pd.read_excel(path, index_col=None, header=0)
+            # path = 'media/files/platformapi/law/{}_question.xlsx'.format(i)
+            path = 'media/files/platformapi/law/{}.xlsx'.format(i)
+            question = pd.read_excel(path, index_col=None, header=4)
             question.fillna(value = '', inplace=True)
             for item in question.values:
+                # print(item)
                 law = Law.objects.filter(law_article=i, serial_number=item[0])[0]
-                new_question = Question(serial_number=item[0],question=item[1],
-                                suggestion=item[2],score=item[3],
+                # new_question = Question(serial_number=item[0],question=item[1],
+                #                 suggestion=item[2],score=item[3],
+                #                 law=law)
+                new_question = Question(serial_number=item[0],question=item[10],
+                                suggestion=item[11],score=item[12],
                                 law=law)
                 new_question.save()
         

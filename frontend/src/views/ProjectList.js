@@ -42,7 +42,7 @@ async function retrieveProjectList(type){
     //handle something else
   })
     console.log(status,plist)
-    return {data:plist,status:status}
+    return {data:plist??[],status:status}
 }
 
 //渲染项目状态单元格

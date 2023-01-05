@@ -40,8 +40,19 @@ export interface ClassifiedFileList{
   [key:string]:FileMeta[]
 }
 
+export interface ICheckListQuestion{
+  label:string,
+  id:number
+}
+
+export interface ICheckListQuestionTF extends ICheckListQuestion{
+
+} 
+
 export type LoadingStatus = 'initial'|'loading'|'error'|'success'|string
 
 export type FileProcessStatus = 'uploaded'|'processing'|'error'|'done'
 
 export type VideoFileStatus = FileProcessStatus | 'ready'
+
+export type QuestionVariant = 'TF'|'Single'|'Multiple'|'Value'
