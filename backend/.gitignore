@@ -1,7 +1,8 @@
 # virtual environment... modify this accordingly
 venv_back/
 backend-venv/
-media/
+media/game_projects/
+media/platformapi/project_files/
 # Model weight
 image_classification/weights
 # Some log files
