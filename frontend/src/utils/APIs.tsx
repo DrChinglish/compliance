@@ -98,6 +98,35 @@ handler?:(res:any)=>void) {
     )
 }
 
+export async function createPlatformProject(name:string,description:string,law:string[],catchCallback?:(e:any)=>void,
+handler?:(res:any)=>void) {
+    let personal = law.indexOf('personal')!==-1
+    let network  = law.indexOf('network')!==-1
+    let data = law.indexOf('data')!==-1
+
+    let formdata = new FormData()
+    formdata.append('personal_protection_law',personal.toString())
+    formdata.append('network_security_law',network.toString())
+    formdata.append('data_security_law',data.toString())
+    formdata.append('title',name)
+    formdata.append('description',description)
+
+    let url = `${urlmapping.apibase.platform}/projects/`
+
+    return fetchRequest(
+        url,
+        {
+            method:'POST',
+            mode:'cors',
+            credentials:'include',
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        }
+        ,catchCallback,handler
+    )
+}
+
 export async function uploadHealthyReminder(pid:number,fileList:UploadFile[],catchCallback?:(e:any)=>void,
 handler?:(res:any)=>void) {
     let url = `${urlmapping.apibase.game}/advices/`

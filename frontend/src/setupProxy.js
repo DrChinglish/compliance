@@ -5,7 +5,7 @@ let otherApiPattern = RegExp("^"+urlmapping.apibase.other)
 module.exports = function (app){
     
     app.use(
-        [urlmapping.apibase.game,urlmapping.apibase.other],
+        [urlmapping.apibase.game,urlmapping.apibase.other,urlmapping.apibase.platform],
         createProxyMiddleware({
             target:'http://localhost:8000',
             changeOrigin:true,

@@ -3,10 +3,15 @@ import { Chip, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup} from
 import { ICheckListQuestion, QuestionVariant } from '../../../Interfaces'
 type Props = {
     question:ICheckListQuestion,
-    variant:QuestionVariant
+    variant:QuestionVariant,
+    onValueChange:(value: string)=>void
 }
 
-export default function CheckListQuestion({question,variant}: Props) {
+export default function CheckListQuestion({question,variant,onValueChange}: Props) {
+
+    const handleChange=(event: React.ChangeEvent<HTMLInputElement>)=>{
+        onValueChange((event.target as HTMLInputElement).value)
+    }
 
     let questionTF = 
     <FormControl>
@@ -16,7 +21,9 @@ export default function CheckListQuestion({question,variant}: Props) {
         </FormLabel>
         <RadioGroup
         row
-        name={question.label}>
+        onChange={handleChange}
+        name={question.label}
+        >
             <FormControlLabel value={true} control={<Radio/>} label='是'/>
             <FormControlLabel value={false} control={<Radio/>} label='否'/>
         </RadioGroup>

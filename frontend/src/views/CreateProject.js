@@ -9,6 +9,8 @@ import cookie from 'react-cookies'
 import DoneIcon from '@mui/icons-material/Done';
 import fetchHandle from '../utils/FetchErrorhandle' 
 import urlMapping from '../urlMapping.json'
+import { createPlatformProject } from '../utils/APIs'
+import SnackBar from '../components/elements/SnackBar'
 const {Dragger} = Upload
 //import "../assets/scss/createProject.scss"
 
@@ -47,22 +49,26 @@ class CreateProject extends Component {
         error:{
             name:false,
             type:false,
-            description:false
+            description:false,
+            law:false
         },
         helperText:{
             name:' ',
             type:' ',
-            description:' '
+            description:' ',
+            law:' '
         },
         values:{
             name:'',
             type:'',
-            description:''
+            description:'',
+            law:[]
          },
         touched:{
             name:false,
             type:false,
-            description:false
+            description:false,
+            law:false
          },
         errorField:{
             field:'',
@@ -87,6 +93,30 @@ class CreateProject extends Component {
     }
 
     handleSubmit =(e)=>{
+        if(this.state.values.type==='other'){
+            createPlatformProject(this.state.values.name,this.state.values.description,this.state.values.law,
+                (e)=>{
+                    this.setState({
+                        snackmessage:{
+                            show:true,
+                            text:e,
+                            severity:'error'
+                        }
+                    })
+                },
+                (res)=>{
+                    console.log(res)
+                    this.setState({
+                        snackmessage:{
+                            show:true,
+                            text:'创建项目成功，正在进入下一个步骤',
+                            severity:'success'
+                        }
+                    })
+                }
+                )
+                return
+        }
         const formdata = new FormData()
         this.state.fileList.forEach((file)=>{
             formdata.append('files[]',file)
@@ -220,13 +250,14 @@ class CreateProject extends Component {
             titleTypographyProps={{variant:'h5',fontWeight:'bold'}}
         />
         <CardContent>
-            <Snackbar onClose={this.handleCloseSnackbar} anchorOrigin={{vertical:'top',horizontal:'center'}}
+            <SnackBar status={this.state.snackmessage}/>
+            {/* <Snackbar onClose={this.handleCloseSnackbar} anchorOrigin={{vertical:'top',horizontal:'center'}}
                 open={this.state.snackmessage.show} autoHideDuration={3000}>
                 <Alert onClose={this.handleCloseSnackbar} severity={this.state.snackmessage.severity} 
                 sx={{width:'50ch'}}>
                     {this.state.snackmessage.text}
                 </Alert>
-            </Snackbar>
+            </Snackbar> */}
             <Stack sx={{minHeight:'75vh', display:'flex',flexWrap:'wrap',overflow:'auto'}} spacing={2}>
                 <Divider flexItem textAlign='left'><Typography variant='h6' fontWeight='bold'>项目属性</Typography></Divider>
                 <Grid container>
@@ -258,6 +289,23 @@ class CreateProject extends Component {
                                 {typeItems}
                         </Select>
                         <FormHelperText>{this.state.helperText.type}</FormHelperText>
+                    </FormControl>
+                    <FormControl sx={{m:1, width:'25ch'}} variant='outlined' error={this.state.error.law}>
+                        <InputLabel id="type-select-label-law">选择法律</InputLabel>
+                        <Select
+                            multiple
+                            required
+                            labelId='type-select-label-law'
+                            id='project-law'
+                            value={values.law}
+                            onChange={this.handleChange('law')}
+                            onFocus={this.handleFoucus('law')}
+                            onBlur={this.handleblur('law')}
+                            label="选择法律"
+                            >   
+                                {typeItemslaw}
+                        </Select>
+                        <FormHelperText>{this.state.helperText.law}</FormHelperText>
                     </FormControl>
                 </Grid>
                 <Grid container sx={{mt:0}}>
@@ -304,6 +352,12 @@ class CreateProject extends Component {
     )
   }
 }
+
+const typeItemslaw = [
+    <MenuItem value='personal'>个人信息保护法</MenuItem>,
+    <MenuItem value='network'>网络安全法</MenuItem>,
+    <MenuItem value='data'>数据安全法</MenuItem>
+]
 
 const typeItems = [
     <MenuItem value='table'>表格数据合规</MenuItem>,

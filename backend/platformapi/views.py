@@ -43,7 +43,7 @@ class ProjectModelViewSet(ModelViewSet):
                     for ques in Question.objects.filter(law=instence):
                         ProjectQuest(project=project, question=ques).save()
             
-        return Response({'status': 1}, status=status.HTTP_201_CREATED)
+        return Response({'status': 1,'id':project.id}, status=status.HTTP_201_CREATED)
 
 
 
