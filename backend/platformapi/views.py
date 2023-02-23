@@ -21,7 +21,11 @@ from platformapi.utils.score import *
 class ProjectModelViewSet(ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectModelSerializer
-
+    law_list = [
+            'personal_protection_law',
+            'network_security_law',
+            'data_security_law'
+    ]
     '''项目启动时执行一次，将平台目前支持的法律保存到数据库'''
     save_law_to_database()
     save_question_to_database()
@@ -33,9 +37,15 @@ class ProjectModelViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
+        print(request.FILES)
         project =  Project.objects.last()
-    
+        for f in request.FILES.getlist('files[]'):
+            from .utils.util import calculate_file_hash
+            # This looks not so right, could have cause some undesire behaviors....
+            hashcode = calculate_file_hash(f)  
+            instance = File(file=f ,project=project,md5=hashcode)
+            instance.save()
+            print(f,'111',instance,'111',instance.file.path)
         for i in law_list:
             if request.data[i] == 'true':
                 print(type(request.data[i]),request.data[i])
@@ -56,13 +66,20 @@ class ProjectModelViewSet(ModelViewSet):
             res.append({'id':i.id, 'law_article':i.question.law.law_article, 'question':i.question.question})
        
         if request.method == "POST":
-            for key, values in request.data.items():
-                print(key,values)
-                if values == 'true':
-                    ProjectQuest.objects.filter(id=key).update(answer=True)
+            if project.status != 'open':
+                return Response({'status':-1,'msg':'您已经填写过问卷，请勿重复提交'},status=status.HTTP_200_OK)
+            else:
                 
-            return Response({'status':1 },status=status.HTTP_200_OK)
+                for key, values in request.data.items():
+                    print(key,values)
+                    if values == 'true':
+                        ProjectQuest.objects.filter(id=key).update(answer=True)
+                project.status = 'pending'
+                project.save()
+                return Response({'status':1 },status=status.HTTP_200_OK)
         
+        project.status = 'open'
+        project.save()
         return Response(res,status=status.HTTP_200_OK)
 
 
@@ -94,9 +111,6 @@ class ProjectModelViewSet(ModelViewSet):
                 if i.question.suggestion:
                     suggestion_list.append(i.question.suggestion)
                 law_list.append(law.law_term)
-
-
-        
         return Response({'risk_data':res, 'scores':scores, 'suggestion':suggestion_list,'law':law_list},status=status.HTTP_200_OK)
 
 

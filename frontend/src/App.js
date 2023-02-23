@@ -16,6 +16,7 @@ import  './assets/scss/style.scss';
 import ProjectList from './views/ProjectList';
 import CreateProject from './views/CreateProject';
 import Checklist from './views/Checklist'
+
 // Initialize Google Analytics
 ReactGA.initialize(process.env.REACT_APP_GA_CODE);
 
@@ -47,6 +48,8 @@ const App = () => {
           </Route>
           <Route path="/checklist" element={<LayoutDetail/>}>
             <Route index element={<Checklist/>}/>
+            {/* <Route path='result' element={<ChecklistResult/>}/> */}
+            <Route path=":id" element={<Checklist/>}/>
           </Route>
           <Route path="/detail" element={<LayoutDetail/>} >
             <Route path=':id' element={<Detail/>}/>

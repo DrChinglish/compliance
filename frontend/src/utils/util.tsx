@@ -40,3 +40,28 @@ export function classifyFiles(fileList:FileMeta[]){
 export function convertBase64Image(b64:string){
     return `data:image/png;base64,${b64}`
 }
+
+export const LocallizationLaw = {
+    personal:'个人信息保护法',
+    network:'网络安全法',
+    data:'数据安全法'
+}
+
+export const LocallizationLawArticle = {
+    personal_protection_law:'个人信息保护法',
+    network_security_law:'网络安全法',
+    data_security_law:'数据安全法'
+}
+
+
+export function questionFilter(question:string){
+    let reg = RegExp('【.*?】')
+    let result = question.match(reg)
+    if(result?.index)
+        question = question.substring(result?.index+result[0].length)
+    return question
+}
+
+export function findElement<T>(element:T,array:T[]){
+    return array.findIndex(value=>value===element)>=0
+}

@@ -39,4 +39,6 @@ urlpatterns=[
 
     path('test/',views.search_keyword,name = "search_keyword"),
     path('test_db/',views.test_db,name = "test_db"),
+
+    path('get_csrftoken/',views.get_csrftoken,name="get_csrftoken")
     ]

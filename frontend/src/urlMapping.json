@@ -4,6 +4,7 @@
     "imagelist":"/list/image",
     "tablelist":"/list/table",
     "textlist":"/list/text",
+    "platformlist":"/list/platform",
     "newproject":"/new",
     "list":"/list",
     "apibase":{
@@ -19,7 +20,9 @@
         "censor_text":"/projects/{0}/texts/{1}/process_doc/",
         "censor_image":"/projects/{0}/images/{1}/process_image/",
         "dbscan":"/projects/conndb/",
-        "delete_project":"/projects/"
+        "delete_project":"/projects/",
+        "project_list_platform":"/projects/",
+        "get_csrftoken":"/get_csrftoken/"
     },
     "host":"http://localhost:8000"
 }
