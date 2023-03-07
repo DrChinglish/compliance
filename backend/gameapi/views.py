@@ -158,7 +158,7 @@ class ProjectModelViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        print(request.FILES)
+        
         for f in request.FILES.getlist('files[]'):
             from .util import calculate_file_hash
             # This looks not so right, could have cause some undesire behaviors....

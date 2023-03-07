@@ -14,7 +14,7 @@ import SnackBar from '../components/elements/SnackBar'
 import { RcFile, UploadFile } from 'antd/lib/upload'
 import { NavigateFunction, Params } from 'react-router-dom'
 import { UploadListType } from 'antd/lib/upload/interface'
-import { createGameProject, createPlatformProject } from '../utils/APIs'
+import { createGameProject, createPlatformProject, setCookies } from '../utils/APIs'
 import { LocallizationLaw } from '../utils/util'
 const {Dragger} = Upload
 //import "../assets/scss/createProject.scss"
@@ -56,18 +56,7 @@ type State={
 
 class CreateProject extends Component<Props, State> {
     componentDidMount=()=>{
-        let url = urlMapping.apibase.game+urlMapping.apis.create_project
-        fetch(url,{
-            method:'GET',
-            mode:'cors'
-        })
-        .then((res)=>{
-            //console.log(res.json())
-            if(cookie.load("csrftoken")!=undefined)
-                console.log("cookie ok!")
-            else
-                console.log("cookie error!")
-        })
+        setCookies()
     }
 
     constructor(props) {

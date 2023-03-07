@@ -22,8 +22,6 @@ type State = {
     activeStep:number
 }
 
-
-
 class Checklist extends Component<Props, State> {
 
   constructor(props){
@@ -54,7 +52,7 @@ class Checklist extends Component<Props, State> {
   }
 
   handleBackClick = ()=>{
-    this.props.navigate(-1)
+    this.props.navigate("/list/platform")
   }
 
   handleQuestionCheck = (index: string)=>(value:string)=>{
