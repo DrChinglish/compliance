@@ -35,7 +35,8 @@ class ProjectModelViewSet(ModelViewSet):
         serializer.save()
 
         project =  Project.objects.last()
-    
+
+
         for i in law_list:
             if request.data[i] == 'true':
                 print(type(request.data[i]),request.data[i])
@@ -78,6 +79,9 @@ class ProjectModelViewSet(ModelViewSet):
         dataprocesser = DataProcess()
         dataprocesser.init_para(path)
         dataprocesser.search_risk()
+        dataprocesser.face_detect()
+        dataprocesser.fingerprint_detect() 
+        dataprocesser.bioinfo_detect()
         dataprocesser.des_txts()
         dataprocesser.des_iamge()
         res = dataprocesser.sensitive_information
