@@ -7,7 +7,7 @@ from .key_frame import Extractor
 from paddleocr import PaddleOCR, draw_ocr
 from PIL import Image
 import numpy as np
-from paddlespeech.cli.asr.infer import ASRExecutor
+
 
 
 # 处理图片数据
@@ -341,10 +341,32 @@ class SpeechProcess(object):
         audio = AudioSegment.from_file(path)
         audio.export(convertedpath,format='wav')
 
-    def init_para(self, path):
+    def asr(self,path,local=True):
+        if local:
+            from paddlespeech.cli.asr.infer import ASRExecutor
+            asr = ASRExecutor()
+            result = asr(audio_file=path)
+            return result
+        else :
+            from paddlespeech.server.bin.paddlespeech_client import ASRClientExecutor
+            asrclient_executor = ASRClientExecutor()
+            result = asrclient_executor(
+                input=path,
+                server_ip = '127.0.0.1',
+                port = 8090,
+                sample_rate = 16000,
+                lang = 'zh_cn',
+                audio_format = 'wav'
+            )
+            return result
+
+    def init_para(self, path,local=True):
         print('init speech process')
-        
         from paddlespeech.cli.text.infer import TextExecutor
+        print('text')
+        # import importlib
+        # ASRExecutor = importlib.import_module("paddlespeech.cli.asr.infer.ASRExecutor")
+        # from paddlespeech.cli.asr.infer import ASRExecutor
         import os
         import soundfile as sf
         print('import')
@@ -353,11 +375,10 @@ class SpeechProcess(object):
             if not os.path.exists(self.get_converted_path(path)):
                 self.convert_to_wav(path)
             path = self.get_converted_path(path)
-        print('asr')
-        asr = ASRExecutor()
-        print('asr done')
         self.re_sample(path)
-        result = asr(audio_file=path)
+        print('asr')
+        result = self.asr(path=path,local=local)
+        print('asr done')
         
         text_punc = TextExecutor()
         result = text_punc(text=result)

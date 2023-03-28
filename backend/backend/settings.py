@@ -199,6 +199,7 @@ AUTH_USER_MODEL="platformapi.UserInfo"
 
 
 # Celery settings
+CELERYD_FORCE_EXECV = True
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BROKER_URL = 'redis://localhost:6379/0' 
