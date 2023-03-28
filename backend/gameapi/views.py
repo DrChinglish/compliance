@@ -623,6 +623,11 @@ class ProjectModelViewSet(ModelViewSet):
 
 
     '''链接数据库并获取数据'''
+    @action(methods=["post"], detail=False, url_path="testdb")
+    def testdb(self, request):
+        dbcursor = DBConnection(user='root',pwd='123456',)
+
+    '''链接数据库并获取数据'''
     @action(methods=["post"], detail=False, url_path="conndb")
     def conndb(self, request):
         import pandas as pd

@@ -12,7 +12,7 @@ export default function SingleSelectDisplay({question}: Props) {
     <Stack>
       <FormControl>
         <FormLabel id={`question-${question.index}`}>
-          <Paragraphs variant='strong'>
+          <Paragraphs type='strong'>
             {`${question.index}.${question.title}`}
           </Paragraphs>
         </FormLabel>

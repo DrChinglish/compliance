@@ -1,17 +1,17 @@
-import { Typography } from '@mui/material'
+import { Typography, TypographyProps } from '@mui/material'
 import React from 'react'
 
 type ParagraphsVariant = 'strong'|'center'|string
 
 type Props = {
-  variant?: ParagraphsVariant,
+  type?: ParagraphsVariant,
   children?:React.ReactNode,
-  [key:string]:any
-}
+  
+} & TypographyProps
 
-export default function Paragraphs({variant,children,...rest}:Props) {
+export default function Paragraphs({type,children,...rest}:Props) {
     let prop={}
-    switch(variant){
+    switch(type){
         case 'strong':prop = {fontWeight:'bold'};break;
         case 'center':prop = {align:'center'};break;
         default:prop = {}

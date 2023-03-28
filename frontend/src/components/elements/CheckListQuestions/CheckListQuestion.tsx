@@ -5,7 +5,7 @@ import { LocallizationLawArticle, questionFilter } from '../../../utils/util'
 import Paragraphs from '../../typography/Paragraphs'
 type Props = {
     question:ICheckListQuestion,
-    variant:QuestionVariant,
+    variant:QuestionVariant,    
     onValueChange:(value: string)=>void,
     error:boolean,
     helperText:string,
@@ -15,7 +15,7 @@ type Props = {
 
 export default function CheckListQuestion({index,value,question,variant,onValueChange,error=false,helperText=''}: Props) {
 
-    const [formError,setFormError] = useState(false)
+    const [formError,setFormError] = useState(false)    
     const [formHelperText,setFormHelperText] = useState('')
     const [formValue,setFormValue] = useState<any>('')
     useEffect(()=>{
@@ -37,13 +37,13 @@ export default function CheckListQuestion({index,value,question,variant,onValueC
     <FormControl error={formError}>
         <FormLabel id={`question-${question.id}`} sx={{fontWeight:'bold'}}>
             <Stack spacing={1} direction='row'>
-                <Paragraphs variant='strong'>
+                <Paragraphs type='strong'>
                     {`${index+1}.${questionFilter(question.question)}`}
                 </Paragraphs>
                 <Chip variant='outlined' color='error' size='small' label='* 必填'/>
                 <Chip color='primary' size='small' label={LocallizationLawArticle[question.law_article]}/>
             </Stack>
-        </FormLabel>
+        </FormLabel> 
         <RadioGroup
         row
         value={formValue}
@@ -59,4 +59,5 @@ export default function CheckListQuestion({index,value,question,variant,onValueC
   return (
     questionTF
   )
-}
+} 
+     

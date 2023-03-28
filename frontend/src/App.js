@@ -17,7 +17,8 @@ import ProjectList from './views/ProjectList';
 import CreateProject from './views/CreateProject';
 import Checklist from './views/Checklist'
 import CustomChecklist from './views/CustomChecklist'
-
+import HomePage from './views/HomePage'
+import LayoutHomePage from './layouts/LayoutHomePage'
 // Initialize Google Analytics
 ReactGA.initialize(process.env.REACT_APP_GA_CODE);
 
@@ -46,6 +47,9 @@ const App = () => {
         <Routes>
           <Route path="/home" element={<LayoutDefault/>}>
             <Route index element={<Home/>}/>
+          </Route>
+          <Route path="/index" element={<LayoutHomePage/>}>
+            <Route index element={<HomePage/>}/>
           </Route>
           <Route path="/customchecklist" element={<LayoutDetail/>}>
             <Route index element={<CustomChecklist/>}/>

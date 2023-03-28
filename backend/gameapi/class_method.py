@@ -625,7 +625,7 @@ class DBConnection(object):
 
     def get_data(self):
         sql = "select * from {}".format(self.tablename)
-        cursor = self.conn()
+        cursor = self.conn() 
         cursor.execute(sql)
         self.formheader=[]
         desc = cursor.description
@@ -635,7 +635,38 @@ class DBConnection(object):
         ret = cursor.fetchall()
         
         return ret
+    
+    def get_tables(self,db_name):
+        import pymysql
+        sql = 'show tables;'
+        cursor = pymysql.connect(host='localhost',
+                       port=3306,
+                       user=self.user,
+                       passwd=self.pwd,
+                       db=db_name,
+                       charset = 'utf8').cursor()
+        cursor.execute(sql)
+        ret = cursor.fetchall()
+        ret_list = [r[0] for r in ret]
+        cursor.close()
+        print(ret)
+        return ret_list
+        
 
+    def get_databases(self):
+        import pymysql
+        sql = 'show databases;'
+        cursor = pymysql.connect(host='localhost',
+                       port=3306,
+                       user=self.user,
+                       passwd=self.pwd,
+                       charset = 'utf8').cursor()
+        cursor.execute(sql)
+        ret = cursor.fetchall()
+        ret_list = [r[0] for r in ret]
+        cursor.close()
+        print(ret)
+        return ret_list
 
 
 # 获取文件夹下的各类文件,接受两个参数，第一个为文件根目录，第二个为要获取的文件类型

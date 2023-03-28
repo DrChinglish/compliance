@@ -50,7 +50,7 @@ export default function CheckListResults({pid}: Props) {
         <Paragraphs>
           <CheckListResultData data={projectResult!.riskData as RiskData}/>
         </Paragraphs>
-        <Paragraphs variant='center' gutterBottom> 
+        <Paragraphs type='center' gutterBottom> 
             
         </Paragraphs>
         <br/>
