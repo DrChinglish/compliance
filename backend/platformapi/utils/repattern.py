@@ -306,15 +306,16 @@ def search_database_riskdata(value):
 
     # 匹配法律
     res = np.array(risk_pd).tolist()
+    queryset1 = SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息') )
+    print([model_to_dict(obj) for obj in queryset1])
+    queryset2 = SimpleLaw.objects.exclude(primary_classification='未成年人个人信息').exclude(primary_classification='个人财产信息')
+    print([model_to_dict(obj) for obj in queryset2])
     for i,row in enumerate(res):
         if row[1] !='年龄':           
-            queryset = SimpleLaw.objects.exclude(Q(primary_classification='未成年人个人信息') | Q(primary_classification='个人财产信息'))
-            selected = random.sample(list(queryset), random.randint(2, 5))
+            selected = random.sample(list(queryset2), random.randint(2, 5))
             selected_list = [model_to_dict(obj) for obj in selected]
             res[i].append(selected_list)
         else:
-            queryset1 = SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息') | Q(primary_classification='个人财产信息'))
-            queryset2 = SimpleLaw.objects.exclude(Q(primary_classification='未成年人个人信息') | Q(primary_classification='个人财产信息'))
             selected = random.sample(list(queryset2), random.randint(2,3))
             selected_list = [model_to_dict(obj) for obj in selected]+[model_to_dict(obj) for obj in queryset1]
             res[i].append(selected_list)
