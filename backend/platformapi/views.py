@@ -25,6 +25,7 @@ class ProjectModelViewSet(ModelViewSet):
     '''项目启动时执行一次，将平台目前支持的法律保存到数据库'''
     save_law_to_database()
     save_question_to_database()
+    save_simplelaw_to_database()
         
 
     '''添加一个项目'''
@@ -131,6 +132,30 @@ class ProjectModelViewSet(ModelViewSet):
         return Response({'status':1 if uploaded>0 else 0,'file_rejected':file_rejected,
         'fileuploaded':uploaded,'text':'共上传了{0}个文件中的{1}个'.format(filecount,uploaded)}
         ,status=status.HTTP_200_OK)
+    
+
+    '''扫描数据库数据'''
+    @action(methods=["post"], detail=False, url_path="conndb")
+    def conndb(self, request):
+        import pandas as pd
+        form_data=request.data
+        # request._request.session['user'] = form_data['user']
+        # request._request.session['pwd'] = form_data['pwd']
+        # request._request.session['dbname'] = form_data['dbname']
+        # request._request.session['tablename'] = form_data['tablename']
+ 
+        dbcursor = DBConnection(user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
+        dbcursor.conn()
+        data = list(dbcursor.get_data())
+        formheader = dbcursor.formheader
+        df = pd.DataFrame(data,columns=formheader)
+      
+        data.insert(0,formheader)  
+
+
+        res = search_database_riskdata(data)
+               
+        return Response( data={'data':res},status=status.HTTP_201_CREATED)
 
 
 

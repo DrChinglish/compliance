@@ -8,7 +8,7 @@
 #     医疗健康（healthcare）：个人因生病医治等产生的相关记录，如病症、住院志、医嘱单、生育信息、以往病史、诊治情况、家族病史、现病史、传染病史等
 #     未成年人个人信息（juveniles_information）：14岁以下（含）未成年人的个人信息
 #     身份鉴别信息（authentication_information）：用于验证主体是否具有访问或使用权限的信息，包括但不限于登录密码、支付密码、账户查询密码、交易密码、银行卡有效期、银行卡片验证码（CVN 和 CVN2）、口令、动态口令、口令保护答案、短信验证码、密码提示问题答案、随机令牌等
-#     其他敏感个人信息（other）：种族、性取向、婚史、宗教信仰、未公开的违法犯罪记录等
+#     其他敏感个人信息（other）：年龄、种族、性取向、婚史、宗教信仰、未公开的违法犯罪记录等
 #--------------------------------------------------------------------------------#
 import re
 
@@ -87,8 +87,21 @@ def des_business(s):
     des = lambda m: m.group()[:3]+'*****'+m.group()[-3:]
     res = s
     for i in business_check(s):
-        res = re.sub(i, des, s)
-    return res
+        res = re.s
+        
+
+# (6) 中文姓名: 算法
+def name_lac(sentences: str):
+    from LAC import LAC
+    user_name_list = []
+    lac = LAC(mode="lac")
+    lac_result = lac.run(sentences)
+    for index, lac_label in enumerate(lac_result[1]):
+        if lac_label == "PER":
+            user_name_list.append(lac_result[0][index])
+    return user_name_list
+
+
 
 
 #--------------------------------------------------------------------------------#
@@ -199,11 +212,24 @@ def des_ipv6(s):
     return res
 
 
+#--------------------------------------------------------------------------------#
+# (五) 未成年人个人信息（juveniles_information）：14岁以下（含）未成年人的个人信息
+#--------------------------------------------------------------------------------#
+
+# (1) 年龄： 正则表达式（130岁以下）结合关键字（如：年龄、age等）共同判定，然后判断是否小于14岁
+age_pattern =  re.compile(r'''(
+                ^(0?[1-9]|[1-9][0-9])$|^1[0-2][0-9]$
+                )''', re.VERBOSE)
+
+age_keys = ['年龄','岁','岁数','age','dob']
 
 
-#-------------------------------------------------------------------------------#
-# 基于上面的正则和算法查找数据中的敏感信息 返回结果形如：{'敏感信息类型': ,'开始位置': ,'结束位置':,'敏感信息':,}
-#-------------------------------------------------------------------------------#
+
+
+
+#------------------------------------------------------------------------------------------------------------#
+# 基于上面的正则和算法查找文本数据中的敏感信息 返回结果形如：{'敏感信息类型': ,'开始位置': ,'结束位置':,'敏感信息':,}
+#------------------------------------------------------------------------------------------------------------#
 import pandas as pd
 import numpy as np
 from varname import nameof
@@ -234,3 +260,66 @@ def search_riskdata(value):
                 drop_index.append(i)
     risk_pd.drop(drop_index,inplace=True)
     return np.array(risk_pd).tolist()
+
+
+
+#-------------------------------------------------------------------------------------------------------#
+# 基于上面的正则和算法查找表格数据中的敏感信息 返回结果形如：{'违规内容': ,'位置': ,'敏感信息': ,'违反法规': ,}
+#-------------------------------------------------------------------------------------------------------#
+from platformapi.models import SimpleLaw
+from django.db.models import Q
+from django.forms.models import model_to_dict
+import random
+def search_database_riskdata(value):
+    age_keys = ['年龄','岁','岁数','age','dob']
+    risk_type = {'adress':'地址', 'phone':'手机号',
+                 'bankcard':'银行卡号','email':'邮箱',
+                 'name':'姓名','age':'年龄',
+                 'IDNumber':'身份证号','passport':'护照号',
+                 'officer':'军官证号','HM_pass':'港澳通行证号',
+                 'carnum':'车牌号','business':'营业执照号'}
+
+    pattern_list = [nameof(adress_pattern),nameof(phone_pattern),
+                    nameof(bankcard_check),nameof(email_pattern),
+                    nameof(name_lac),nameof(age_pattern),
+                    nameof(IDNumber_pattern), nameof(passport_pattern), 
+                    nameof(officer_pattern), nameof(HM_pass_pattern),
+                    nameof(carnum_pattern),nameof(business_check)]
+  
+    res = []
+    for i, row in enumerate(value[1:]):
+        for j,cell in enumerate(row):
+            for pattstr in pattern_list :
+                patt = eval(pattstr)
+                if isinstance(patt,(re.Pattern)):
+                    if pattstr != 'age_pattern' or (pattstr == 'age_pattern' and value[0][j].strip().lower() in age_keys and eval(str(cell))<=14):
+                        risk_data = [k[0] for k in patt.findall(str(cell))]
+                else:
+                    risk_data = patt(str(cell))
+                if len(risk_data):
+                    for data in risk_data:
+                        res.append((data,risk_type[pattstr.split('_')[0]], (i+1,j+1)))
+          
+    risk_pd = pd.DataFrame(res,columns=['违规内容','违规项','位置'])
+    # 过滤掉位置一样的风险项
+    risk_pd = risk_pd.groupby('位置').apply(lambda x: x.loc[x['违规内容'].str.len().idxmax()])
+
+    # 匹配法律
+    res = np.array(risk_pd).tolist()
+    for i,row in enumerate(res):
+        if row[1] !='年龄':           
+            queryset = SimpleLaw.objects.exclude(Q(primary_classification='未成年人个人信息') | Q(primary_classification='个人财产信息'))
+            selected = random.sample(list(queryset), random.randint(2, 5))
+            selected_list = [model_to_dict(obj) for obj in selected]
+            res[i].append(selected_list)
+        else:
+            queryset1 = SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息') | Q(primary_classification='个人财产信息'))
+            queryset2 = SimpleLaw.objects.exclude(Q(primary_classification='未成年人个人信息') | Q(primary_classification='个人财产信息'))
+            selected = random.sample(list(queryset2), random.randint(2,3))
+            selected_list = [model_to_dict(obj) for obj in selected]+[model_to_dict(obj) for obj in queryset1]
+            res[i].append(selected_list)
+
+    
+
+    return res
+    

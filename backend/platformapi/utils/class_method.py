@@ -258,3 +258,40 @@ def unzip_file(zip_file: ZipFile):
             del name_to_info[name]
             name_to_info[real_name] = info
     return zip_file                
+
+
+# 链接数据库
+class DBConnection(object):
+    
+    def __init__(self,user,pwd,dbname,tablename,host='localhost'):
+        self.host = host
+        self.user = user
+        self.pwd = pwd
+        self.dbname = dbname
+        self.tablename = tablename
+        self.formheader=[]
+        
+    def conn(self):
+        import pymysql
+        database = pymysql.connect(host=self.host,
+                       port=3306,
+                       user=self.user,
+                       passwd=self.pwd,                     
+                       db=self.dbname,
+                       charset = 'utf8')
+
+        cursor = database.cursor()
+        return cursor
+
+    def get_data(self):
+        sql = "select * from {}".format(self.tablename)
+        cursor = self.conn()
+        cursor.execute(sql)
+        self.formheader=[]
+        desc = cursor.description
+        for field in desc:
+            self.formheader.append(field[0])
+        # print(self.formheader)
+        ret = cursor.fetchall()
+        
+        return ret
