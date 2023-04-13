@@ -87,6 +87,19 @@ class Law(models.Model):
         return self.law_term
 
 
+class SimpleLaw(models.Model):
+    """
+    demo临时使用法律表（刘宁整理16条法律）
+    """
+ 
+    law_article = models.CharField(verbose_name='所属法律', max_length=50)
+    serial_number = models.CharField(verbose_name='条目', max_length=30)
+    law_term = models.TextField()
+    primary_classification = models.CharField(verbose_name='一级分类', max_length=50)
+ 
+    def __str__(self):
+        return self.law_term
+
 
 class Question(models.Model):
     """

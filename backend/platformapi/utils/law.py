@@ -4,7 +4,7 @@
 #     网络安全法（network_security_law）
 #     数据安全法（data_security_law）
 #-------------------------------------------------------------------------------#
-from platformapi.models import Law, Question
+from platformapi.models import Law, Question, SimpleLaw
 import pandas as pd
 import numpy as np
 
@@ -41,3 +41,14 @@ def save_question_to_database():
                                 suggestion=item[2],score=item[3],
                                 law=law)
                 new_question.save()
+
+# demo临时使用法律表（刘宁整理16条法律）
+def save_simplelaw_to_database():
+    if not SimpleLaw.objects.all():
+        path = 'media/files/platformapi/law/simplelaw.xlsx'
+        law = pd.read_excel(path, index_col=None, header=0)
+        law.fillna(value = '', inplace=True)
+        for item in law.values:
+            new_law = SimpleLaw(law_article= item[0], serial_number=item[1],law_term=item[2],
+                            primary_classification=item[3])
+            new_law.save()
