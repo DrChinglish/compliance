@@ -50,5 +50,5 @@ def save_simplelaw_to_database():
         law.fillna(value = '', inplace=True)
         for item in law.values:
             new_law = SimpleLaw(law_article= item[0], serial_number=item[1],law_term=item[2],
-                            primary_classification=item[3])
+                            primary_classification=item[3],secondary_classification=item[4])
             new_law.save()

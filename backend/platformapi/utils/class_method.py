@@ -308,7 +308,8 @@ class DBConnection(object):
         cursor = database.cursor()
         return cursor
 
-    
+
+      
 
     def get_data(self):
         sql = "select * from {}".format(self.tablename)

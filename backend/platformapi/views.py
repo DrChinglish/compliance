@@ -152,20 +152,15 @@ class ProjectModelViewSet(ModelViewSet):
     def conndb(self, request):
         import pandas as pd
         form_data=request.data
-        # request._request.session['user'] = form_data['user']
-        # request._request.session['pwd'] = form_data['pwd']
-        # request._request.session['dbname'] = form_data['dbname']
-        # request._request.session['tablename'] = form_data['tablename']
+      
  
-        dbcursor = DBConnection(user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
+        dbcursor = DBConnection(dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
         dbcursor.conn()
         data = list(dbcursor.get_data())
         formheader = dbcursor.formheader
-        df = pd.DataFrame(data,columns=formheader)
+    
       
         data.insert(0,formheader)  
-
-
         res = search_database_riskdata(data)
                
         return Response( data={'data':res},status=status.HTTP_201_CREATED)
