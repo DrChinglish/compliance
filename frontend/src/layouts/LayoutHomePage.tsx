@@ -23,7 +23,7 @@ export default function LayoutHomePage({}: Props) {
                 </Button>
                 <Button variant='contained'>
                     能力
-                </Button>
+                </Button>  
                 <Button variant='contained'>
                     展示
                 </Button>
@@ -31,8 +31,8 @@ export default function LayoutHomePage({}: Props) {
         </Box>
         <Box pt='84px'>
           <Outlet/>  
-        </Box>
-        
+        </Box> 
+           
     </Box>
   )
-}    
+}     

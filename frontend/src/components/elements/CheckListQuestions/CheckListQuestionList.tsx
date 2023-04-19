@@ -103,7 +103,7 @@ export default function CheckListQuestionList({questions,pid},props: Props) {
   return (
     <React.Fragment>
         {question.slice((currentPage-1)*pageQuestion,currentPage*pageQuestion)}
-            <LinearProgressWithLabel value={finished/questions.length*100}/>
+            <LinearProgressWithLabel value={finished/questions.length*100} />
             <Stack direction='row' alignItems='center' justifyContent='center' spacing={2}>
                 <Button startIcon={<SkipPreviousIcon/>} variant='outlined' size='large' onClick={handlePageChange(false, true)} 
                 fullWidth={false} disabled={currentPage===1}>首页</Button>

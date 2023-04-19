@@ -154,10 +154,9 @@ class ProjectModelViewSet(ModelViewSet):
         form_data=request.data
       
  
-        dbcursor = DBConnection(dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
-        dbcursor.conn()
-        data = list(dbcursor.get_data())
-        formheader = dbcursor.formheader
+        db = DBConnection(dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
+        data = list(db.get_data())
+        formheader = db.formheader
     
       
         data.insert(0,formheader)  

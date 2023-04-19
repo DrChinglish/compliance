@@ -273,8 +273,6 @@ class DBConnection(object):
         self.dbtype = dbtype
     
     def db_list(self):
-        import pymysql
-        import pymssql
         sql_my = "show databases;"
         sql_ms = "select name from sysdatabases;"
         sql = sql_my if self.dbtype=='mysql' else sql_ms
