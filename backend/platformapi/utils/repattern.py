@@ -296,7 +296,7 @@ def search_riskdata(value):
 
 
 #-------------------------------------------------------------------------------------------------------#
-# 基于上面的正则和算法查找表格数据中的敏感信息 返回结果形如：{'违规内容': ,'位置': ,'敏感信息': ,'违反法规': ,}
+# 基于上面的正则和算法查找表格数据中的敏感信息 
 #-------------------------------------------------------------------------------------------------------#
 from .risk_level import get_risk_level
 from platformapi.models import SimpleLaw
@@ -318,9 +318,11 @@ def search_database_riskdata(value):
                     nameof(officer_pattern), nameof(HM_pass_pattern),
                     nameof(carnum_pattern),nameof(business_check)]
   
-    res = {'overview':{'高风险':{},'中风险':{},'低风险':{}},
-           'detail':[]}
-    # res = []
+    res = {'overview':{'high':{},'middle':{},'low':{}},
+           'detail':{'high':{},'middle':{},'low':{}}}
+    
+    # 发现风险项
+    ret = []
     for i, row in enumerate(value[1:]):
         for j,cell in enumerate(row):
             for pattstr in pattern_list :
@@ -333,37 +335,57 @@ def search_database_riskdata(value):
                     risk_data = patt(str(cell))
                 if len(risk_data):
                     for data in risk_data:
-                        res['detail'].append((data,
+                        ret.append((data,
                                     risk_type[pattstr.split('_')[0]], 
                                     (i+1,j+1),
                                     get_risk_level(pattstr.split('_')[0])
                                     ))
-          
-    risk_pd = pd.DataFrame(res['detail'],columns=['违规内容','违规项','位置','风险等级'])
-    # 过滤掉位置一样的风险项
-    risk_pd = risk_pd.groupby('位置').apply(lambda x: x.loc[x['违规内容'].str.len().idxmax()])
-    level_group = risk_pd.groupby('风险等级',as_index=False)['违规项'].value_counts()
 
+    # 过滤掉位置一样的风险项  
+    risk_pd = pd.DataFrame(ret,columns=['violation_content','violation_item','position','levle'])
+    risk_pd = risk_pd.groupby('position').apply(lambda x: x.loc[x['violation_content'].str.len().idxmax()])
+    
     # 分类统计各风险项
+    level_group = risk_pd.groupby('levle',as_index=False)['violation_item'].value_counts()
     for level in res['overview'].keys():
-        result = level_group.loc[level_group['风险等级'] == level, ['违规项', 'count']]
-        for i,j in zip(result['违规项'],result['count']):
+        result = level_group.loc[level_group['levle'] == level, ['violation_item', 'count']]
+        for i,j in zip(result['violation_item'],result['count']):
             res['overview'][level][i] = j
 
     # 匹配法律
-    res['detail'] = np.array(risk_pd).tolist()
-    queryset1 = SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息') )
-    queryset2 = SimpleLaw.objects.exclude(primary_classification='未成年人个人信息').exclude(primary_classification='个人财产信息')
+    all_law = {'high':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(secondary_classification='high'))],
+               'middle':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(secondary_classification='middle'))],
+               'low':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(secondary_classification='low'))],
+               'underage':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息'))],
+               'property':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(primary_classification='个人财产信息'))],
+               }
+    # queryset1 = SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息'))
+    # queryset2 = SimpleLaw.objects.exclude(primary_classification='未成年人个人信息').exclude(primary_classification='个人财产信息')
 
-    for i,row in enumerate(res['detail']):
-        if row[1] !='年龄':           
-            selected = random.sample(list(queryset2), random.randint(2, 5))
-            selected_list = [model_to_dict(obj) for obj in selected]
-            res['detail'][i].append(selected_list)
-        else:
-            selected = random.sample(list(queryset2), random.randint(2,3))
-            selected_list = [model_to_dict(obj) for obj in selected]+[model_to_dict(obj) for obj in queryset1]
-            res['detail'][i].append(selected_list)
+    law_group = risk_pd.groupby('levle',as_index=False)
+    for group in law_group:
+        level = group[0]
+        group = group[1].sort_values(by='violation_item')
+        violation_item = group['violation_item'].unique()
+        for item in violation_item:
+            law_list = all_law[level] 
+            content_list =  np.array(group[group['violation_item']==item][['violation_content','position']]).tolist()
+            item_content = {'content_list':content_list,'law_list':law_list}
+            res['detail'][level][item] = item_content
+            
+
+
+
+    # res['detail'] = np.array(risk_pd).tolist()
+    # for i,row in enumerate(res['detail']):
+    #     if row[1] !='年龄':           
+    #         selected = random.sample(list(queryset2), random.randint(2, 5))
+    #         selected_list = [model_to_dict(obj) for obj in selected]
+    #         res['detail'][i].append(selected_list)
+    #     else:
+    #         selected = random.sample(list(queryset2), random.randint(2,3))
+    #         selected_list = [model_to_dict(obj) for obj in selected]+[model_to_dict(obj) for obj in queryset1]
+    #         res['detail'][i].append(selected_list)
 
     return res
     

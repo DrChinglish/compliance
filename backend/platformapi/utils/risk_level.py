@@ -10,15 +10,15 @@ middle_risk = ['adress','ip','mac','ipv6','age','email']
 low_risk =['average','variance','median','mode','std','maxvalue','minvalue']
 
 def get_risk_level(value):
-    risk_level = '高风险'
+    risk_level = 'high'
     if value in high_risk:
-        risk_level = '高风险'
+        risk_level = 'high'
         return risk_level
     elif value in middle_risk:
-        risk_level = '中风险'
+        risk_level = 'middle'
         return risk_level
     elif value in low_risk:
-        risk_level = '低风险'
+        risk_level = 'low'
         return risk_level
     else:
         raise ValueError('Unknown riskdata type: ' + value)

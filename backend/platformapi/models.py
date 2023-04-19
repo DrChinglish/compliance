@@ -96,6 +96,7 @@ class SimpleLaw(models.Model):
     serial_number = models.CharField(verbose_name='条目', max_length=30)
     law_term = models.TextField()
     primary_classification = models.CharField(verbose_name='一级分类', max_length=50)
+    secondary_classification = models.CharField(verbose_name='二级分类', max_length=50)
  
     def __str__(self):
         return self.law_term
