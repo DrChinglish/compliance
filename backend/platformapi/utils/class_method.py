@@ -263,25 +263,52 @@ def unzip_file(zip_file: ZipFile):
 # 链接数据库
 class DBConnection(object):
     
-    def __init__(self,user,pwd,dbname,tablename,host='localhost'):
+    def __init__(self,user,pwd,dbname,tablename,dbtype='mysql',host='localhost'):
         self.host = host
         self.user = user
         self.pwd = pwd
         self.dbname = dbname
         self.tablename = tablename
         self.formheader=[]
-        
-    def conn(self):
+        self.dbtype = dbtype
+    
+    def db_list(self):
         import pymysql
-        database = pymysql.connect(host=self.host,
-                       port=3306,
-                       user=self.user,
-                       passwd=self.pwd,                     
-                       db=self.dbname,
-                       charset = 'utf8')
+        import pymssql
+        sql_my = "show databases;"
+        sql_ms = "select name from sysdatabases;"
+        sql = sql_my if self.dbtype=='mysql' else sql_ms
+        cursor = self.conn()
+        cursor.execute(sql)
+        res = cursor.fetchall()
+        rl = [r[0] for r in res]
+        return rl
+
+
+    def conn(self):
+        import pymysql,pymssql
+        if self.dbtype == 'mssql': # Sql Server
+            port = self.port
+            if not self.port:
+                port = 1433
+            database = pymssql.connect(host=self.host,
+                                       port=port,
+                                       user=self.user,
+                                       password=self.pwd,
+                                       charset = 'utf-8',
+                                       )
+        else: #Mysql 
+            database = pymysql.connect(host=self.host,
+                        port=3306,
+                        user=self.user,
+                        passwd=self.pwd,                     
+                        db=self.dbname,
+                        charset = 'utf8')
 
         cursor = database.cursor()
         return cursor
+
+    
 
     def get_data(self):
         sql = "select * from {}".format(self.tablename)

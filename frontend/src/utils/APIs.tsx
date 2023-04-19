@@ -365,6 +365,28 @@ handler?:(res:any)=>void) {
     )
 }
 
+export async function databaseScan(ip:string,user:string,pwd:string,schema:string,table:string,catchCallback?:(e:any)=>void,
+handler?:(res:any)=>void) {
+    let formData = new FormData()
+    formData.append('ip',ip)
+    formData.append('user',user)
+    formData.append('pwd',pwd)
+    formData.append('dbname',schema)
+    formData.append('tablename',table)
+    let url = `${urlmapping.apibase.platform}/projects/conndb/`
+    return fetchRequest(url,
+        {
+            method:'POST',
+            mode:'cors',
+            body:formData,
+            credentials:"include",
+            headers:{
+                'X-CSRFToken':cookie.load('csrftoken')
+            }
+        },catchCallback,handler
+    )
+}
+
 export async function createTask(pid:number,files:ProjectFiles ,catchCallback?:(e:any)=>void,
 handler?:(res:any)=>void) {
     let formData = new FormData()
