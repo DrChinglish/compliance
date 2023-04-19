@@ -19,8 +19,8 @@ type Props = {
 }
 
 export default function StatusContainer({status,initialText,errorText,children,errorAction,successText,sx,variant='display'}: Props) {
-    let content:React.ReactNode
-    if(variant==='display'){
+    let content:React.ReactNode = <></>
+    if(variant === "display"){//信息显示类型界面，用于展示相关信息，初状态为
         switch(status){
             case 'initial':content = <EmptyHint text={initialText??'现在没有内容可以显示'}/>;break;
             case 'loading':content = <LoadingProgress/>;break;
@@ -29,7 +29,7 @@ export default function StatusContainer({status,initialText,errorText,children,e
             default: content = <EmptyHint text='未知状态'/>
         }
     }else{
-        switch(status){
+        switch(status){//操作类型界面，初始有相关操作提示
             case 'initial':content = children;break;
             case 'loading':content = <LoadingProgress/>;break;
             case 'success':content = <SuccessHint label={successText??'操作成功'}/>;break;

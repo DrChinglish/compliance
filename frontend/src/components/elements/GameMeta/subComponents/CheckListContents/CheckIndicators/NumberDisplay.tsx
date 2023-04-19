@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 // import { SxProps } from '@mui/material';
 import TweenOne from 'rc-tween-one'
 import Children from 'rc-tween-one/lib/plugin/ChildrenPlugin';
@@ -62,28 +62,19 @@ export default function NumberDisplay(props:NumberDisplayProps) {
         display:'flex',
         justifyContent:'center'
     }
-    console.log(layoutProps)
+    //console.log(layoutProps)
     const [animation, setAnimation] = useState({})
-    useEffect(()=>{
+    useLayoutEffect(()=>{
         let bp1 = props.value1.toString().length - 1  
+        if(bp1<0)
+            bp1 = 0
+        //console.log(textRef.current!.style)
         textRef.current!.style.fontSize = breakPointV1[bp1].fontSize
         setAnimation({
             Children:{
                 value:props.value1<=999?props.value1:999,floatLength:0,formatMoney:false
             },
             duration:1000,
-            // onUpdate:(e)=>{
-            //     //console.log(e)
-                
-            //     //console.log(bp1)
-            //     // Automatically resize font
-            //     // let currentFontSize = parseInt(textRef.current.style.fontSize)
-            //     // while(textRef.current?.offsetWidth>textRef.current?.parentElement.offsetWidth*0.75){
-            //     //     currentFontSize-=0.5
-            //     //     textRef.current!.style.fontSize = currentFontSize+'px'
-            //     // }
-            //     // console.log(currentFontSize)
-            // },
             onComplete:()=>{
                 if (props.value1.toString().length === breakPointV2.length) 
                     setDisplayValue(props.value2+'+')

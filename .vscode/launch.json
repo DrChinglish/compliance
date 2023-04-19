@@ -5,15 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Django",
+            "name": "Python: Celery",
             "type": "python",
+            "cwd": "${workspaceFolder}/backend",
             "request": "launch",
-            "program": "${workspaceFolder}\\backend\\manage.py",
+            "module": "celery",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "gevent": true,
             "args": [
-                "runserver"
-            ],
-            "django": true,
-            "justMyCode": true
+                "-A",
+                "backend",
+                "worker",
+                "-l",
+                "DEBUG",
+                "-P",
+                "eventlet"
+            ]
         }
     ]
 }

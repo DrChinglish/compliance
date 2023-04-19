@@ -152,7 +152,7 @@ export default class GameMeta extends Component {
                 healthyReminder:this.state.healthyReminder}}/>,
         },
         {
-            label:'游戏信息',
+            label:'项目信息',
             variant:'game',
             content:<GameInfo info={{...this.props.info,['filecount']:this.getFileCount()}}/>,
         },

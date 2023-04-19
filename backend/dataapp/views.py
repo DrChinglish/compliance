@@ -163,6 +163,10 @@ class MainView(TemplateView):
     template_name = 'dataapp/main.html'
 
 @ensure_csrf_cookie
+def get_csrftoken(request):
+    return JsonResponse({'status':'ok'})
+
+@ensure_csrf_cookie
 def create_project_view(request):
     if request.method == "POST":
         project_form = ProjectForm(request.POST)

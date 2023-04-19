@@ -63,7 +63,7 @@ export default class LayoutDetail extends Component {
             {/* Body end */}
 
             {/* Footer */}
-            <Box component='footer' sx={{flexGrow:1}} >  
+            <Box        component='footer' sx={{flexGrow:1}} >  
                 <Footer/>
             </Box>
             
@@ -73,10 +73,6 @@ export default class LayoutDetail extends Component {
     </Box>
     )
   }
-}
-
-LayoutDetail.propTypes={
-    chilidren: PropTypes.any
 }
 
 

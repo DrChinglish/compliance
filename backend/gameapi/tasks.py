@@ -1,6 +1,7 @@
 from celery import shared_task,group
 from gameapi.models import KeyFrame, File
 from .class_method import *
+import threading,queue
 
 @shared_task(name='gameapi.process_frame')
 def process_frame(frame_id):
@@ -40,6 +41,8 @@ def extract_keyframe(video_id):
     video.status = 'ready'
     video.save()
 
+
+
 @shared_task
 def process_audio(audio_id):
     audio = File.objects.get(id=audio_id)
@@ -48,7 +51,7 @@ def process_audio(audio_id):
     path = './media/' + str(audio.file)
     print('processing...')
     speechfilter = SpeechProcess()
-    speechfilter.init_para(path)
+    speechfilter.init_para(path,local=False)
     speechfilter.process_sensitive_word()
     speechfilter.process_english_word()
     res = speechfilter.process_result 

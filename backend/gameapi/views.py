@@ -158,6 +158,7 @@ class ProjectModelViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        
         for f in request.FILES.getlist('files[]'):
             from .util import calculate_file_hash
             # This looks not so right, could have cause some undesire behaviors....
@@ -620,6 +621,11 @@ class ProjectModelViewSet(ModelViewSet):
 
 
 
+
+    '''链接数据库并获取数据'''
+    @action(methods=["post"], detail=False, url_path="testdb")
+    def testdb(self, request):
+        dbcursor = DBConnection(user='root',pwd='123456',)
 
     '''链接数据库并获取数据'''
     @action(methods=["post"], detail=False, url_path="conndb")

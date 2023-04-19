@@ -263,39 +263,47 @@ def unzip_file(zip_file: ZipFile):
 # 链接数据库
 class DBConnection(object):
     
-    def __init__(self,dbtype,user,pwd,dbname,tablename,host='localhost'):
-        self.dbtype = dbtype
+    def __init__(self,user,pwd,dbname,tablename,dbtype='mysql',host='localhost'):
         self.host = host
         self.user = user
         self.pwd = pwd
         self.dbname = dbname
         self.tablename = tablename
         self.formheader=[]
-        
-    def conn(self):
-        import pymysql
-        import pyodbc
+        self.dbtype = dbtype
+    
+    def db_list(self):
+        sql_my = "show databases;"
+        sql_ms = "select name from sysdatabases;"
+        sql = sql_my if self.dbtype=='mysql' else sql_ms
+        cursor = self.conn()
+        cursor.execute(sql)
+        res = cursor.fetchall()
+        rl = [r[0] for r in res]
+        return rl
 
-        if self.dbtype == 'mysql':
-            db = pymysql.connect(
-                host=self.host,
-                port=3306,
-                user=self.user,
-                passwd=self.pwd,
-                db=self.dbname,
-                charset = 'utf8'
-            )
-            cursor = db.cursor()
-        elif self.dbtype == 'sql_server':
-            db = pyodbc.connect(
-                'Driver={ODBC Driver 17 for SQL Server};'
-                'Server=' + self.host + ';'
-                'Database=' + self.dbname + ';'
-                'Trusted_Connection=yes;'
-            )
-            cursor = db.cursor()
-        else:
-            raise ValueError('Unknown database type: ' + self.dbtype)
+
+    def conn(self):
+        import pymysql,pymssql
+        if self.dbtype == 'mssql': # Sql Server
+            port = self.port
+            if not self.port:
+                port = 1433
+            database = pymssql.connect(host=self.host,
+                                       port=port,
+                                       user=self.user,
+                                       password=self.pwd,
+                                       charset = 'utf-8',
+                                       )
+        else: #Mysql 
+            database = pymysql.connect(host=self.host,
+                        port=3306,
+                        user=self.user,
+                        passwd=self.pwd,                     
+                        db=self.dbname,
+                        charset = 'utf8')
+
+        cursor = database.cursor()
         return cursor
 
 

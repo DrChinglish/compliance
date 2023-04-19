@@ -24,7 +24,7 @@ export default class VideoFileContent extends Component<Props, State> {
   }
   videoref: React.RefObject<HTMLVideoElement>
 
-  constructor(props){
+  constructor(props: Props | Readonly<Props>){
     super(props)
     this.videoref=createRef()
   }

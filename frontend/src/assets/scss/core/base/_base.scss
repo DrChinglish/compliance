@@ -1,5 +1,5 @@
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
-	color: #323737 !important;
+	color: #323737 /*!important*/;
 }
 
 // .tiles-wrap {
@@ -8,7 +8,7 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 // }
 
 p {
-	font-size: 15px !important;
+	font-size: 15px/*!important*/;
 }
 
 
@@ -119,14 +119,14 @@ th {
 th,
 td {
 	padding: $spacing--table-cell-v $spacing--table-cell-h;
+	//由于影响了mui的布局，进行了注释
+	// &:first-child {
+	// 	padding-left: 0;
+	// }
 
-	&:first-child {
-		padding-left: 0;
-	}
-
-	&:last-child {
-		padding-right: 0;
-	}
+	// &:last-child {
+	// 	padding-right: 0;
+	// }
 }
 
 .invert-color  {

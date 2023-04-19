@@ -1,3 +1,5 @@
+import { NavigateFunction, Params } from "react-router-dom"
+
 export interface FileMeta extends FileInfoBasic{
     content: object,
     ext: string,
@@ -10,6 +12,13 @@ export interface FileInfoBasic{
   id: number,
   url:string,
   status:FileProcessStatus|VideoFileStatus
+}
+
+export interface FormState{
+  error:boolean,
+  helperText:string,
+  values:any,
+  touched:boolean,
 }
 
 export interface SnackbarStatus{
@@ -40,8 +49,48 @@ export interface ClassifiedFileList{
   [key:string]:FileMeta[]
 }
 
+export interface ICheckListQuestion{
+  question:string,
+  law_article:string,
+  id:number
+}
+
+export interface ICheckListQuestionTF extends ICheckListQuestion{
+
+} 
+
+export interface WithRouterProps{
+  navigate:NavigateFunction,
+  location:Location,
+  params:Readonly<Params<string>>
+}
+
+
+export type TFAnswer = boolean
+
+export interface QuestionError{
+  id:number,
+  helperText:string
+}
+
+export interface CheckListStep{
+  label:string,
+  content?:JSX.Element|Function
+}
+
+export interface QuestionAnswer {
+    id:number,
+    value:TFAnswer
+} 
+
+
+
+export type ChecklistAnswer = QuestionAnswer[]
+
 export type LoadingStatus = 'initial'|'loading'|'error'|'success'|string
 
 export type FileProcessStatus = 'uploaded'|'processing'|'error'|'done'
 
 export type VideoFileStatus = FileProcessStatus | 'ready'
+
+export type QuestionVariant = 'TF'|'Single'|'Multiple'|'Value'

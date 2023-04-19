@@ -109,23 +109,23 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',        #数据库名字
-        'USER': 'root',          #账号
-        'PASSWORD': '123456',      #密码
-        'HOST': '127.0.0.1',    #IP
-        'PORT': '3306',                   #端口
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'django',        #数据库名字
+#         'USER': 'root',          #账号
+#         'PASSWORD': '123456',      #密码
+#         'HOST': '127.0.0.1',    #IP
+#         'PORT': '3306',                   #端口
+#     }
+# }
 
 
 # Password validation
@@ -199,6 +199,7 @@ AUTH_USER_MODEL="platformapi.UserInfo"
 
 
 # Celery settings
+CELERYD_FORCE_EXECV = True
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BROKER_URL = 'redis://localhost:6379/0' 

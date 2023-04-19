@@ -11,6 +11,9 @@ import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
 import RecordVoiceOverIcon from '@mui/icons-material/RecordVoiceOver';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
+import GavelIcon from '@mui/icons-material/Gavel';
+
+
 import urlMapping from '../../../../urlMapping.json'
 import { DrawerHeader } from './DrawerHeader';
 import withRouter from '../../../../utils/WithRouter';
@@ -26,13 +29,7 @@ const theme = createTheme({
     //     }
     //   }
     // },
-    MuiListItemButton:{
-      styleOverrides:{
-        selected:{
-          backgroundColor:'#202020',
-        }
-      }
-    }
+    
   }
 })
 
@@ -116,9 +113,9 @@ class SideDrawer extends Component {
 
     const {open} = this.state 
     return (
-      <ThemeProvider theme={theme}>
+      <ThemeProvider  key={item.title} theme={theme}>
         <StyledListItemButton
-        key={item.title} disablePadding divider onClick={(e)=>{this.setState({selectedIndex:item.id}); this.props.navigate(item.link)}} selected={this.state.selectedIndex==item.id}
+        disableGutters divider onClick={(e)=>{this.setState({selectedIndex:item.id}); this.props.navigate(item.link)}} selected={this.state.selectedIndex==item.id}
           sx={{
             minHeight: 48,
             justifyContent: open ? 'initial' : 'center',
@@ -218,5 +215,11 @@ const menuList = [
     title:"游戏合规",
     icon:<VideogameAssetIcon/>,
     link:urlMapping.gamelist//for navigation...
+  },
+  { 
+    id:6,
+    title:"合规表单",
+    icon:<GavelIcon/>,
+    link:urlMapping.platformlist//for navigation...
   },
 ]
