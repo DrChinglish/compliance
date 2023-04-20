@@ -256,7 +256,18 @@ modekey_pattern = re.compile(r'''(
                 众数|mode
                 )''', re.VERBOSE)
 
+#--------------------------------------------------------------------------------#
+#  定义风险检测模式列表以及风险类型映射字典
+#--------------------------------------------------------------------------------#
 
+pattern_list = [adress_pattern,phone_pattern,bankcard_check,email_pattern,name_lac,age_pattern,IDNumber_pattern, 
+                passport_pattern, officer_pattern, HM_pass_pattern,carnum_pattern,business_check]
+
+pattern_name = ['adress','phone','bankcard','email','name','age','IDNumber', 'passport', 'officer', 'HM_pass','carnum','business']
+
+risk_type = {'adress':'地址', 'phone':'手机号','bankcard':'银行卡号','email':'邮箱',
+             'name':'姓名','age':'年龄','IDNumber':'身份证号','passport':'护照号',
+             'officer':'军官证号','HM_pass':'港澳通行证号','carnum':'车牌号','business':'营业执照号'}
 
 
 #------------------------------------------------------------------------------------------------------------#
@@ -302,22 +313,8 @@ from .risk_level import get_risk_level
 from platformapi.models import SimpleLaw
 from django.db.models import Q
 from django.forms.models import model_to_dict
-import random
 def search_database_riskdata(value):
-    risk_type = {'adress':'地址', 'phone':'手机号',
-                 'bankcard':'银行卡号','email':'邮箱',
-                 'name':'姓名','age':'年龄',
-                 'IDNumber':'身份证号','passport':'护照号',
-                 'officer':'军官证号','HM_pass':'港澳通行证号',
-                 'carnum':'车牌号','business':'营业执照号'}
-
-    pattern_list = [nameof(adress_pattern),nameof(phone_pattern),
-                    nameof(bankcard_check),nameof(email_pattern),
-                    nameof(name_lac),nameof(age_pattern),
-                    nameof(IDNumber_pattern), nameof(passport_pattern), 
-                    nameof(officer_pattern), nameof(HM_pass_pattern),
-                    nameof(carnum_pattern),nameof(business_check)]
-  
+    # 定义结果字典
     res = {'overview':{'high':{},'middle':{},'low':{}},
            'detail':{'high':{},'middle':{},'low':{}}}
     
@@ -325,20 +322,18 @@ def search_database_riskdata(value):
     ret = []
     for i, row in enumerate(value[1:]):
         for j,cell in enumerate(row):
-            for pattstr in pattern_list :
-                patt = eval(pattstr)
+            for patt_index,patt in enumerate(pattern_list) :
                 if isinstance(patt,(re.Pattern)):
-                    if pattstr != 'age_pattern' or (pattstr == 'age_pattern' and re.search(agekey_pattern, value[0][j].strip().lower()) and eval(str(cell))<=14):
+                    if pattern_name[patt_index] != 'age_pattern' or (pattern_name[patt_index] == 'age_pattern' and re.search(agekey_pattern, value[0][j].strip().lower())):
                         risk_data = [k[0] for k in patt.findall(str(cell))]
-                                                                                #  value[0][j].strip().lower() in age_keys
                 else:
                     risk_data = patt(str(cell))
                 if len(risk_data):
                     for data in risk_data:
                         ret.append((data,
-                                    risk_type[pattstr.split('_')[0]], 
+                                    risk_type[pattern_name[patt_index].split('_')[0]], 
                                     (i+1,j+1),
-                                    get_risk_level(pattstr.split('_')[0])
+                                    get_risk_level(pattern_name[patt_index].split('_')[0])
                                     ))
 
     # 过滤掉位置一样的风险项  
@@ -353,14 +348,12 @@ def search_database_riskdata(value):
             res['overview'][level][i] = j
 
     # 匹配法律
-    all_law = {'high':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(secondary_classification='high'))],
-               'middle':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(secondary_classification='middle'))],
-               'low':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(secondary_classification='low'))],
-               'underage':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息'))],
-               'property':[model_to_dict(obj) for obj in SimpleLaw.objects.filter(Q(primary_classification='个人财产信息'))],
+    all_law = {'high':[obj for obj in SimpleLaw.objects.filter(secondary_classification='high').values('law_article','serial_number','law_term')],
+               'middle':[obj for obj in SimpleLaw.objects.filter(secondary_classification='middle').values('law_article','serial_number','law_term')],
+               'low':[obj for obj in SimpleLaw.objects.filter(secondary_classification='low').values('law_article','serial_number','law_term')],
+               'underage':[obj for obj in SimpleLaw.objects.filter(primary_classification='未成年人个人信息').values('law_article','serial_number','law_term')],
+               'property':[obj for obj in SimpleLaw.objects.filter(primary_classification='个人财产信息').values('law_article','serial_number','law_term')],
                }
-    # queryset1 = SimpleLaw.objects.filter(Q(primary_classification='未成年人个人信息'))
-    # queryset2 = SimpleLaw.objects.exclude(primary_classification='未成年人个人信息').exclude(primary_classification='个人财产信息')
 
     law_group = risk_pd.groupby('levle',as_index=False)
     for group in law_group:
@@ -369,23 +362,12 @@ def search_database_riskdata(value):
         violation_item = group['violation_item'].unique()
         for item in violation_item:
             law_list = all_law[level] 
+            # law_list = [{k: v for k, v in d.items() if k not in ['id', 'primary_classification','secondary_classification']} for d in law_list]
             content_list =  np.array(group[group['violation_item']==item][['violation_content','position']]).tolist()
+            print(content_list)
             item_content = {'content_list':content_list,'law_list':law_list}
             res['detail'][level][item] = item_content
             
-
-
-
-    # res['detail'] = np.array(risk_pd).tolist()
-    # for i,row in enumerate(res['detail']):
-    #     if row[1] !='年龄':           
-    #         selected = random.sample(list(queryset2), random.randint(2, 5))
-    #         selected_list = [model_to_dict(obj) for obj in selected]
-    #         res['detail'][i].append(selected_list)
-    #     else:
-    #         selected = random.sample(list(queryset2), random.randint(2,3))
-    #         selected_list = [model_to_dict(obj) for obj in selected]+[model_to_dict(obj) for obj in queryset1]
-    #         res['detail'][i].append(selected_list)
 
     return res
     
