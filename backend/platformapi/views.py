@@ -19,7 +19,7 @@ from platformapi.utils.score import *
 
 
 class ProjectModelViewSet(ModelViewSet):
-    queryset = Project.objects.all()
+    queryset = Project.objects.all()    
     serializer_class = ProjectModelSerializer
     law_list = [
             'personal_protection_law',
@@ -147,14 +147,26 @@ class ProjectModelViewSet(ModelViewSet):
         ,status=status.HTTP_200_OK)
     
 
+    '''扫描数据库信息'''
+    @action(methods=["POST"], detail=False, url_path="get_databases")
+    def get_databases(self, request):
+        import pandas as pd
+        form_data=request.data
+      
+ 
+        db = DBConnection(host=form_data['ip'],dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'])
+        res = db.db_list()
+               
+        return Response(data={'databases':res},status=status.HTTP_200_OK)
+
     '''扫描数据库数据'''
-    @action(methods=["post"], detail=False, url_path="conndb")
+    @action(methods=["POST"], detail=False, url_path="conndb")
     def conndb(self, request):
         import pandas as pd
         form_data=request.data
       
  
-        db = DBConnection(dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
+        db = DBConnection(host=form_data['ip'],dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=form_data['dbname'],tablename=form_data['tablename'])
         data = list(db.get_data())
         formheader = db.formheader
     
@@ -163,7 +175,37 @@ class ProjectModelViewSet(ModelViewSet):
         res = search_database_riskdata(data)
                
         return Response( data={'data':res},status=status.HTTP_201_CREATED)
-
+    
+    '''扫描所有选择的数据库'''
+    @action(methods=["POST"], detail=False, url_path="scandb")
+    def scandb(self, request):
+        import pandas as pd
+        import json
+        form_data=dict(eval(request.body))
+        print(form_data)
+        db_list = form_data['databases']
+        print(db_list)
+        ret = {}
+        for db in db_list:
+            print(db)
+            conn = DBConnection(host=form_data['ip'], dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=db)
+            table_list = conn.table_list()
+            ret[db] = {}
+            for table in table_list:
+                print(table)
+                db_cursor = DBConnection(host=form_data['ip'],dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=db,tablename=table)
+                print('getting data')
+                data = list(db_cursor.get_data())
+                formheader = db_cursor.formheader
+                data.insert(0,formheader)  
+                print('scanning')
+                res = search_database_riskdata(data)
+                ret[db][table] = res
+        print('saving result')
+        save_file = open("media/result/result_file.json",'w',encoding='utf-8')
+        json.dump(ret,save_file,ensure_ascii=False)
+        save_file.close()
+        return Response( data={'data':ret},status=status.HTTP_200_OK)
 
 
 class FileModelViewSet(ModelViewSet):

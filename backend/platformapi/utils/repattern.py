@@ -322,8 +322,10 @@ def search_database_riskdata(value):
            'detail':{'high':{},'middle':{},'low':{}}}
     
     # 发现风险项
+    print('prepare to scan')
     ret = []
     for i, row in enumerate(value[1:]):
+        print('row {0} of {1}'.format(i,len(value)))
         for j,cell in enumerate(row):
             for pattstr in pattern_list :
                 patt = eval(pattstr)
@@ -341,6 +343,7 @@ def search_database_riskdata(value):
                                     get_risk_level(pattstr.split('_')[0])
                                     ))
 
+    print('post processing')
     # 过滤掉位置一样的风险项  
     risk_pd = pd.DataFrame(ret,columns=['violation_content','violation_item','position','levle'])
     risk_pd = risk_pd.groupby('position').apply(lambda x: x.loc[x['violation_content'].str.len().idxmax()])

@@ -1,12 +1,17 @@
 import { InboxOutlined } from '@ant-design/icons'
 import { LoadingButton } from '@mui/lab'
-import {Card, Divider, Typography, Grid, Select, CardHeader, CardContent, Stack, FormControl, InputLabel, OutlinedInput, FormHelperText, Box, Chip } from '@mui/material'
+import {Card, Divider, Typography, Grid, Select, CardHeader, CardContent, Stack, FormControl, InputLabel, OutlinedInput, FormHelperText, Box, Chip, MenuItem, List, Paper, ListItem, Checkbox, ListItemButton, ListItemIcon, ListItemText } from '@mui/material'
 import React, { Component } from 'react'
 import SnackBar from '../components/elements/SnackBar'
 import { LocallizationLaw } from '../utils/util'
 import { FormState, SnackbarStatus } from '../Interfaces'
-import { databaseScan } from '../utils/APIs'
+import { databaseScan, databaseScanAll } from '../utils/APIs'
 import DoneIcon from '@mui/icons-material/Done';
+import StatusContainer from '../components/elements/StatusContainer'
+import Titles from '../components/typography/Titles'
+import ScanResultType from '../components/elements/DatabaseScan/ScanResultType'
+import ScanResultSum from '../components/elements/DatabaseScan/ScanResultSum'
+import ScanResult from '../components/elements/DatabaseScan/ScanResult'
 type Props = {}
 const helperText={
     empty:'该项目是必填项'
@@ -17,6 +22,7 @@ type State = {
         ip:FormState,
         user:FormState,
         password:FormState,
+        dbtype:FormState,
         schema:FormState,
         table:FormState
     },
@@ -26,7 +32,12 @@ type State = {
         helperText:string
     },
     creating:boolean,
-    success:boolean
+    success:boolean,
+    connected:string,
+    databases:string[],
+    checked:string[],
+    isResult:string,
+    result:any
 }
 
 function emptyFormState(array:boolean=false){
@@ -44,7 +55,7 @@ export default class DatabaseScan extends Component<Props, State> {
         super(props)
       
         this.state = {
-          forms:{ip:emptyFormState(),user:emptyFormState(),password:emptyFormState(),schema:emptyFormState(),table:emptyFormState()},
+          forms:{dbtype:emptyFormState(),ip:emptyFormState(),user:emptyFormState(),password:emptyFormState(),schema:emptyFormState(),table:emptyFormState()},
           snackbarStatus:{show:false,text:'',severity:"success"},
           errorField:{
               field:'',
@@ -52,8 +63,27 @@ export default class DatabaseScan extends Component<Props, State> {
            },//for backend verification only
            creating:false,
            success:false,
+           connected:'initial',
+           databases:[],
+           checked:[],
+           isResult:'initial',
+           result:undefined
         }
     }
+
+    handleToggle = (value: string) => () => {
+        let {checked} = this.state 
+        const currentIndex = checked.indexOf(value);
+        const newChecked = [...checked];
+    
+        if (currentIndex === -1) {
+          newChecked.push(value);
+        } else {
+          newChecked.splice(currentIndex, 1);
+        }
+        console.log(newChecked)
+        this.setState({checked:newChecked})
+      };
 
     isTouched = (item:string)=>{
         return this.state.forms[item].touched
@@ -118,16 +148,55 @@ export default class DatabaseScan extends Component<Props, State> {
         }
         ,()=>{this.isCorrectInput(prop)})
     }
+    showSnackMessage = (severity, text)=>{
+        let msgstate = this.state.snackbarStatus
+        msgstate.show = true
+        msgstate.severity = severity
+        msgstate.text = text
+        this.setState({snackbarStatus:msgstate})
+    }
 
     handleSubmit = ()=>{
-        let {ip,password,schema,table,user} = this.state.forms
-        databaseScan(ip.values,user.values,password.values,schema.values,table.values,()=>{},(res)=>{
+        let {ip,password,dbtype,table,user} = this.state.forms
+        this.setState({connected:'loading'})
+        databaseScan(ip.values,user.values,password.values,dbtype.values,
+            (e)=>{this.showSnackMessage('error','发生了一个错误，可能是数据库用户名密码错误')},
+            (res)=>{
+            if(res.databases?.length>0){
+                this.setState({databases:res.databases,connected:'success'})
+            }
             console.log(res)
         })
     }
 
+    render_result=()=>{
+        let ret:JSX.Element[]=[]
+        let res = this.state.result
+        for(let db in res){
+            ret.push(<ScanResult database_name={db} database_data={res[db]}/>)
+        }
+        return ret
+    }
+
+    handleScan = ()=>{
+        let {ip,password,dbtype,table,user} = this.state.forms
+        this.setState({isResult:'loading'})
+        databaseScanAll(this.state.checked,ip.values,user.values,password.values,dbtype.values,
+            (e)=>{
+                this.showSnackMessage('error','发生了一个错误，可能是数据库用户名密码错误')
+                this.setState({isResult:'error'})
+            },
+            (res)=>{
+            if(res.data){
+                this.setState({result:res.data,isResult:'success'})
+            }
+            console.log(res)
+        })
+        }
+    
+
   render() {
-    let {ip,user,password,schema,table}=this.state.forms
+    let {ip,user,password,dbtype,table}=this.state.forms
     return (
         <Card sx={{maxWidth:'75vw',mx:'auto'}}>
         <CardHeader
@@ -142,7 +211,8 @@ export default class DatabaseScan extends Component<Props, State> {
                     <FormControl sx={{m:1, width:'40ch'}} variant='outlined' error={ip.error}>
                         <InputLabel htmlFor='db-address'>数据库地址</InputLabel>
                         <OutlinedInput
-                            required                  
+                            required  
+                            // defaultValue='127.0.0.1'                
                             id='db-address'
                             value={ip.values}
                             onChange={this.handleChange('ip')}
@@ -155,7 +225,8 @@ export default class DatabaseScan extends Component<Props, State> {
                     <FormControl sx={{m:1, width:'40ch'}} variant='outlined' error={user.error}>
                         <InputLabel htmlFor='db-user'>用户名</InputLabel>
                         <OutlinedInput
-                            required                  
+                            required
+                            // defaultValue='root'             
                             id='db-user'
                             value={user.values}
                             onChange={this.handleChange('user')}
@@ -179,20 +250,24 @@ export default class DatabaseScan extends Component<Props, State> {
                             />
                             <FormHelperText>{password.helperText}</FormHelperText>
                     </FormControl>
-                    <FormControl sx={{m:1, width:'40ch'}} variant='outlined' error={schema.error}>
-                        <InputLabel htmlFor='db-schema'>数据库名称</InputLabel>
-                        <OutlinedInput
-                            required                  
-                            id='db-schema'
-                            value={schema.values}
-                            onChange={this.handleChange('schema')}
-                            onFocus={this.handleFoucus('schema')}
-                            onBlur={this.handleblur('schema')}
-                            label="数据库名称"
-                            />
-                            <FormHelperText>{schema.helperText}</FormHelperText>
+                    <FormControl sx={{m:1, width:'25ch'}} variant='outlined' error={dbtype.error}>
+                        <InputLabel id="dbtype-select-label">数据库类型</InputLabel>
+                        <Select
+                            required
+                            // defaultValue='mysql'
+                            labelId='dbtype-select-label'
+                            id='dbtype'
+                            value={dbtype.values}
+                            onChange={this.handleChange('dbtype')}
+                            onFocus={this.handleFoucus('dbtype')}
+                            onBlur={this.handleblur('dbtype')}
+                            label="数据库类型"
+                            >   
+                                {typeItems}
+                        </Select>
+                        <FormHelperText>{dbtype.helperText}</FormHelperText>
                     </FormControl>
-                    <FormControl sx={{m:1, width:'40ch'}} variant='outlined' error={table.error}>
+                    {/* <FormControl sx={{m:1, width:'40ch'}} variant='outlined' error={table.error}>
                         <InputLabel htmlFor='db-table'>数据表名称</InputLabel>
                         <OutlinedInput
                             required                  
@@ -204,14 +279,66 @@ export default class DatabaseScan extends Component<Props, State> {
                             label="项目名称"
                             />
                             <FormHelperText>{table.helperText}</FormHelperText>
-                    </FormControl>
+                    </FormControl> */}
                 </Grid>
                 
                 <Stack justifyContent='center' alignItems='center'>
                     <LoadingButton startIcon={this.state.success?<DoneIcon/>:undefined} variant='contained' loading={this.state.creating} color={this.state.success?'success':'primary'}
                     onClick={this.state.success?()=>{}:this.handleSubmit}>
-                        {this.state.success?"完成":"开始扫描"}
+                        {this.state.success?"完成":"连接到数据库"}
                     </LoadingButton>
+                    <Divider flexItem textAlign='left'><Typography variant='h6' fontWeight='bold'>选择数据库</Typography></Divider>
+                    <Paper>
+                        <StatusContainer sx={{width:'400px', height:'50vh'}} status={this.state.connected} initialText='连接到数据库以选择需要审查的内容'>
+                            <Box sx={{p:2}}>
+                                <Titles>请选择需要扫描的数据库</Titles>
+                            </Box>
+                            <Divider></Divider>
+                            <List sx={{bgcolor:'background.paper',height:'calc(100% - 128px)', overflowY:'auto'}}>
+                                {this.state.databases.map((value,index)=>{
+                                    const labelID = `db-list-${value}`
+                                    return (
+                                        <ListItem
+                                        key={value}
+                                        disablePadding
+                                    >
+                                        <ListItemButton role={undefined} onClick={this.handleToggle(value)} dense>
+                                        <ListItemIcon>
+                                            <Checkbox
+                                            edge="start"
+                                            checked={this.state.checked.indexOf(value) !== -1}
+                                            tabIndex={-1}
+                                            disableRipple
+                                            inputProps={{ 'aria-labelledby': labelID }}
+                                            />
+                                        </ListItemIcon>
+                                        <ListItemText id={labelID} primary={`${value}`} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                    )
+                                })}
+                            </List>
+                            <Divider/>
+                            <Box sx={{height:'64px'}} display={'flex'} alignItems='center' justifyContent='center'>
+                                <LoadingButton startIcon={this.state.isResult==='success'?<DoneIcon/>:undefined} 
+                                variant='contained' loading={this.state.isResult==='loading'} 
+                                disabled={this.state.checked.length===0}
+                                color={this.state.isResult==='success'?'success':'primary'}
+                                onClick={this.state.isResult==='success'?()=>{}:this.handleScan}>
+                                    {this.state.success?"完成":"连接到数据库"}
+                                </LoadingButton>
+                            </Box>
+                            
+                            
+                        </StatusContainer>
+                    </Paper>
+                    
+                </Stack>
+                <Divider flexItem textAlign='left'><Typography variant='h6' fontWeight='bold'>检测结果</Typography></Divider>
+                <Stack justifyContent='center' alignItems='center' sx={{p:2}}>
+                    <StatusContainer status={this.state.isResult} initialText='选择数据库后点击开始检测并等待结果'>
+                       {this.render_result()}
+                    </StatusContainer>
                 </Stack>
                 
             </Stack>
@@ -220,3 +347,8 @@ export default class DatabaseScan extends Component<Props, State> {
     )
   }
 }
+
+const typeItems = [
+    <MenuItem value='mysql'>Mysql</MenuItem>,
+    <MenuItem value='mssql'>SqlServer</MenuItem>,
+]

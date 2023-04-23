@@ -506,7 +506,7 @@ class DFAFilter(object):
                     if self.delimit not in level[char] or message[start:start+step_ins] in self.whitelist: 
                         level = level[char]
                     else:
-                        if start+step_ins < len(message) and (message[step_ins+start+1] in level[char]):
+                        if start+step_ins < len(message) and ((step_ins+start+1<len(message)) and (message[step_ins+start+1] in level[char])):
                             level = level[char]
                         else:
                             self.ret.append({'flag':1,'text':message[start:start+step_ins]})

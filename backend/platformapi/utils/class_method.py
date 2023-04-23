@@ -263,7 +263,7 @@ def unzip_file(zip_file: ZipFile):
 # 链接数据库
 class DBConnection(object):
     
-    def __init__(self,user,pwd,dbname,tablename,dbtype='mysql',host='localhost'):
+    def __init__(self,user,pwd,dbname='',tablename='',dbtype='mysql',host='localhost'):
         self.host = host
         self.user = user
         self.pwd = pwd
@@ -282,18 +282,52 @@ class DBConnection(object):
         rl = [r[0] for r in res]
         return rl
 
+    def table_list(self):
+        sql_ms = "select name from sysobjects where xtype='U';"
+        sql_my = "show tables;"
+        sql = sql_my if self.dbtype=='mysql' else sql_ms
+        
+        cursor = self.conn_db()
+        cursor.execute(sql)
+        res = cursor.fetchall()
+        rl = [r[0] for r in res]
+        return rl
 
     def conn(self):
         import pymysql,pymssql
         if self.dbtype == 'mssql': # Sql Server
-            port = self.port
-            if not self.port:
-                port = 1433
+            # port = self.port
+            # if not self.port:
+            #     port = 1433
             database = pymssql.connect(host=self.host,
-                                       port=port,
+                                       port=1433,
+                                       user=self.user,
+                                       password=self.pwd
+                                      
+                                       )
+        else: #Mysql 
+            database = pymysql.connect(host=self.host,
+                        port=3306,
+                        user=self.user,
+                        passwd=self.pwd,                     
+                        db=self.dbname,
+                        charset = 'utf8')
+
+        cursor = database.cursor()
+        return cursor
+    
+    def conn_db(self):
+        import pymysql,pymssql
+        if self.dbtype == 'mssql': # Sql Server
+            # port = self.port
+            # if not self.port:
+            #     port = 1433
+            print(self.user,self.pwd,self.dbname,self.host)
+            database = pymssql.connect(host=self.host,
+                                       port=1433,
                                        user=self.user,
                                        password=self.pwd,
-                                       charset = 'utf-8',
+                                       database=self.dbname
                                        )
         else: #Mysql 
             database = pymysql.connect(host=self.host,
@@ -306,18 +340,16 @@ class DBConnection(object):
         cursor = database.cursor()
         return cursor
 
-
-      
-
     def get_data(self):
         sql = "select * from {}".format(self.tablename)
-        cursor = self.conn()
+        cursor = self.conn_db()
         cursor.execute(sql)
         self.formheader=[]
         desc = cursor.description
         for field in desc:
             self.formheader.append(field[0])
         # print(self.formheader)
-        ret = cursor.fetchall()
-        
+        # ret = cursor.fetchall()
+        ret = cursor.fetchmany(size=1000)
+        cursor.close()
         return ret

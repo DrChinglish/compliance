@@ -20,7 +20,7 @@ type Props = {
 
 export default function StatusContainer({status,initialText,errorText,children,errorAction,successText,sx,variant='display'}: Props) {
     let content:React.ReactNode = <></>
-    if(variant === "display"){//信息显示类型界面，用于展示相关信息，初状态为
+    if(variant === "display"){//信息显示类型界面，用于展示相关信息，初状态为空
         switch(status){
             case 'initial':content = <EmptyHint text={initialText??'现在没有内容可以显示'}/>;break;
             case 'loading':content = <LoadingProgress/>;break;
