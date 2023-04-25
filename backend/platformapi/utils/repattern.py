@@ -322,7 +322,7 @@ def search_database_riskdata(value):
     print('prepare to scan')
     ret = []
     for i, row in enumerate(value[1:]):
-        print('row {0} of {1}'.format(i,len(value)))
+        print('row {0} of {1}'.format(i,len(value)-1))
         for j,cell in enumerate(row):
             for patt_index,patt in enumerate(pattern_list) :
                 if isinstance(patt,(re.Pattern)):

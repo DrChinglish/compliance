@@ -295,6 +295,7 @@ class DBConnection(object):
 
     def conn(self):
         import pymysql,pymssql
+        print(self.host)
         if self.dbtype == 'mssql': # Sql Server
             # port = self.port
             # if not self.port:
@@ -307,7 +308,7 @@ class DBConnection(object):
                                        )
         else: #Mysql 
             database = pymysql.connect(host=self.host,
-                        port=3306,
+                        port=13306,
                         user=self.user,
                         passwd=self.pwd,                     
                         db=self.dbname,
@@ -331,7 +332,7 @@ class DBConnection(object):
                                        )
         else: #Mysql 
             database = pymysql.connect(host=self.host,
-                        port=3306,
+                        port=13306,
                         user=self.user,
                         passwd=self.pwd,                     
                         db=self.dbname,
@@ -350,6 +351,6 @@ class DBConnection(object):
             self.formheader.append(field[0])
         # print(self.formheader)
         # ret = cursor.fetchall()
-        ret = cursor.fetchmany(size=1000)
+        ret = cursor.fetchmany(size=100)
         cursor.close()
         return ret

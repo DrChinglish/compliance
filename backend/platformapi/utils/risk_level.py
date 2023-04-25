@@ -7,7 +7,7 @@
 
 high_risk = ['IDNumber','passport','officer','HM_pass','carnum','name','phone','bankcard']
 middle_risk = ['adress','ip','mac','ipv6','age','email']
-low_risk =['average','variance','median','mode','std','maxvalue','minvalue']
+low_risk =['average','variance','median','mode','std','maxvalue','minvalue','business']
 
 def get_risk_level(value):
     risk_level = 'high'

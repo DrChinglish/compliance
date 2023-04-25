@@ -153,7 +153,7 @@ class ProjectModelViewSet(ModelViewSet):
         import pandas as pd
         form_data=request.data
       
- 
+        print(form_data['ip'])
         db = DBConnection(host=form_data['ip'],dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'])
         res = db.db_list()
                
@@ -186,11 +186,13 @@ class ProjectModelViewSet(ModelViewSet):
         db_list = form_data['databases']
         print(db_list)
         ret = {}
+        
         for db in db_list:
             print(db)
             conn = DBConnection(host=form_data['ip'], dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=db)
             table_list = conn.table_list()
             ret[db] = {}
+            print('Tables in database \'{0}\': {1}'.format(db,table_list))
             for table in table_list:
                 print(table)
                 db_cursor = DBConnection(host=form_data['ip'],dbtype=form_data['dbtype'],user=form_data['user'],pwd=form_data['pwd'],dbname=db,tablename=table)

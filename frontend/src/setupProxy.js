@@ -7,7 +7,7 @@ module.exports = function (app){
     app.use(
         [urlmapping.apibase.game,urlmapping.apibase.other,urlmapping.apibase.platform],
         createProxyMiddleware({
-            target:'http://localhost:8000',
+            target:'http://127.0.0.1:8000',
             changeOrigin:true,
             pathRewrite:function (path, req){
                 if(path.match(gameApiPattern))
