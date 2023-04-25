@@ -324,17 +324,26 @@ def search_database_riskdata(value):
         for j,cell in enumerate(row):
             for patt_index,patt in enumerate(pattern_list) :
                 if isinstance(patt,(re.Pattern)):
-                    if pattern_name[patt_index] != 'age_pattern' or (pattern_name[patt_index] == 'age_pattern' and re.search(agekey_pattern, value[0][j].strip().lower())):
+                    if pattern_name[patt_index] != 'age_pattern' or (pattern_name[patt_index] == 'age_pattern' and bool(re.search(agekey_pattern, value[0][j].strip().lower()))):
                         risk_data = [k[0] for k in patt.findall(str(cell))]
                 else:
                     risk_data = patt(str(cell))
                 if len(risk_data):
                     for data in risk_data:
-                        ret.append((data,
-                                    risk_type[pattern_name[patt_index].split('_')[0]], 
-                                    (i+1,j+1),
-                                    get_risk_level(pattern_name[patt_index].split('_')[0])
-                                    ))
+                        if len(data)==len(cell):
+                            if pattern_name[patt_index].split('_')[0] == 'name':  
+                                if not bool(re.match('^[A-Za-z]+$', data)):
+                                    ret.append((data,
+                                        risk_type[pattern_name[patt_index].split('_')[0]], 
+                                        (i+1,j+1),
+                                        get_risk_level(pattern_name[patt_index].split('_')[0])
+                                        ))
+                            else:
+                                ret.append((data,
+                                            risk_type[pattern_name[patt_index].split('_')[0]], 
+                                            (i+1,j+1),
+                                            get_risk_level(pattern_name[patt_index].split('_')[0])
+                                            ))
 
     # 过滤掉位置一样的风险项  
     risk_pd = pd.DataFrame(ret,columns=['violation_content','violation_item','position','levle'])
