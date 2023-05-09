@@ -175,17 +175,21 @@ class FaceDet(FaceDetection):
             return bboxes, keypoints
         for detection in results.detections:
             location = detection.location_data
+            
             if not location.HasField('relative_bounding_box'):
                 continue
             relative_bounding_box = location.relative_bounding_box
-
+            print(relative_bounding_box,image_cols,image_rows)
             x_min, y_min = _normalized_to_pixel_coordinates(
                 relative_bounding_box.xmin, 
                 relative_bounding_box.ymin, image_cols, image_rows)
 
+            relative_x_max = relative_bounding_box.xmin + relative_bounding_box.width
+            relative_y_max = relative_bounding_box.ymin + relative_bounding_box.height
+            
             x_max, y_max = _normalized_to_pixel_coordinates(
-                relative_bounding_box.xmin + relative_bounding_box.width,
-                relative_bounding_box.ymin + relative_bounding_box.height, image_cols, image_rows)
+                relative_x_max if relative_x_max<=1.0 else 1,
+                relative_y_max if relative_y_max<=1.0 else 1, image_cols, image_rows)
             bboxes.append((x_min, y_min, x_max, y_max))
             
             keypoints.append([_normalized_to_pixel_coordinates(
