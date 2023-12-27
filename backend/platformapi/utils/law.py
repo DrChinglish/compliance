@@ -52,3 +52,15 @@ def save_simplelaw_to_database():
             new_law = SimpleLaw(law_article= item[0], serial_number=item[1],law_term=item[2],
                             primary_classification=item[3],secondary_classification=item[4])
             new_law.save()
+
+
+# 匹配法律
+all_law = {'high':[obj for obj in SimpleLaw.objects.filter(secondary_classification='high').values('law_article','serial_number','law_term')],
+                'middle':[obj for obj in SimpleLaw.objects.filter(secondary_classification='middle').values('law_article','serial_number','law_term')],
+                'low':[obj for obj in SimpleLaw.objects.filter(secondary_classification='low').values('law_article','serial_number','law_term')],
+                'underage':[obj for obj in SimpleLaw.objects.filter(primary_classification='未成年人个人信息').values('law_article','serial_number','law_term')],
+                'property':[obj for obj in SimpleLaw.objects.filter(primary_classification='个人财产信息').values('law_article','serial_number','law_term')],
+                }
+
+def get_law_list(level):
+    return all_law[level]

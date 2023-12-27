@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'platformapi',
     'dataappentry.apps.FrontendConfig',
     
+    
 ]
 
 MIDDLEWARE = [
@@ -199,10 +200,15 @@ AUTH_USER_MODEL="platformapi.UserInfo"
 
 
 # Celery settings
-CELERYD_FORCE_EXECV = True
+CELERY_FORCE_EXECV = True
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 CELERY_BROKER_URL = 'redis://localhost:6379/0' 
+CELERY_SEND_EVENTS = True
 
+# Paddle Server Settings
+PADDLE_OCR_HOST = 'http://127.0.0.1:8868/predict/ocr_system'
 
-
+# Webscan Settings
+WEBSCAN_SPIDER_RES_DIR = 'media/files/webscan/source/'
+WEBSCAN_DEFAULT_SCAN_MODULES = ['文本类型敏感信息检测','人脸信息检测','暴露信息检测','指纹信息检测','生物识别信息检测']

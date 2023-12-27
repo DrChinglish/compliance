@@ -3,7 +3,7 @@ import requests
 def get(url,params=None):
     # 下载url对应资源，可能是图片/html等
     res = requests.get(url=url,params=params)
-    print(res.text,res.headers,res.cookies.items())
+    # print(res.text,res.headers,res.cookies.items())
     res_type = get_response_type(res.headers['Content-Type'])
     file_handler={
         'image':download_image,
@@ -38,7 +38,7 @@ def download_image(content,format,type=None):
 def get_response_type(content_type:str):
     # 分析资源类型
     list = content_type.split(';')
-    type = list[0]
+    type = list[0]  
     param = list[1:] if len(list)>1 else None
     type_list = type.split('/')
     if len(type_list) != 2:
@@ -60,16 +60,27 @@ def resolve_html(content):
     root_elem = etree.HTML(content)
     # xpath_text = "//descendant::text()"
     # xpath_text = "(//p)//text()"
-    xpath_text = "(//a | //p | //li | //span | //h1 | //h2 | //h3 | //h4 | //h5 | //h6 | //strong)//text()"
+    xpath_text = "(//a | //p |  //span | //h1 | //h2 | //h3 | //h4 | //h5 | //h6 | //strong)//text()"
     text_list = root_elem.xpath(xpath_text)
     # print(text_list)
     import re
     patt = re.compile(r"\S+")
     # print(patt.search(" 2 "))
     filtered_list = list(filter(lambda str: patt.search(str)!=None,text_list))
-    # print("\n",filtered_list,len(text_list),len(filtered_list))
+    print("\n",filtered_list,len(text_list),len(filtered_list))
     return filtered_list
 
-get("https://www.cnblogs.com/hjxiamen/p/17231739.html")
+
+# get("http://www.chinanews.com/")
+
+def get_urllist_from_log(logpath):
+    file = open(logpath,'r')
+    info_list = file.readlines()
+    ext_list = [eval(list[list.find('{'):list.rfind('}')+1]) for list in info_list 
+                if list.find('{') != -1 and list.rfind('}') != -1 ]
+        
+    return [item['url'] for item in ext_list]
+
+# print(get_urllist_from_log("../../media/files/msg_proxy_8b7bca6562e446b1b19a4c0a90cdc311.log").__len__())
 
 

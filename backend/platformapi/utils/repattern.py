@@ -14,14 +14,36 @@
 import re
 
 
+
+
 #--------------------------------------------------------------------------------#
 # (一) 特定身份（specified_identity）：身份证、军官证、护照、驾驶证、工作证、出入证、社保卡、居住证、港澳台通行证等
 #--------------------------------------------------------------------------------#
 
 # (1) 身份证号: 正则表达式
+# IDNumber_pattern = re.compile(r'''(
+#                 [1-9]\d{5}[12]\d{3}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\d{3}[0-9xX]
+#                 )''', re.VERBOSE)
+
+# 身份证号码格式： AABBCCYYYYMMDDXXXR
+# 参考 GB/T 2260-2002、GB11643-1999
 IDNumber_pattern = re.compile(r'''(
-                [1-9]\d{5}[12]\d{3}(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])\d{3}[0-9xX]
+                            (1[1-5]|2[1-3]|3[1-7]|4[1-6]|5[0-4]|6[1-5]|71|8[1-2]) # 省级行政区 AA
+                            (0[1-9]|[1-9][0-9]) # 市级行政区 BB
+                            (0[1-9]|[1-9][0-9]) # 县级行政区 CC
+                            (1[89]\d{2}|20[012]\d{1}) # 出生年份 YYYY 仅认为1800-2029年份为合法
+                            (0[1-9]|1[012]) # 出生月份 MM
+                            (0[1-9]|[12][0-9]|3[01]) #出生日 DD
+                            \d{3}[0-9xX] #顺序码与校验码 XXXR
                 )''', re.VERBOSE)
+
+def calc_last_digit(data):
+    factors = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+    digit_sum = sum(map(lambda digit,fac:eval(digit)*fac,data,factors))
+    digit_map = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
+
+    return digit_map[digit_sum%11]
+
 def des_IDNumber(s):
     des = lambda m: m.group()[:4]+'********'+m.group()[-4:]
     res = re.sub(IDNumber_pattern, des, s)
@@ -47,19 +69,18 @@ def des_officer(s):
     return res
 
 # (4) 港澳通行证号: 正则表达式
-HM_pass_pattern = re.compile(r'''(
-                [HMhm]{1}([0-9]{10}|[0-9]{8})
+HMpass_pattern = re.compile(r'''(
+                ([HMhm]){1}([0-9]{10}|[0-9]{8})
                 )''', re.VERBOSE)
-def des_HM_pass(s):
+def des_HMpass(s):
     des = lambda m: m.group()[:4]+'*****'+m.group()[-4:]
-    res = re.sub(HM_pass_pattern, des, s)
+    res = re.sub(HMpass_pattern, des, s)
     return res
 
 # (5) 车牌号: 正则表达式
 carnum_pattern = re.compile(r'''(
-                ([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}
-                [a-zA-Z](([DF]((?![IO])[a-zA-Z0-9](?![IO]))[0-9]{4})|([0-9]{5}[DF]))|[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼使领A-Z]{1}[A-Z]{1}[A-Z0-9]{4}[A-Z0-9挂学警港澳]{1})
-                )''', re.VERBOSE)
+    ([京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤青藏川宁琼]){1}([·]){0,1}([A-HJ-NP-Z]){1}([°|·]){0,1}[A-HJ-NP-Z0-9]{4}[A-HJ-NP-Z0-9挂学警港澳]{1}
+    )''', re.VERBOSE)
 def des_carnum(s):
     des = lambda m: m.group()[:3]+'*****'+m.group()[-3:]
     res = re.sub(carnum_pattern, des, s)
@@ -92,6 +113,17 @@ def des_business(s):
         
 
 # (6) 中文姓名: 算法
+def is_all_chinese(str):
+    '''
+    判断字符串是否只有汉字
+    '''
+    pattern = re.compile('^[\u4e00-\u9fa5]+$')
+    result = pattern.match(str)
+    if result:
+        return True
+    else:
+        return False
+
 def name_lac(sentences: str):
     from LAC import LAC
     user_name_list = []
@@ -99,7 +131,8 @@ def name_lac(sentences: str):
     lac_result = lac.run(sentences)
     for index, lac_label in enumerate(lac_result[1]):
         if lac_label == "PER":
-            user_name_list.append(lac_result[0][index])
+            if is_all_chinese(lac_result[0][index]) and len(lac_result[0][index])>1:
+                user_name_list.append(lac_result[0][index])
     return user_name_list
 
 
@@ -113,8 +146,8 @@ def name_lac(sentences: str):
 adress_pattern = re.compile(r'''(
                 ([\u4e00-\u9fa5]{2,5}?(?:省|自治区)){0,1}
                 ([\u4e00-\u9fa5]{2,5}?(?:市)){1}
-                ([\u4e00-\u9fa5]{2,5}?(?:区|县|州)){0,1}
-                ([\u4e00-\u9fa5]{2,5}?(?:村|镇|街道|路)){0,1}
+                ([\u4e00-\u9fa5]{2,5}?(?:区|县|州)){1}
+                ([\u4e00-\u9fa5]{2,6}?(?:村|镇|街道|路)){1}
                 ([\d]{1,5}(?:号)){0,1}
                 ([\u4e00-\u9fa5]{2,10}?(?:小区|社区|百货|大厦|厦|园|苑|院|大学|公寓|畔|场|村)){0,1}
                 ([\u4e00-\u9fa5]{1,8}?(?:区)){0,1}
@@ -256,63 +289,175 @@ modekey_pattern = re.compile(r'''(
                 众数|mode
                 )''', re.VERBOSE)
 
+
+#--------------------------------------------------------------------------------#
+# (七) 内部文件（restricted_document）：判定文件是否是内部，用于ocr识别中
+#--------------------------------------------------------------------------------#
+restdoc_pattern = re.compile(r'''(
+                内部文件)''', re.VERBOSE)
+
+
+
+#--------------------------------------------------------------------------------#
+#  对于数字类型数据的二次验证，过滤在长数字字符串中匹配的情况
+#--------------------------------------------------------------------------------#
+def validate(value,data_type,start,end):
+    risk_type_digits=[
+        'phone',
+        'banckcard',
+        'IDNumber',
+        'business',
+    ]
+    if data_type=='IDNumber' and calc_last_digit(value) != value[end-1].upper():
+        return False
+    if data_type in risk_type_digits: 
+        return (start==0 or not value[start-1].isdigit()) and (end==len(value) or not value[end].isdigit())
+    else:
+        return True     
+
+
 #--------------------------------------------------------------------------------#
 #  定义风险检测模式列表以及风险类型映射字典
 #--------------------------------------------------------------------------------#
 
-pattern_list = [adress_pattern,phone_pattern,bankcard_check,email_pattern,name_lac,age_pattern,IDNumber_pattern, 
-                passport_pattern, officer_pattern, HM_pass_pattern,carnum_pattern,business_check]
+# pattern_list = [adress_pattern,phone_pattern,bankcard_check,email_pattern,name_lac,age_pattern,IDNumber_pattern, 
+#                 passport_pattern, officer_pattern, HMpass_pattern,carnum_pattern,business_check]
 
-pattern_name = ['adress','phone','bankcard','email','name','age','IDNumber', 'passport', 'officer', 'HM_pass','carnum','business']
+pattern_list = [adress_pattern,phone_pattern,bankcard_check,email_pattern,name_lac,IDNumber_pattern, 
+                carnum_pattern,business_check,restdoc_pattern]
+
+# pattern_name = ['adress','phone','bankcard','email','name','age','IDNumber', 'passport', 'officer', 'HMpass','carnum','business']
+pattern_name = ['adress','phone','bankcard','email','name','IDNumber','carnum','business','restricted_doc']
+
+# risk_type = {'adress':'地址', 'phone':'手机号','bankcard':'银行卡号','email':'邮箱',
+#              'name':'姓名','age':'年龄','IDNumber':'身份证号','passport':'护照号',
+#              'officer':'军官证号','HMpass':'港澳通行证号','carnum':'车牌号','business':'营业执照号'}
 
 risk_type = {'adress':'地址', 'phone':'手机号','bankcard':'银行卡号','email':'邮箱',
-             'name':'姓名','age':'年龄','IDNumber':'身份证号','passport':'护照号',
-             'officer':'军官证号','HM_pass':'港澳通行证号','carnum':'车牌号','business':'营业执照号'}
+             'name':'姓名','IDNumber':'身份证号','carnum':'车牌号','business':'营业执照号','restricted':'内部文件'}
 
 
 #------------------------------------------------------------------------------------------------------------#
-# 基于上面的正则和算法查找文本数据中的敏感信息 返回结果形如：{'敏感信息类型': ,'开始位置': ,'结束位置':,'敏感信息':,}
+# 基于上面的正则和算法查找文本数据中的敏感信息 
 #------------------------------------------------------------------------------------------------------------#
+from .risk_level import get_risk_level
+from platformapi.models import SimpleLaw
+from django.db.models import Q
 import pandas as pd
 import numpy as np
-from varname import nameof
-def search_riskdata(value):
-    pattern_list = [nameof(IDNumber_pattern), nameof(passport_pattern), 
-                    nameof(officer_pattern), nameof(HM_pass_pattern),
-                    nameof(carnum_pattern),nameof(business_check)]
-  
-    res = []
-    for pattstr in pattern_list :
-        patt = eval(pattstr) 
-        if isinstance(patt,(re.Pattern)):
-            risk_data = [i[0] for i in patt.findall(value)]
-        else:
-            risk_data = patt(value)
-        for data in risk_data:
-            all_index = [r.span() for r in re.finditer(data, value)]
-            for i in all_index:
-                res.append((pattstr.split('_')[0], i[0], i[1], data))
+import threading
+from platformapi.utils.law import get_law_list
+
+
+
+class SearchRiskdata:
+    def __init__(self,text):
+        self.text = text
+        self.ret = []
+        self.res = {'overview':{'high':{},'middle':{},'low':{}},'detail':{'high':{},'middle':{},'low':{}}}
+
+    def init_para(self):
+        if isinstance(self.text,dict):
+            self.text = self.text
+        elif isinstance(self.text,str):
+            self.text = {'text':self.text}
+
+
+    def matching_law(self):
+
+        risk_pd = pd.DataFrame(self.ret,columns=['violation_content','violation_item','start','end','url','levle'])
+        print('post processing')
+        # 分类统计各风险项
+        level_group = risk_pd.groupby('levle',as_index=False)['violation_item'].value_counts()
+        for level in  self.res['overview'].keys():
+            result = level_group.loc[level_group['levle'] == level, ['violation_item', 'count']]
+            for i,j in zip(result['violation_item'],result['count']):
+                 self.res['overview'][level][i] = j
+
+        law_group = risk_pd.groupby('levle',as_index=False)
+        for group in law_group:
+            level = group[0]
+            group = group[1].sort_values(by='violation_item')
+            violation_item = group['violation_item'].unique()
+            for item in violation_item:
+                law_list = get_law_list(level)
+                # law_list = [{k: v for k, v in d.items() if k not in ['id', 'primary_classification','secondary_classification']} for d in law_list]
+                content_list =  np.array(group[group['violation_item']==item][['violation_content','url']]).tolist()
+                # print(content_list)
+                item_content = {'content_list':content_list,'law_list':law_list}
+                self.res['detail'][level][item] = item_content
                 
-    risk_pd = pd.DataFrame(res,columns=['type','start','end','content'])
-    risk_pd.sort_values(['start'],inplace=True)
-    risk_pd.reset_index( drop=True,inplace=True)
-    drop_index = []
-    for i, _ in enumerate(res):
-        if i!=0:
-            if risk_pd.loc[i][1]-risk_pd.loc[i-1][2]<0:
-                drop_index.append(i)
-    risk_pd.drop(drop_index,inplace=True)
-    return np.array(risk_pd).tolist()
+        return  self.res
+
+    def miti_process(self):
+        self.init_para()
+        # 多线程处理
+        threads = []
+        for key,value in self.text.items():
+            print(key)
+            thread = threading.Thread(target=self.search_riskdata, args=(value,key))
+            threads.append(thread)
+            thread.start()
+
+        # 等待所有线程结束
+        for thread in threads:
+            thread.join()
+
+        return self.matching_law()
+
+
+    def search_riskdata(self,value,url=None):
+        print('prepare to scan------>')
+        ret = []
+        for patt_index,patt in enumerate(pattern_list) :
+            if isinstance(patt,(re.Pattern)):
+                re_result = patt.findall(value)
+                #   print(re_result)
+                risk_data = []
+                if len(re_result) > 0:
+                    if isinstance(re_result[0],tuple):
+                        risk_data = [i[0] for i in re_result]
+                    else:
+                        risk_data = [i for i in re_result]
+            else:
+                risk_data = patt(value)
+            for data in risk_data:
+                patt_name = pattern_name[patt_index]
+                all_index = [r.span() for r in re.finditer(data, value)]
+                for i in all_index:
+                    if validate(value,patt_name,i[0],i[1]):
+                        print(f'{patt_name}------>{data}')
+                        ret.append((
+                                data,
+                                risk_type[patt_name.split('_')[0]],
+                                i[0], # start index
+                                i[1], # end index
+                                url,
+                                get_risk_level(patt_name.split('_')[0])
+                                    ))
+                    
+
+        risk_pd = pd.DataFrame(ret,columns=['violation_content','violation_item','start','end','url','levle'])
+        risk_pd.sort_values(['start'],inplace=True)
+        risk_pd.reset_index( drop=True,inplace=True)
+        drop_index = []
+        for i, _ in enumerate(ret):
+            if i!=0:
+                if risk_pd.loc[i][2]-risk_pd.loc[i-1][3]<0:
+                    drop_index.append(i)
+        risk_pd.drop(drop_index,inplace=True)
+        ret = np.array(risk_pd).tolist()
+
+        self.ret += ret
+                    
+    
 
 
 
 #-------------------------------------------------------------------------------------------------------#
 # 基于上面的正则和算法查找表格数据中的敏感信息 
 #-------------------------------------------------------------------------------------------------------#
-from .risk_level import get_risk_level
-from platformapi.models import SimpleLaw
-from django.db.models import Q
-from django.forms.models import model_to_dict
+
 def search_database_riskdata(value):
     # 定义结果字典
     res = {'overview':{'high':{},'middle':{},'low':{}},
@@ -333,19 +478,12 @@ def search_database_riskdata(value):
                 if len(risk_data):
                     for data in risk_data:
                         if len(data)==len(cell):
-                            if pattern_name[patt_index].split('_')[0] == 'name':  
-                                if not bool(re.match('^[A-Za-z]+$', data)):
-                                    ret.append((data,
-                                        risk_type[pattern_name[patt_index].split('_')[0]], 
-                                        (i+1,j+1),
-                                        get_risk_level(pattern_name[patt_index].split('_')[0])
-                                        ))
-                            else:
-                                ret.append((data,
-                                            risk_type[pattern_name[patt_index].split('_')[0]], 
-                                            (i+1,j+1),
-                                            get_risk_level(pattern_name[patt_index].split('_')[0])
-                                            ))
+                            ret.append((data,
+                                    risk_type[pattern_name[patt_index].split('_')[0]], 
+                                    (i+1,j+1),
+                                    get_risk_level(pattern_name[patt_index].split('_')[0])
+                                    ))
+                       
 
     print('post processing')
     # 过滤掉位置一样的风险项  
@@ -359,13 +497,6 @@ def search_database_riskdata(value):
         for i,j in zip(result['violation_item'],result['count']):
             res['overview'][level][i] = j
 
-    # 匹配法律
-    all_law = {'high':[obj for obj in SimpleLaw.objects.filter(secondary_classification='high').values('law_article','serial_number','law_term')],
-               'middle':[obj for obj in SimpleLaw.objects.filter(secondary_classification='middle').values('law_article','serial_number','law_term')],
-               'low':[obj for obj in SimpleLaw.objects.filter(secondary_classification='low').values('law_article','serial_number','law_term')],
-               'underage':[obj for obj in SimpleLaw.objects.filter(primary_classification='未成年人个人信息').values('law_article','serial_number','law_term')],
-               'property':[obj for obj in SimpleLaw.objects.filter(primary_classification='个人财产信息').values('law_article','serial_number','law_term')],
-               }
 
     law_group = risk_pd.groupby('levle',as_index=False)
     for group in law_group:
@@ -373,7 +504,7 @@ def search_database_riskdata(value):
         group = group[1].sort_values(by='violation_item')
         violation_item = group['violation_item'].unique()
         for item in violation_item:
-            law_list = all_law[level] 
+            law_list = get_law_list(level)
             # law_list = [{k: v for k, v in d.items() if k not in ['id', 'primary_classification','secondary_classification']} for d in law_list]
             content_list =  np.array(group[group['violation_item']==item][['violation_content','position']]).tolist()
             print(content_list)
@@ -383,3 +514,31 @@ def search_database_riskdata(value):
 
     return res
     
+
+
+
+
+# def search_riskdata(value):
+  
+#     res = []
+#     # for pattstr in pattern_list :
+#     for patt_index,patt in enumerate(pattern_list) :
+#         if isinstance(patt,(re.Pattern)):
+#             risk_data = [i[0] for i in patt.findall(value)]
+#         else:
+#             risk_data = patt(value)
+#         for data in risk_data:
+#             all_index = [r.span() for r in re.finditer(data, value)]
+#             for i in all_index:
+#                 res.append((pattern_name[patt_index].split('_')[0], i[0], i[1], data))
+                
+#     risk_pd = pd.DataFrame(res,columns=['type','start','end','content'])
+#     risk_pd.sort_values(['start'],inplace=True)
+#     risk_pd.reset_index( drop=True,inplace=True)
+#     drop_index = []
+#     for i, _ in enumerate(res):
+#         if i!=0:
+#             if risk_pd.loc[i][1]-risk_pd.loc[i-1][2]<0:
+#                 drop_index.append(i)
+#     risk_pd.drop(drop_index,inplace=True)
+#     return np.array(risk_pd).tolist()

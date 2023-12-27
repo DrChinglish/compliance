@@ -26,9 +26,11 @@ export default function CheckListResults({pid}: Props) {
   const loadResult = ()=>{
     setStatus('loading')
     getCheckListResult(pid,(e)=>{
+      console.log(e)
       setStatus('error')
     },
       (res)=>{
+        console.log(res)
         let result = loadResultFromResponse(res)
         setProjectResult(result)
         setStatus('success')

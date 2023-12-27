@@ -57,6 +57,28 @@ class ProjectModelViewSet(ModelViewSet):
         return Response({'status': 1,'id':project.id}, status=status.HTTP_201_CREATED)
 
 
+    '''快速检测'''
+    @action(methods=['POST'],detail=False,url_path='scan')
+    def image_scan(self,request): 
+        from django.core.files.uploadedfile import UploadedFile
+        import os
+        save_dir = "media/ocr_test/"
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        file_list:list[UploadedFile] = request.FILES.getlist('files[]') 
+        for f in file_list:
+            # from .utils.util import calculate_file_hash
+            # This looks not so right, could have cause some undesire behaviors....
+            # hashcode = calculate_file_hash(f)  
+            with open(f"{save_dir}{f.name}",'wb') as wf:
+                wf.write(f.read())
+            # instance = File(file=f ,project=project,md5=hashcode)
+            # instance.save()
+            # print(f,'111',instance,'111',instance.file.path)
+        file_map = {f"{save_dir}{f.name}":f"Image:{f.name}" for f in file_list}
+        res = process_img({},file_map,modules=['文本类型敏感信息检测'])
+        return Response(data=res,status=status.HTTP_200_OK)
+
 
     '''填写项目问卷'''
     @action(methods=['POST','GET'], detail=True, url_path="questions") 
@@ -85,44 +107,23 @@ class ProjectModelViewSet(ModelViewSet):
 
 
 
-    '''处理项目数据'''
+    '''处理项目图片数据'''
     @action(methods=['GET'], detail=True, url_path="results") 
     def process_data(self,request,pk):
         project = Project.objects.get(id=pk)
         files = project.project_files.all()
-        path = 'media/' + str(files.last().file)
+        file_list = {"media/"+str(file.file):f'{convert_type(str(file.file))} ' for file in project.project_files.all()}
+        res = process_img({}, file_list)
 
-        # 开始处理数据
-        dataprocesser = DataProcess()
-        dataprocesser.init_para(path)
-        dataprocesser.search_risk()
-        dataprocesser.face_detect()
-        dataprocesser.fingerprint_detect() 
-        dataprocesser.bioinfo_detect()
-        dataprocesser.des_txts()
-        dataprocesser.des_iamge()
-        res = dataprocesser.sensitive_information
-
-        # 合规得分
-        scores = get_scores(project)
-
-        # 合规建议、违规法条
-        suggestion_list = []
-        law_list = []
-        for i in ProjectQuest.objects.filter(project=project):
-            if not i.answer:
-                law = Law.objects.filter(serial_number=i.question.serial_number)[0]
-                if i.question.suggestion:
-                    suggestion_list.append(i.question.suggestion)
-                law_list.append(law.law_term)
-        return Response({'risk_data':res, 'scores':scores, 'suggestion':suggestion_list,'law':law_list},status=status.HTTP_200_OK)
+        return Response(data=res,status=status.HTTP_200_OK)
+    
 
 
 
     '''上传项目文件'''
     @action(methods=['POST'], detail=True, url_path="upload") 
     def upload_new_files(self,request,pk):
-        from utils.util import calculate_file_hash
+        from .utils.util import calculate_file_hash
         uploaded = 0
         filecount = len(request.FILES.getlist('files[]'))
         project = Project.objects.get(id=pk)
@@ -137,11 +138,12 @@ class ProjectModelViewSet(ModelViewSet):
                 continue
             instance = File(file=f ,project=project,md5=hashcode)
             instance.save()
+            uploaded+=1
         
-            from utils.util import convert_type,generate_video_cover
+            from .utils.util import convert_type,generate_video_cover
             if convert_type(instance.file.path) == 'video':
                 generate_video_cover(instance)
-            uploaded+=1
+            
         return Response({'status':1 if uploaded>0 else 0,'file_rejected':file_rejected,
         'fileuploaded':uploaded,'text':'共上传了{0}个文件中的{1}个'.format(filecount,uploaded)}
         ,status=status.HTTP_200_OK)
@@ -150,7 +152,6 @@ class ProjectModelViewSet(ModelViewSet):
     '''扫描数据库信息'''
     @action(methods=["POST"], detail=False, url_path="get_databases")
     def get_databases(self, request):
-        import pandas as pd
         form_data=request.data
       
         print(form_data['ip'])
@@ -179,7 +180,6 @@ class ProjectModelViewSet(ModelViewSet):
     '''扫描所有选择的数据库'''
     @action(methods=["POST"], detail=False, url_path="scandb")
     def scandb(self, request):
-        import pandas as pd
         import json
         form_data=dict(eval(request.body))
         print(form_data)
@@ -208,6 +208,85 @@ class ProjectModelViewSet(ModelViewSet):
         json.dump(ret,save_file,ensure_ascii=False)
         save_file.close()
         return Response( data={'data':ret},status=status.HTTP_200_OK)
+    
+    '''用于DEBUG的API'''
+    @action(methods=['POST'],detail=False, url_path='testscan')
+    def scanweb(self,request):
+        text = request.data['text']
+        risk_data = SearchRiskdata({'test':text})
+        res = risk_data.miti_process()
+        return Response(data=res,status=status.HTTP_201_CREATED)
+
+    '''扫描网站信息'''
+    from asgiref.sync import async_to_sync
+    @async_to_sync  
+    @action(methods=["POST"], detail=False, url_path="scanweb")
+    async def sacnweb(self, request):
+        from django.conf import settings
+        form_data=request.data
+
+        print(form_data['selected']) # '文本类型敏感信息检测,人脸信息检测,暴露信息检测'
+        keys:str = form_data['selected']
+        keylist = keys.split(',')
+        if keylist.__len__() == 0:
+            return Response(data={'status':0,'msg':'无效的处理模块'},status=status.HTTP_200_OK)
+        try:
+            url = form_data['url']
+            print(url)
+            scraper = WebScraper(url)
+        except:
+            # 使用日志文件导入所有网页链接的情况
+            import hashlib
+            import os
+            file = request.FILES.get('file')
+            file_data = file.file.read()
+
+            m = hashlib.md5()   #创建md5对象
+            m.update(file_data)  #更新md5对象
+            file_hash = m.hexdigest() #哈希值
+            # 上传日志文件
+
+            filename = "{0}/logfile_{1}{2}".format(settings.WEBSCAN_SPIDER_RES_DIR,file_hash,os.path.splitext(file.name)[1]) 
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            with open(filename, 'wb') as f:
+                f.write(file_data)
+                f.close()
+
+            from .utils.webscan import get_urllist_from_log 
+            scraper = WebScraper(logfile=filename,logparser=get_urllist_from_log)
+
+        scraper.miti_process()
+        web_text = scraper.filtered_text
+        web_img = scraper.img
+     
+
+        # img = {}
+        # img_scrapy = ImgScraper(web_text, img)
+        # await img_scrapy.run()
+        # from .utils.util import merge_dict
+        # print(img)
+        # web_img = merge_dict(web_img, img)
+       
+        #开始处理文本数据
+        riskdata = SearchRiskdata(web_text)
+        res = riskdata.miti_process()
+
+
+        # 开始处理非文本数据
+        res=process_img(res, web_img, modules=keylist)
+
+        # 保存结果
+        try:
+            resfilename = "media/files/webscan/results/result_{0}".format(file.name)
+            os.makedirs(os.path.dirname(resfilename), exist_ok=True)
+            with open(resfilename,'w',encoding='utf-8') as rf:
+                import json
+                json.dump(res,rf,ensure_ascii=False)
+                
+                rf.close()
+        except Exception as e:
+            print(e)
+        return Response(data={'result':res,'status':0},status=status.HTTP_200_OK)
 
 
 class FileModelViewSet(ModelViewSet):

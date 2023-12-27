@@ -1,0 +1,47 @@
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 01, 2023 - 16:01:59
+Django version 4.0.6, using settings 'backend.settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+处理图片------>>media/ocr_test/00991c885b934baa8d23b922644b7f18.jpg
+Image:00991c885b934baa8d23b922644b7f18.jpg
+prepare to scan------>
+phone------>15559990091
+W1201 16:02:45.436915 23612 analysis_predictor.cc:2166] Deprecated. Please use CreatePredictor instead.
+post processing
+[01/Dec/2023 16:02:45] "POST /papi/projects/scan/ HTTP/1.1" 200 2078
+处理图片------>>media/ocr_test/00991c885b934baa8d23b922644b7f18.jpg
+Image:00991c885b934baa8d23b922644b7f18.jpg
+prepare to scan------>
+phone------>15559990091
+post processing
+[01/Dec/2023 16:02:56] "POST /papi/projects/scan/ HTTP/1.1" 200 2078
+处理图片------>>media/ocr_test/00991c885b934baa8d23b922644b7f18.jpg
+Image:00991c885b934baa8d23b922644b7f18.jpg
+prepare to scan------>
+phone------>15559990091
+post processing
+[01/Dec/2023 16:04:27] "POST /papi/projects/scan/ HTTP/1.1" 200 2078
+处理图片------>>media/ocr_test/00991c885b934baa8d23b922644b7f18.jpg
+Image:00991c885b934baa8d23b922644b7f18.jpg
+prepare to scan------>
+phone------>15559990091
+post processing
+[01/Dec/2023 16:04:41] "POST /papi/projects/scan/ HTTP/1.1" 200 2078
+Not Found: //papi/projects/scan
+[04/Dec/2023 10:31:50] "POST //papi/projects/scan HTTP/1.1" 404 7178
+Internal Server Error: /papi/projects/scan
+Traceback (most recent call last):
+  File "/root/compliance/backend/venv_back/lib/python3.8/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/root/compliance/backend/venv_back/lib/python3.8/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "/root/compliance/backend/venv_back/lib/python3.8/site-packages/django/middleware/common.py", line 54, in process_request
+    path = self.get_full_path_with_slash(request)
+  File "/root/compliance/backend/venv_back/lib/python3.8/site-packages/django/middleware/common.py", line 88, in get_full_path_with_slash
+    raise RuntimeError(
+RuntimeError: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to 127.0.0.1:8000/papi/projects/scan/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+[04/Dec/2023 10:34:07] "POST /papi/projects/scan HTTP/1.1" 500 70412

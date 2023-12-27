@@ -113,3 +113,30 @@ def get_file_info(f):
             'status': f.status,
             'content': extracontent
         }
+
+
+def merge_dict(dict1, dict2):
+    """
+    合并字典,遇到是整数的value则相加,遇到列表的value进行append操作
+    """
+    if isinstance(dict1, dict) and isinstance(dict2, dict):
+        merged_dict = {}
+        for key in set(dict1.keys()) | set(dict2.keys()):
+            if key in dict1 and key in dict2:
+                merged_dict[key] = merge_dict(dict1[key], dict2[key])
+            else:
+                merged_dict[key] = dict1.get(key, dict2.get(key))
+        return merged_dict
+    elif isinstance(dict1, int) and isinstance(dict2, int):
+        return dict1 + dict2
+    elif isinstance(dict1, list) and isinstance(dict2, list):
+        for item in dict2:
+            if item not in dict1:
+                dict1.append(item)
+        return dict1
+    else:
+        return dict1 or dict2
+    
+def cv2_to_base64(image):
+    import base64
+    return base64.b64encode(image).decode('utf8')
