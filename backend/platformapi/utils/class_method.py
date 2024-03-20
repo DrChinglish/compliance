@@ -16,7 +16,7 @@ from platformapi.utils.law import get_law_list
 from django.conf import settings
 # 数据处理
 class DataProcess(object):
-    def __init__(self,path,path_list,modules=settings.WEBSCAN_DEFAULT_SCAN_MODULES):
+    def __init__(self,path,path_list,modules=settings.WEBSCAN_DEFAULT_SCAN_MODULES,options=settings.WEBSCAN_DEFAULT_OCR_OPTIONS):
         self.path = path
         self.path_list = path_list # 文件本地的地址和网址的映射关系
         self.txts = []  # 文本内容
@@ -27,6 +27,7 @@ class DataProcess(object):
         self.speech = None
         self.sensitive_information = {}
         self.scan_modules = modules
+        self.options = options
         import logging,time
         self.logger = logging.getLogger(__name__)
 
@@ -62,13 +63,27 @@ class DataProcess(object):
             self.txts = [result, 0]
             self.string = ''.join((str(x[0]) for x in self.txts))
         elif convert_type(file_path) == 'image':
+            name = os.path.split(path)[1]
+            from itertools import product
             self.file_type = 'image'
             self.image = Image.open(path).convert('RGB')
             from django.conf import settings
             import requests,json
             headers = {"Content-type": "application/json"}
             from .util import cv2_to_base64
-            img = open(str(path), 'rb').read()
+            if 'watermark_remove' in self.options:
+                img = Image.open(str(path))
+                width, height = img.size
+                print(width,height)
+                for pos in product(range(width), range(height)):
+                    if sum(img.getpixel(pos)[:3]) > 600:
+                        img.putpixel(pos, (255,255,255))
+                if not os.path.exists('media/ocr_test/temp'):
+                    os.makedirs('media/ocr_test/temp')
+                img.save(f'media/ocr_test/temp/{name}')
+                img = open(f'media/ocr_test/temp/{name}', 'rb').read()
+            else:
+                img = open(str(path), 'rb').read()
             data = {'images': [cv2_to_base64(img)]}
             url = settings.PADDLE_OCR_HOST
             r = requests.post(
@@ -91,10 +106,13 @@ class DataProcess(object):
             #     self.boxes.append(item['points'])
 
             # 根据ppocr不同版本，返回格式可能有区别，需要注意
-            self.boxes = [res['text_region'] for res in result ]
+            self.boxes = [res['text_region'] for res in result]
             self.txts = [res['text'] for res in result ]
             print(f'识别出的文本内容：{self.txts}')
-            self.string = ''.join((str(x) for x in self.txts))
+            self.string = ''.join((str(x)+" " for x in self.txts))
+            print(f'识别出的文本字符串：{self.string}')
+            if 'watermark_remove' in self.options:
+                os.remove(f'media/ocr_test/temp/{name}')
         else:
             pass
         
@@ -284,7 +302,7 @@ class DataProcess(object):
 
 
 # 多线程处理图片
-def process_img(res, path_list, modules=settings.WEBSCAN_DEFAULT_SCAN_MODULES):
+def process_img(res, path_list, modules=settings.WEBSCAN_DEFAULT_SCAN_MODULES,options=settings.WEBSCAN_DEFAULT_OCR_OPTIONS):
     # 定义一个锁对象
     lock = threading.Lock()
     import logging
@@ -293,7 +311,7 @@ def process_img(res, path_list, modules=settings.WEBSCAN_DEFAULT_SCAN_MODULES):
     def worker(path,path_list):
         nonlocal res
         try:
-            dataprocesser = DataProcess(path,path_list,modules=modules)
+            dataprocesser = DataProcess(path,path_list,modules=modules,options=options)
             # dataprocesser.sensitive_information = res
             logger.info(f"Processing image file:{path}.")
             dataprocesser.process()

@@ -154,12 +154,10 @@ paddlefsl==1.1.0
 paddlehub==2.1.0
 paddlenlp==2.5.2
 paddleocr==2.6.0.2
-paddlepaddle-gpu==2.4.2.post117
 pandas==1.5.1
 parameterized==0.9.0
 pathos==0.2.8
 pattern-singleton==1.2.0
-pdf2docx==0.5.6
 Pillow==10.0.0
 Polygon3==3.0.9.1
 pooch==1.6.0
@@ -248,9 +246,6 @@ threadpoolctl==3.1.0
 tifffile==2022.7.31
 timer==0.2.2
 ToJyutping==0.2.3
-torch==1.13.1+cu117
-torchaudio==0.13.1+cu117
-torchvision==0.14.1+cu117
 tornado==6.2
 tqdm==4.64.0
 triton==2.0.0
