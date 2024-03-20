@@ -212,3 +212,4 @@ PADDLE_OCR_HOST = 'http://127.0.0.1:8868/predict/ocr_system'
 # Webscan Settings
 WEBSCAN_SPIDER_RES_DIR = 'media/files/webscan/source/'
 WEBSCAN_DEFAULT_SCAN_MODULES = ['文本类型敏感信息检测','人脸信息检测','暴露信息检测','指纹信息检测','生物识别信息检测']
+WEBSCAN_DEFAULT_OCR_OPTIONS = ['watermark_remove']

@@ -397,7 +397,7 @@ class SearchRiskdata:
             print(key)
             thread = threading.Thread(target=self.search_riskdata, args=(value,key))
             threads.append(thread)
-            thread.start()
+            thread.start()  
 
         # 等待所有线程结束
         for thread in threads:

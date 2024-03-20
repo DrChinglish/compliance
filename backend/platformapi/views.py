@@ -67,18 +67,27 @@ class ProjectModelViewSet(ModelViewSet):
             os.makedirs(save_dir)
         file_list:list[UploadedFile] = request.FILES.getlist('files[]') 
         for f in file_list:
-            # from .utils.util import calculate_file_hash
-            # This looks not so right, could have cause some undesire behaviors....
-            # hashcode = calculate_file_hash(f)  
             with open(f"{save_dir}{f.name}",'wb') as wf:
                 wf.write(f.read())
-            # instance = File(file=f ,project=project,md5=hashcode)
-            # instance.save()
-            # print(f,'111',instance,'111',instance.file.path)
         file_map = {f"{save_dir}{f.name}":f"Image:{f.name}" for f in file_list}
         res = process_img({},file_map,modules=['文本类型敏感信息检测'])
         return Response(data=res,status=status.HTTP_200_OK)
-
+    
+    '''快速检测-无去水印功能'''
+    @action(methods=['POST'],detail=False,url_path='scan_2')
+    def image_scan_2(self,request): 
+        from django.core.files.uploadedfile import UploadedFile
+        import os
+        save_dir = "media/ocr_test/"
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        file_list:list[UploadedFile] = request.FILES.getlist('files[]') 
+        for f in file_list:
+            with open(f"{save_dir}{f.name}",'wb') as wf:
+                wf.write(f.read())
+        file_map = {f"{save_dir}{f.name}":f"Image:{f.name}" for f in file_list}
+        res = process_img({},file_map,modules=['文本类型敏感信息检测'],options=[])
+        return Response(data=res,status=status.HTTP_200_OK)
 
     '''填写项目问卷'''
     @action(methods=['POST','GET'], detail=True, url_path="questions") 
